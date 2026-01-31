@@ -394,6 +394,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   Mask1Volume: {fileID: 1296960890}
   Mask2Volume: {fileID: 1214510865}
+  mask1Action: {fileID: 8953542885560802198, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  mask2Action: {fileID: -3790881054569865870, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
 --- !u!4 &17135749
 Transform:
   m_ObjectHideFlags: 0
@@ -560,7 +562,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor32.rgba
-      value: 4293848751
+      value: 4287852763
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
@@ -2976,7 +2978,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
-      value: NoWifi-8
+      value: Planet Dammit Janet
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
@@ -3464,7 +3466,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
-      value: Planet Dammit Janet (1)
+      value: 'TODO: Find Name'
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
