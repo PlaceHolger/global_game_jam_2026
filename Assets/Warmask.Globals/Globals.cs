@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 [CreateAssetMenu(fileName = "Globals", menuName = "WarMaster/Globals", order = 1)]
 public class Globals : ScriptableObject
@@ -19,6 +20,8 @@ public class Globals : ScriptableObject
             return _instance;
         }
     }
+
+    public UnityEvent<eMask> OnMaskChanged = new UnityEvent<eMask>();
 
     public enum eType
     {
