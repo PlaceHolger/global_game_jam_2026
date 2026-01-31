@@ -252,7 +252,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_type
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: onUnitCreated.m_PersistentCalls.m_Calls.Array.size
@@ -703,7 +703,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_type
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: onUnitCreated.m_PersistentCalls.m_Calls.Array.size
@@ -957,7 +957,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_type
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: onUnitCreated.m_PersistentCalls.m_Calls.Array.size
@@ -2394,15 +2394,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.b
-      value: 0.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.g
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.r
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8506309251168395980, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Name
@@ -2857,7 +2857,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_type
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: onUnitCreated.m_PersistentCalls.m_Calls.Array.size

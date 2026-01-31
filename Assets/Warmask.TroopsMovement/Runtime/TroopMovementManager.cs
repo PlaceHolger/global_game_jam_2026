@@ -1,8 +1,11 @@
 using UnityEngine;
+using UnityEngine.Events;
 using Warmask.Planet.Runtime;
 
 public class TroopMovementManager : MonoBehaviour
 {
+    static UnityEvent<PlanetInstance, PlanetInstance, int, Globals.ePlayer> OnTroopMovementStarted = new(); //from, to, num, who
+    
     //for now, this class is just a placeholder for future troop movement management logic
     //nor now it will get a public methode moveTroops(fromPlanet, toPlanet, numberOfTroops, player)
     //for now it will then reduce the number of troops on fromPlanet and increase on toPlanet accordingly if owned by same player
@@ -17,7 +20,7 @@ public class TroopMovementManager : MonoBehaviour
         return Instance;
     }
     
-    public void MoveTroops(PlanetInstance fromPlanet, PlanetInstance toPlanet, int numberOfTroops, Globals.ePlayer player)
+    public void MoveTroops(PlanetInstance fromPlanet, PlanetInstance toPlanet, int numberOfTroops, Globals.ePlayer movingPlayer)
     {
         if (!fromPlanet || !toPlanet || numberOfTroops <= 0)
         {
@@ -25,15 +28,17 @@ public class TroopMovementManager : MonoBehaviour
             return;
         }
 
-        if (fromPlanet.OwnedBy != player)
+        if (fromPlanet.OwnedBy != movingPlayer)
             return; // Can't move troops from a planet you don't own
 
         if (fromPlanet.UnitCount < numberOfTroops)
             numberOfTroops = fromPlanet.UnitCount; // Adjust to available troops
+        
+        OnTroopMovementStarted.Invoke(fromPlanet, toPlanet, numberOfTroops, movingPlayer);
 
         fromPlanet.UnitCount -= numberOfTroops;
 
-        if (toPlanet.OwnedBy == player)
+        if (toPlanet.OwnedBy == movingPlayer)
         {
             // Reinforce own planet
             toPlanet.UnitCount += numberOfTroops;
@@ -44,7 +49,7 @@ public class TroopMovementManager : MonoBehaviour
             if (numberOfTroops > toPlanet.UnitCount)
             {
                 // Successful attack
-                toPlanet.SetOwner(player);
+                toPlanet.SetOwner(movingPlayer);
                 toPlanet.UnitCount = numberOfTroops - toPlanet.UnitCount;
             }
             else
