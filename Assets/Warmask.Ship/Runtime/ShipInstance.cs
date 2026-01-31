@@ -1,172 +1,454 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace Warmask.Ship
 {
+    [RequireComponent(typeof(Collider2D))]
     public class ShipInstance : MonoBehaviour
     {
-        [SerializeField]
-        private float moveSpeed = 5f;
+        [Header("Movement")]
+        [SerializeField] private float moveSpeed = 5f;
+        [SerializeField] private float maxTurnAnglePerSecond = 90f;
 
-        [SerializeField]
-        private float neighborRadius = 5f;
+        [Header("Boid Behavior")]
+        [SerializeField] private float neighborRadius = 5f;
+        [SerializeField] private float separationDistance = 2f;
+        [SerializeField] private float alignmentWeight = 1f;
+        [SerializeField] private float cohesionWeight = 1f;
+        [SerializeField] private float separationWeight = 1.5f;
+        [SerializeField] private float targetWeight = 2f;
 
-        [SerializeField]
-        private float separationDistance = 2f;
+        [Header("Combat")]
+        [SerializeField] private int playerId;
+        [SerializeField] private float detectionRadius = 10f;
+        [SerializeField] private float weaponRange = 5f;
+        [SerializeField] private float fireCooldown = 1f;
+        [SerializeField] private float weaponDamage = 20f;
+        [SerializeField] private float raycastStartOffset = 0.5f;
 
-        [SerializeField]
-        private float alignmentWeight = 1f;
+        [Header("Enemy Handling")]
+        [SerializeField] private float enemyAvoidanceWeight = 2f;
+        [SerializeField] private float enemyAvoidanceRadius = 3f;
+        [SerializeField] private float maxDistanceFromTarget = 5f;
+        [SerializeField] private float targetBehindDistance = 3f;
 
-        [SerializeField]
-        private float cohesionWeight = 1f;
+        [Header("Health")]
+        [SerializeField] private float maxHealth = 100f;
 
-        [SerializeField]
-        private float separationWeight = 1.5f;
+        [Header("Physics")]
+        [SerializeField] private LayerMask shipLayerMask = ~0;
 
-        [SerializeField]
-        private float targetWeight = 2f; // Weight for target attraction
+        [Header("Performance")]
+        [SerializeField] private float aiUpdateInterval = 0.1f;
+        [SerializeField] private int maxColliderBufferSize = 50;
 
+        [Header("Orbit Breaking")]
+        [SerializeField] private float orbitBreakTime = 3f;
+        [SerializeField] private float aggressiveTurnMultiplier = 2f;
+        [SerializeField] private float orbitBreakJitterStrength = 0.5f;
+
+        // Cached components
+        private Transform cachedTransform;
+        private Collider2D ownCollider;
+
+        // State
         private Vector2 velocity;
-        
+        private float currentHealth;
+        private ShipInstance currentEnemyTarget;
+        private float lastFireTime;
+        private float nextAiUpdate;
+
+        // Orbit breaking state
+        private float lastSuccessfulHitTime;
+        private Vector2 orbitBreakJitter;
+        private float nextJitterUpdateTime;
+
+        // Cached squared distances to avoid sqrt calculations
+        private float sqrDetectionRadius;
+        private float sqrNeighborRadius;
+        private float sqrSeparationDistance;
+        private float sqrEnemyAvoidanceRadius;
+        private float sqrMaxDistanceFromTarget;
+
+        // Collider caching to reduce allocations
+        private Collider2D[] colliderBuffer;
+        private int cachedColliderCount;
+        private int frameOfLastCache = -1;
+        private float cachedMaxRadius;
+
+        // Neighbor caching to avoid list allocations
+        private readonly List<ShipInstance> neighborCache = new List<ShipInstance>();
+
+        // Cached position to avoid repeated transform access
+        private Vector2 cachedPosition;
+
         [SerializeField]
-        private Transform target; // Current target position
+        private Transform target;
+
+        private void Awake()
+        {
+            cachedTransform = transform;
+            ownCollider = GetComponent<Collider2D>();
+            colliderBuffer = new Collider2D[maxColliderBufferSize];
+
+            // Pre-calculate squared distances
+            sqrDetectionRadius = detectionRadius * detectionRadius;
+            sqrNeighborRadius = neighborRadius * neighborRadius;
+            sqrSeparationDistance = separationDistance * separationDistance;
+            sqrEnemyAvoidanceRadius = enemyAvoidanceRadius * enemyAvoidanceRadius;
+            sqrMaxDistanceFromTarget = maxDistanceFromTarget * maxDistanceFromTarget;
+
+            // Calculate max radius for single overlap query
+            cachedMaxRadius = Mathf.Max(neighborRadius, detectionRadius, enemyAvoidanceRadius);
+        }
 
         private void Start()
         {
-            // Initialize velocity with a random direction and speed
             velocity = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized * moveSpeed;
+            currentHealth = maxHealth;
+            lastSuccessfulHitTime = Time.time;
         }
 
         private void Update()
         {
-            Vector2 separation = CalculateSeparation() * separationWeight;
-            Vector2 alignment = CalculateAlignment() * alignmentWeight;
-            Vector2 cohesion = CalculateCohesion() * cohesionWeight;
-            Vector2 targetAttraction = CalculateTargetAttraction() * targetWeight;
+            // Cache position once per frame
+            cachedPosition = cachedTransform.position;
 
-            Vector2 desiredDirection = separation + alignment + cohesion + targetAttraction;
+            // AI logic runs at reduced frequency
+            if (Time.time >= nextAiUpdate)
+            {
+                nextAiUpdate = Time.time + aiUpdateInterval;
+                UpdateAI();
+            }
 
-            // Ensure desiredDirection is valid
-            if (desiredDirection != Vector2.zero)
+            // Movement runs every frame for smooth visuals
+            UpdateMovement();
+            TryFireAtEnemyInFront();
+        }
+
+        private void UpdateAI()
+        {
+            if (!IsEnemyTargetValid())
+            {
+                currentEnemyTarget = DetectEnemy();
+            }
+        }
+
+        private void UpdateMovement()
+        {
+            float timeSinceHit = Time.time - lastSuccessfulHitTime;
+            bool isInOrbitBreakMode = timeSinceHit > orbitBreakTime && currentEnemyTarget != null;
+
+            // Update jitter only when in orbit break mode
+            if (isInOrbitBreakMode && Time.time >= nextJitterUpdateTime)
+            {
+                nextJitterUpdateTime = Time.time + 0.3f + Random.Range(0f, 0.2f);
+                orbitBreakJitter = Random.insideUnitCircle * orbitBreakJitterStrength;
+            }
+            else if (!isInOrbitBreakMode)
+            {
+                orbitBreakJitter = Vector2.zero;
+            }
+
+            Vector3? overrideTargetPosition = null;
+
+            if (currentEnemyTarget != null && !IsTooFarFromTarget())
+            {
+                Debug.DrawLine(currentEnemyTarget.cachedTransform.position, cachedTransform.position, Color.green);
+
+                Vector2 enemyFlightDirection = currentEnemyTarget.velocity.normalized;
+                overrideTargetPosition = currentEnemyTarget.cachedTransform.position - (Vector3)(enemyFlightDirection * targetBehindDistance);
+
+                Debug.DrawLine(currentEnemyTarget.cachedTransform.position, overrideTargetPosition.Value, Color.yellow);
+            }
+
+            Vector2 desiredDirection = CalculateCombinedBehavior(overrideTargetPosition);
+
+            // Apply orbit break jitter
+            desiredDirection += orbitBreakJitter;
+
+            if (desiredDirection.sqrMagnitude > 0.001f)
             {
                 desiredDirection.Normalize();
 
-                // Calculate the angle between current velocity and desired direction
                 float angle = Vector2.SignedAngle(velocity, desiredDirection);
-
-                // Clamp the angle to the maximum turn angle per second
-                float maxTurnAnglePerSecond = 90f; // Maximum turn angle in degrees per second
-                float maxTurnAngle = maxTurnAnglePerSecond * Time.deltaTime;
+                
+                // Increase turn rate when in orbit break mode
+                float turnMultiplier = isInOrbitBreakMode ? aggressiveTurnMultiplier : 1f;
+                float maxTurnAngle = maxTurnAnglePerSecond * Time.deltaTime * turnMultiplier;
+                
                 angle = Mathf.Clamp(angle, -maxTurnAngle, maxTurnAngle);
 
-                // Rotate the velocity vector by the clamped angle
                 Quaternion rotation = Quaternion.Euler(0, 0, angle);
                 velocity = rotation * velocity;
             }
 
-            // Ensure constant velocity magnitude
             velocity = velocity.normalized * moveSpeed;
+            cachedTransform.position += (Vector3)(velocity * Time.deltaTime);
 
-            transform.position += (Vector3)(velocity * Time.deltaTime);
-
-            // Check if velocity is not zero before setting transform.up
-            if (velocity != Vector2.zero)
+            if (velocity.sqrMagnitude > 0.001f)
             {
-                transform.up = velocity.normalized;
+                cachedTransform.up = velocity;
+            }
+
+            // Debug visualization for orbit break mode
+            if (isInOrbitBreakMode)
+            {
+                Debug.DrawRay(cachedTransform.position, orbitBreakJitter * 2f, Color.magenta);
             }
         }
-        
+
+        /// <summary>
+        /// Combines all boid behaviors and target attraction into a single pass over neighbors.
+        /// </summary>
+        private Vector2 CalculateCombinedBehavior(Vector3? overrideTargetPosition)
+        {
+            CacheCollidersIfNeeded();
+
+            Vector2 separation = Vector2.zero;
+            Vector2 alignment = Vector2.zero;
+            Vector2 cohesion = Vector2.zero;
+            Vector2 enemyAvoidance = Vector2.zero;
+
+            int neighborCount = 0;
+            int enemyCount = 0;
+
+            for (int i = 0; i < cachedColliderCount; i++)
+            {
+                Collider2D col = colliderBuffer[i];
+                if (col == null || col == ownCollider) continue;
+
+                if (!col.TryGetComponent(out ShipInstance ship)) continue;
+
+                Vector2 toOther = (Vector2)ship.cachedTransform.position - cachedPosition;
+                float sqrDistance = toOther.sqrMagnitude;
+
+                if (ship.playerId == playerId)
+                {
+                    // Friendly ship - apply boid behaviors
+                    if (sqrDistance <= sqrNeighborRadius)
+                    {
+                        // Separation
+                        if (sqrDistance <= sqrSeparationDistance && sqrDistance > 0.000001f)
+                        {
+                            float distance = Mathf.Sqrt(sqrDistance);
+                            separation -= toOther.normalized / distance;
+                        }
+
+                        // Alignment and Cohesion
+                        alignment += ship.velocity;
+                        cohesion += (Vector2)ship.cachedTransform.position;
+                        neighborCount++;
+                    }
+                }
+                else
+                {
+                    // Enemy ship - apply avoidance
+                    if (sqrDistance <= sqrEnemyAvoidanceRadius && sqrDistance > 0.000001f)
+                    {
+                        float distance = Mathf.Sqrt(sqrDistance);
+                        enemyAvoidance -= toOther.normalized / distance;
+                        enemyCount++;
+                    }
+                }
+            }
+
+            Vector2 result = Vector2.zero;
+
+            // Apply boid weights
+            if (neighborCount > 0)
+            {
+                separation = (separation / neighborCount) * separationWeight;
+                alignment = ((alignment / neighborCount).normalized) * alignmentWeight;
+                cohesion = (((cohesion / neighborCount) - cachedPosition).normalized) * cohesionWeight;
+                result += separation + alignment + cohesion;
+            }
+
+            // Apply enemy avoidance
+            if (enemyCount > 0)
+            {
+                enemyAvoidance = (enemyAvoidance / enemyCount) * enemyAvoidanceWeight;
+                result += enemyAvoidance;
+            }
+
+            // Apply target attraction
+            result += CalculateTargetAttraction(overrideTargetPosition) * targetWeight;
+
+            return result;
+        }
+
+        private void CacheCollidersIfNeeded()
+        {
+            if (frameOfLastCache == Time.frameCount) return;
+
+            frameOfLastCache = Time.frameCount;
+            cachedColliderCount = Physics2D.OverlapCircleNonAlloc(
+                cachedPosition,
+                cachedMaxRadius,
+                colliderBuffer,
+                shipLayerMask
+            );
+        }
+
+        private bool IsEnemyTargetValid()
+        {
+            if (currentEnemyTarget == null) return false;
+
+            Vector2 toEnemy = (Vector2)currentEnemyTarget.cachedTransform.position - cachedPosition;
+            return toEnemy.sqrMagnitude <= sqrDetectionRadius;
+        }
+
         public void SetTarget(Transform newTarget)
         {
             target = newTarget;
         }
 
-        private Vector2 CalculateTargetAttraction()
+        public void TakeDamage(float damage)
         {
+            currentHealth -= damage;
+            Debug.Log($"Ship {name} took {damage} damage. Health: {currentHealth}/{maxHealth}");
+
+            if (currentHealth <= 0)
+            {
+                Die();
+            }
+        }
+
+        private void Die()
+        {
+            Debug.Log($"Ship {name} destroyed!");
+
+            if (TryGetComponent(out PooledShip pooled))
+            {
+                pooled.ReturnToPool();
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+
+        private bool IsTooFarFromTarget()
+        {
+            if (target == null) return false;
+
+            Vector2 toTarget = (Vector2)target.position - cachedPosition;
+            return toTarget.sqrMagnitude > sqrMaxDistanceFromTarget;
+        }
+
+        private void TryFireAtEnemyInFront()
+        {
+            Vector2 direction = cachedTransform.up;
+            Vector2 startPos = cachedPosition + direction * raycastStartOffset;
+
+            RaycastHit2D hit = Physics2D.Raycast(startPos, direction, weaponRange - raycastStartOffset, shipLayerMask);
+
+            if (hit.collider != null && hit.collider != ownCollider)
+            {
+                if (hit.collider.TryGetComponent(out ShipInstance hitShip) && hitShip.playerId != playerId)
+                {
+                    Debug.DrawLine(cachedTransform.position, hit.point, Color.green);
+                    FireWeapon(hitShip);
+                }
+                else
+                {
+                    Debug.DrawRay(cachedTransform.position, direction * weaponRange, Color.yellow);
+                }
+            }else
+            {
+                Debug.DrawRay(cachedTransform.position, direction * weaponRange, Color.white);
+            }
+        }
+
+        private void FireWeapon(ShipInstance targetShip)
+        {
+            if (Time.time - lastFireTime >= fireCooldown)
+            {
+                Debug.DrawRay(cachedTransform.position, cachedTransform.up * weaponRange, Color.red, 0.1f);
+                lastFireTime = Time.time;
+                lastSuccessfulHitTime = Time.time; // Reset orbit break timer on successful hit
+                targetShip.TakeDamage(weaponDamage);
+                Debug.Log($"Ship {name} fired at {targetShip.name}!");
+            }
+        }
+
+        private ShipInstance DetectEnemy()
+        {
+            CacheCollidersIfNeeded();
+
+            ShipInstance closestEnemy = null;
+            float closestScore = float.MinValue;
+
+            Vector2 forward = cachedTransform.up;
+
+            for (int i = 0; i < cachedColliderCount; i++)
+            {
+                Collider2D col = colliderBuffer[i];
+                if (col == null || col == ownCollider) continue;
+
+                if (!col.TryGetComponent(out ShipInstance ship)) continue;
+                if (ship.playerId == playerId) continue;
+
+                Vector2 toEnemy = (Vector2)ship.cachedTransform.position - cachedPosition;
+                float sqrDistance = toEnemy.sqrMagnitude;
+
+                if (sqrDistance > sqrDetectionRadius) continue;
+
+                float distance = Mathf.Sqrt(sqrDistance);
+                Vector2 directionToEnemy = toEnemy / distance;
+                float angleScore = Vector2.Dot(forward, directionToEnemy);
+
+                // Score based on angle and distance (prefer enemies in front and close)
+                float score = angleScore - (distance / detectionRadius);
+
+                if (score > closestScore)
+                {
+                    closestEnemy = ship;
+                    closestScore = score;
+                }
+            }
+
+            return closestEnemy;
+        }
+
+        private Vector2 CalculateTargetAttraction(Vector3? overridePosition)
+        {
+            if (overridePosition.HasValue)
+            {
+                return ((Vector2)overridePosition.Value - cachedPosition).normalized;
+            }
+
             if (target == null) return Vector2.zero;
 
-            Vector2 directionToTarget = target.position - transform.position;
-            return directionToTarget.normalized;
+            return ((Vector2)target.position - cachedPosition).normalized;
         }
 
-        private Vector2 CalculateSeparation()
-        {
-            Vector2 separation = Vector2.zero;
-            int count = 0;
-
-            foreach (ShipInstance neighbor in GetNeighbors())
-            {
-                float distance = Vector2.Distance(transform.position, neighbor.transform.position);
-                if (distance < separationDistance)
-                {
-                    separation += (Vector2)(transform.position - neighbor.transform.position).normalized / distance;
-                    count++;
-                }
-            }
-
-            if (count > 0)
-            {
-                separation /= count;
-            }
-
-            return separation;
-        }
-
-        private Vector2 CalculateAlignment()
-        {
-            Vector2 averageVelocity = Vector2.zero;
-            int count = 0;
-
-            foreach (ShipInstance neighbor in GetNeighbors())
-            {
-                averageVelocity += neighbor.velocity;
-                count++;
-            }
-
-            if (count > 0)
-            {
-                averageVelocity /= count;
-            }
-
-            return averageVelocity.normalized;
-        }
-
-        private Vector2 CalculateCohesion()
-        {
-            Vector2 centerOfMass = Vector2.zero;
-            int count = 0;
-
-            foreach (ShipInstance neighbor in GetNeighbors())
-            {
-                centerOfMass += (Vector2)neighbor.transform.position;
-                count++;
-            }
-
-            if (count > 0)
-            {
-                centerOfMass /= count;
-                return (centerOfMass - (Vector2)transform.position).normalized;
-            }
-
-            return Vector2.zero;
-        }
-
+        // Legacy method for compatibility - uses optimized neighbor detection
         private List<ShipInstance> GetNeighbors()
         {
-            List<ShipInstance> neighbors = new List<ShipInstance>();
-            Collider2D[] neighborColliders = Physics2D.OverlapCircleAll(transform.position, neighborRadius);
+            neighborCache.Clear();
+            CacheCollidersIfNeeded();
 
-            foreach (Collider2D neighborCollider in neighborColliders)
+            for (int i = 0; i < cachedColliderCount; i++)
             {
-                ShipInstance shipInstance = neighborCollider.GetComponent<ShipInstance>();
-                if (shipInstance != null && shipInstance != this)
+                Collider2D col = colliderBuffer[i];
+                if (col == null || col == ownCollider) continue;
+
+                Vector2 toOther = (Vector2)col.transform.position - cachedPosition;
+                if (toOther.sqrMagnitude > sqrNeighborRadius) continue;
+
+                if (col.TryGetComponent(out ShipInstance ship) && ship.playerId == playerId)
                 {
-                    neighbors.Add(shipInstance);
+                    neighborCache.Add(ship);
                 }
             }
 
-            return neighbors;
+            return neighborCache;
+        }
+        
+        public void SetPlayerId(int id)
+        {
+            playerId = id;
         }
     }
 }

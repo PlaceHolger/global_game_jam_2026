@@ -1,3 +1,16 @@
 {
-	"name": "Warmask.Shipyard"
+    "name": "Warmask.Shipyard",
+    "rootNamespace": "",
+    "references": [
+        "GUID:38bc5a01cf7e52c49b9295c47d73702f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
