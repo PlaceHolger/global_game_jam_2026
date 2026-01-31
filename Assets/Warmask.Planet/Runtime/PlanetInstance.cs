@@ -89,7 +89,7 @@ namespace Warmask.Planet.Runtime
         private void InitializePlanet()
         {
             // Set planet color based on type using Globals
-            Color planetColor = Globals.Instance.typeColors[(int)planet_type];
+            Color planetColor = Globals.Instance.GetTypeColor(planet_type);
             if(TryGetComponent(out SpriteRenderer sr))
                 sr.color = planetColor;
 

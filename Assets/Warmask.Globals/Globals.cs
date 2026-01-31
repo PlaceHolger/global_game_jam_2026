@@ -40,15 +40,18 @@ public class Globals : ScriptableObject
     }
     
     // Configurable colors for each eType
-    public Color[] typeColors = new Color[4]
+    public Color[] typeColors = new Color[5]
     {
-        Color.red,    // Default for Red
-        Color.blue,   // Default for Gray
-        Color.gray,    // Default for Blue
-        Color.blueViolet // Default for Unknown
+        Color.red,
+        Color.blue,
+        Color.gray,
+        Color.blueViolet,
+        Color.white // Default for Unknown
     };
 
     public Color GetTypeColor(eType type) => typeColors[(int)type];
+    
+    public bool IsPlayer(ePlayer player) => player == ePlayer.Player1;
 
     public float planetProductionFactor = 1.0f;
 

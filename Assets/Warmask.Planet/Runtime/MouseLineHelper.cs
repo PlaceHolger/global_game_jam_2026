@@ -22,8 +22,8 @@ public class MouseLineHelper : MonoBehaviour
 
     public void SetLineType(Globals.eType starttype, Globals.eType endtype = Globals.eType.Unknown)
     {
-        var startColor = Globals.Instance.typeColors[(int)starttype];
-        var endColor = Globals.Instance.typeColors[(int)endtype];
+        var startColor = Globals.Instance.GetTypeColor(starttype);
+        var endColor = Globals.Instance.GetTypeColor(endtype);
         if(starttype == endtype) //make the end color brighter if same type
             endColor = Color.Lerp(startColor, Color.white, 0.5f);
         else if(endtype == Globals.eType.Unknown)

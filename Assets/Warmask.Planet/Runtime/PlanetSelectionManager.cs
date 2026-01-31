@@ -48,7 +48,7 @@ namespace Warmask.Planet.Runtime{
             // No start set -> set start
             if (!_startPlanet)
             {
-                if (planet.OwnedBy != Globals.ePlayer.Player1) //we are only allowing player 1 to select planets for now
+                if (!Globals.Instance.IsPlayer(planet.OwnedBy))
                     return;
                 
                 _startPlanet = planet;
