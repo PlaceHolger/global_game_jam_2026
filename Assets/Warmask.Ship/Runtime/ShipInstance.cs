@@ -119,6 +119,7 @@ namespace Warmask.Ship
             currentEnemyTargetLifeId = -1;
             orbitBreakJitter = Vector2.zero;
             laserEndPosition = Vector3.zero;
+            maxTurnAnglePerSecond = 90.0f;
 
             if (laserVisual != null)
             {
@@ -271,14 +272,17 @@ namespace Warmask.Ship
             target = newTarget;
         }
 
-        public void TakeDamage(float damage)
+        public bool TakeDamage(float damage)
         {
             currentHealth -= damage;
 
             if (currentHealth <= 0)
             {
                 Die();
+                return true; // Dieser Treffer hat das Schiff zerstört
             }
+
+            return false;
         }
 
         private void Die()
@@ -325,7 +329,12 @@ namespace Warmask.Ship
                 Debug.DrawRay(cachedTransform.position, cachedTransform.up * weaponRange, Color.purple, 0.1f);
                 lastFireTime = Time.time;
                 lastSuccessfulHitTime = Time.time;
-                targetShip.TakeDamage(weaponDamage);
+                bool targetKilled = targetShip.TakeDamage(weaponDamage);
+
+                if (targetKilled)
+                {
+                    maxTurnAnglePerSecond = Mathf.Min(180.0f, maxTurnAnglePerSecond + 15);
+                }
 
                 if (laserVisual)
                 {

@@ -43,15 +43,17 @@ namespace Warmask.Shipyard
 
         private void Update()
         {
-            if (Time.time >= nextSpawnTime && activeShipCount < maxActiveShips)
+            if (Time.time >= nextSpawnTime && activeShipCount < maxActiveShips && spawnInterval > 0f)
             {
                 SpawnShip();
                 nextSpawnTime = Time.time + spawnInterval;
             }
         }
 
-        private void SpawnShip()
+        public void SpawnShip()
         {
+            if (activeShipCount >= maxActiveShips) return;
+            
             GameObject ship = shipPool.Get();
             Vector2 spawnPos = (Vector2)cachedTransform.position + spawnOffset + Random.insideUnitCircle * spawnRandomRadius;
             ship.transform.position = spawnPos;
