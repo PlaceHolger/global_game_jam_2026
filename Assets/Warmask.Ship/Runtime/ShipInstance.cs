@@ -49,6 +49,7 @@ namespace Warmask.Ship
         [SerializeField] private float orbitBreakJitterStrength = 0.5f;
 
         [Header("Effects")] [SerializeField] private GameObject explosionPrefab;
+        [SerializeField] private SpriteRenderer spriteRenderer;
 
         // Cached components
         private Transform cachedTransform;
@@ -276,7 +277,9 @@ namespace Warmask.Ship
         public void SetType(Globals.eType type)
         {
             shipType = type;
+            OnTypeChanged(shipType);
         }
+
 
         public bool TakeDamage(float damage)
         {
@@ -289,6 +292,27 @@ namespace Warmask.Ship
             }
 
             return false;
+        }
+        
+        private void OnTypeChanged(Globals.eType newType)
+        {
+            Color c = Globals.Instance.GetTypeColor(newType);
+            SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+            foreach (SpriteRenderer sr in spriteRenderers)
+            {
+                if (sr != null)
+                {
+                    sr.color = c;
+                }
+            }
+            TrailRenderer[] trailRenderers = GetComponentsInChildren<TrailRenderer>();
+            foreach (TrailRenderer tr in trailRenderers)
+            {
+                if (tr != null)
+                {
+                    tr.startColor = c;
+                }
+            }
         }
 
         private void Die()
@@ -426,6 +450,7 @@ namespace Warmask.Ship
         public void SetPlayerId(int id)
         {
             playerId = id;
+            spriteRenderer.sprite = Globals.Instance.GetPlayerSprite((Globals.ePlayer)playerId);
         }
 
         public void FillJobData(out Vector2 position, out Vector2 vel, out int id)

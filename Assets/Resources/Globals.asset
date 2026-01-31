@@ -21,5 +21,9 @@ MonoBehaviour:
   - {r: 0.5, g: 0.5, b: 0.5, a: 1}
   - {r: 0.5411765, g: 0.1686275, b: 0.8862746, a: 1}
   - {r: 1, g: 1, b: 1, a: 1}
+  playerSprites:
+  - {fileID: 21300000, guid: a0f122d527fea5d4b8acb090321377d0, type: 3}
+  - {fileID: 21300000, guid: 6997e9518c05b0f45a0439d29cb54e2d, type: 3}
+  - {fileID: 21300000, guid: b6c69a6924e639742a6d5cec20fde5fa, type: 3}
   planetProductionFactor: 1
   currentMask: 0

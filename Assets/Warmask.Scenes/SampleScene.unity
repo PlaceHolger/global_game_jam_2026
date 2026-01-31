@@ -234,6 +234,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1863545545}
     m_Modifications:
+    - target: {fileID: 709195870120840830, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: type
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
       value: Missing String:ID
@@ -244,7 +248,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 28.6
+      value: 36.15
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_size
@@ -666,7 +670,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 5.35
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor.b
@@ -686,7 +690,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 28.6
+      value: 36.15
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: owner
@@ -778,13 +782,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1863545545}
     m_Modifications:
+    - target: {fileID: 709195870120840830, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: type
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
       value: "\U0001F609"
       objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 36.15
+      objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 28.6
+      value: 36.15
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_size
@@ -972,6 +984,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1863545545}
     m_Modifications:
+    - target: {fileID: 709195870120840830, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: type
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
       value: Planet Jackson
@@ -982,7 +998,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 28.6
+      value: 36.15
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_size
@@ -1615,11 +1631,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 6.45
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 28.6
+      value: 36.15
       objectReference: {fileID: 0}
     - target: {fileID: 4909586255671823781, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_LocalScale.x
@@ -2161,6 +2177,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1863545545}
     m_Modifications:
+    - target: {fileID: 709195870120840830, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: type
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
       value: Center_Planet
@@ -2175,7 +2195,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 28.6
+      value: 23.7
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: unitCount
@@ -2636,6 +2656,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1863545545}
     m_Modifications:
+    - target: {fileID: 709195870120840830, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: type
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
       value: He-Who-Must-Not-Be-Named
@@ -2646,7 +2670,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 28.6
+      value: 36.15
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_size
@@ -3403,11 +3427,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 6.95
+      value: 5.1
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 28.6
+      value: 36.15
       objectReference: {fileID: 0}
     - target: {fileID: 4909586255671823781, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_LocalScale.x
@@ -3529,7 +3553,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 28.6
+      value: 36.15
       objectReference: {fileID: 0}
     - target: {fileID: 3637299931600586546, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_IsActive

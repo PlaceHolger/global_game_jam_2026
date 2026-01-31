@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: b6c69a6924e639742a6d5cec20fde5fa
+guid: a0f122d527fea5d4b8acb090321377d0
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7391702372671760077
-    second: Ship-Rhombus_0
+      213: -7828794582177974281
+    second: Ship-Default_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Ship-Rhombus_0
+      name: Ship-Default_0
       rect:
         serializedVersion: 2
-        x: 43
-        y: 35
-        width: 430
-        height: 442
+        x: 42
+        y: 65
+        width: 436
+        height: 382
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 339dc7fdad56b6990800000000000000
-      internalID: -7391702372671760077
+      spriteID: 7f777c56ec88a5390800000000000000
+      internalID: -7828794582177974281
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Ship-Rhombus_0: -7391702372671760077
+      Ship-Default_0: -7828794582177974281
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

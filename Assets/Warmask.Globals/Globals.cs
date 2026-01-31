@@ -50,7 +50,12 @@ public class Globals : ScriptableObject
         Color.white // Default for Unknown
     };
 
+    [SerializeField] private Sprite[] playerSprites;
+
+
     public Color GetTypeColor(eType type) => typeColors[(int)type];
+    
+    public Sprite GetPlayerSprite(ePlayer player) => playerSprites[(int)player];
     
     public bool IsPlayer(ePlayer player) => player == ePlayer.Player1;
 
