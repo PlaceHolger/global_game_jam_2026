@@ -79,10 +79,12 @@ public class EnemyAi : MonoBehaviour
             if (defendingTroops >= availableTroops)
                 continue; // Can't attack this planet
             // Simple heuristic: prefer planets with fewer troops and closer distance
+            int ownedByEnemyBonus = (planet.OwnedBy == enemyPlayer) ? 5 : 0;
             float distance = (troopPlanet) ? Vector3.Distance(planet.transform.position, troopPlanet.transform.position) : 0;
             float score = (availableTroops - defendingTroops) * 2f +
                           planet.PlanetSize * 10 -
-                          distance; // Larger planets are more valuable, nearer planets are easier to attack
+                          distance + // Larger planets are more valuable, nearer planets are easier to attack
+                          ownedByEnemyBonus; 
             if (score > bestScore)
             {
                 bestScore = score;

@@ -9,10 +9,10 @@ public class Globals : ScriptableObject
     {
         get
         {
-            if (_instance == null)
+            if (!_instance)
             {
                 _instance = Resources.Load<Globals>("Globals");
-                if (_instance == null)
+                if (!_instance)
                 {
                     Debug.LogError("Globals asset not found in Resources folder.");
                 }

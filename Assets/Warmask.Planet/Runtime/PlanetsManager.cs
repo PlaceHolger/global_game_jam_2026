@@ -11,7 +11,7 @@ public class PlanetsManager : MonoBehaviour
     {
         get
         {
-            if (_instance == null)
+            if (!_instance)
                 _instance = FindFirstObjectByType<PlanetsManager>();
             return _instance;
         }

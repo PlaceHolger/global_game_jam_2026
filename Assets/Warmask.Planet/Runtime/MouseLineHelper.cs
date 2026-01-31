@@ -8,7 +8,7 @@ public class MouseLineHelper : MonoBehaviour
     {
         get
         {
-            if (_instance == null)
+            if (!_instance)
                 _instance = FindFirstObjectByType<MouseLineHelper>();
             return _instance;
         }

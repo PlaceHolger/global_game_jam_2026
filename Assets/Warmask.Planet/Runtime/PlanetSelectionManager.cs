@@ -5,14 +5,14 @@ namespace Warmask.Planet.Runtime{
     public class PlanetSelectionManager : MonoBehaviour 
     {
         [SerializeField] 
-        private float clearDelay =0.5f;
+        private float clearDelay = 0.5f;
 
         private static PlanetSelectionManager _instance;
         public static PlanetSelectionManager Instance
         {
             get
             {
-                if (_instance == null)
+                if (!_instance)
                     _instance = FindFirstObjectByType<PlanetSelectionManager>();
                 return _instance;
             }
