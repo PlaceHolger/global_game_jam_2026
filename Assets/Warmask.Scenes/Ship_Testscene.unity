@@ -246,12 +246,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Warmask.Shipyard::Warmask.Shipyard.ShipyardInstance
   playerId: 0
   shipPrefab: {fileID: 7002252218447778190, guid: b7d1b41f54c5b14498b6e97bc2b59c12, type: 3}
-  spawnInterval: 0.25
+  spawnInterval: 0.1
   maxActiveShips: 100
   spawnOffset: {x: 1, y: 0}
   spawnRandomRadius: 0.5
   defaultPoolCapacity: 10
-  maxPoolSize: 200
+  maxPoolSize: 150
 --- !u!1 &126246930
 GameObject:
   m_ObjectHideFlags: 0
@@ -286,12 +286,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Warmask.Shipyard::Warmask.Shipyard.ShipyardInstance
   playerId: 2
   shipPrefab: {fileID: 7161260867328003869, guid: 35879ef6dff8f964386ef5ec4d634654, type: 3}
-  spawnInterval: 0.25
+  spawnInterval: 0.1
   maxActiveShips: 100
   spawnOffset: {x: 1, y: 0}
   spawnRandomRadius: 0.5
   defaultPoolCapacity: 10
-  maxPoolSize: 200
+  maxPoolSize: 150
 --- !u!65 &126246932
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -424,8 +424,8 @@ MonoBehaviour:
   shipLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  maxNeighborsPerShip: 20
-  overlapBufferSize: 100
+  maxNeighborsPerShip: 5
+  overlapBufferSize: 25
 --- !u!4 &631589374
 Transform:
   m_ObjectHideFlags: 0
@@ -568,12 +568,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Warmask.Shipyard::Warmask.Shipyard.ShipyardInstance
   playerId: 1
   shipPrefab: {fileID: 6384861635870516307, guid: f5043d61b36b9dc4894c5fd7d4c01bbf, type: 3}
-  spawnInterval: 0.25
+  spawnInterval: 0.1
   maxActiveShips: 100
   spawnOffset: {x: 1, y: 0}
   spawnRandomRadius: 0.5
   defaultPoolCapacity: 10
-  maxPoolSize: 200
+  maxPoolSize: 150
 --- !u!1 &1948713103
 GameObject:
   m_ObjectHideFlags: 0

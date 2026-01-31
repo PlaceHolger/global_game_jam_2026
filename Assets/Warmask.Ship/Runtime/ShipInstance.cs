@@ -25,6 +25,7 @@ namespace Warmask.Ship
         [SerializeField] private float fireCooldown = 1f;
         [SerializeField] private float weaponDamage = 20f;
         [SerializeField] private float raycastStartOffset = 0.5f;
+        [SerializeField] private LineRenderer laserVisual;
 
         [Header("Enemy Handling")]
         [SerializeField] private float enemyAvoidanceWeight = 2f;
@@ -47,6 +48,9 @@ namespace Warmask.Ship
         [SerializeField] private float aggressiveTurnMultiplier = 2f;
         [SerializeField] private float orbitBreakJitterStrength = 0.5f;
 
+        [Header("Effects")]
+        [SerializeField] private GameObject explosionPrefab;
+
         // Cached components
         private Transform cachedTransform;
         private Collider2D ownCollider;
@@ -57,6 +61,7 @@ namespace Warmask.Ship
         private ShipInstance currentEnemyTarget;
         private float lastFireTime;
         private float nextAiUpdate;
+        private bool pendingDeath;
 
         // Orbit breaking state
         private float lastSuccessfulHitTime;
@@ -81,63 +86,96 @@ namespace Warmask.Ship
 
         // Cached position to avoid repeated transform access
         private Vector2 cachedPosition;
-        
+
         private Vector2 boidResultFromJob;
+
+        private bool showLaserThisFrame;
+        private float laserTargetDistance;
+
+        public bool IsAlive => currentHealth > 0 && !pendingDeath;
 
         [SerializeField]
         private Transform target;
 
+        private Vector3 laserEndPosition;
+
+        private int lifeId;
+        private int currentEnemyTargetLifeId = -1;
+
+        public int LifeId => lifeId;
+
         private void OnEnable()
         {
+            lifeId = (lifeId == int.MaxValue) ? 0 : lifeId + 1;
+
             ShipManagerInstance.Instance?.Register(this);
+
+            showLaserThisFrame = false;
+            pendingDeath = false;
+            currentHealth = maxHealth;
+            lastFireTime = 0f;
+            lastSuccessfulHitTime = Time.time;
+            currentEnemyTarget = null;
+            currentEnemyTargetLifeId = -1;
+            orbitBreakJitter = Vector2.zero;
+            laserEndPosition = Vector3.zero;
+
+            if (laserVisual != null)
+            {
+                laserVisual.gameObject.SetActive(false);
+            }
         }
 
         private void OnDisable()
         {
             ShipManagerInstance.Instance?.Unregister(this);
+            if (laserVisual != null)
+            {
+                laserVisual.gameObject.SetActive(false);
+            }
+            showLaserThisFrame = false;
             TrailRenderer trail = GetComponentInChildren<TrailRenderer>();
             if (trail) {
                 trail.Clear();
             }
         }
-        
+
         private void Awake()
         {
             cachedTransform = transform;
             ownCollider = GetComponent<Collider2D>();
             colliderBuffer = new Collider2D[maxColliderBufferSize];
 
-            // Pre-calculate squared distances
             sqrDetectionRadius = detectionRadius * detectionRadius;
             sqrNeighborRadius = neighborRadius * neighborRadius;
             sqrSeparationDistance = separationDistance * separationDistance;
             sqrEnemyAvoidanceRadius = enemyAvoidanceRadius * enemyAvoidanceRadius;
             sqrMaxDistanceFromTarget = maxDistanceFromTarget * maxDistanceFromTarget;
 
-            // Calculate max radius for single overlap query
             cachedMaxRadius = Mathf.Max(neighborRadius, detectionRadius, enemyAvoidanceRadius);
+            showLaserThisFrame = false;
+            laserEndPosition = Vector3.zero;
+            if (laserVisual != null)
+            {
+                laserVisual.gameObject.SetActive(false);
+            }
         }
 
         private void Start()
         {
             velocity = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized * moveSpeed;
-            currentHealth = maxHealth;
-            lastSuccessfulHitTime = Time.time;
         }
 
         private void Update()
         {
-            // Cache position once per frame
             cachedPosition = cachedTransform.position;
 
-            // AI logic runs at reduced frequency
             if (Time.time >= nextAiUpdate)
             {
                 nextAiUpdate = Time.time + aiUpdateInterval;
                 UpdateAI();
             }
 
-            // Movement runs every frame for smooth visuals
             UpdateMovement();
             TryFireAtEnemyInFront();
         }
@@ -155,7 +193,6 @@ namespace Warmask.Ship
             float timeSinceHit = Time.time - lastSuccessfulHitTime;
             bool isInOrbitBreakMode = timeSinceHit > orbitBreakTime && currentEnemyTarget != null;
 
-            // Update jitter only when in orbit break mode
             if (isInOrbitBreakMode && Time.time >= nextJitterUpdateTime)
             {
                 nextJitterUpdateTime = Time.time + 0.3f + Random.Range(0f, 0.2f);
@@ -170,17 +207,11 @@ namespace Warmask.Ship
 
             if (currentEnemyTarget != null && !IsTooFarFromTarget())
             {
-                //Line(currentEnemyTarget.cachedTransform.position, cachedTransform.position, Color.green);
-
                 Vector2 enemyFlightDirection = currentEnemyTarget.velocity.normalized;
                 overrideTargetPosition = currentEnemyTarget.cachedTransform.position - (Vector3)(enemyFlightDirection * targetBehindDistance);
-
-                //Debug.DrawLine(currentEnemyTarget.cachedTransform.position, overrideTargetPosition.Value, Color.yellow);
             }
 
             Vector2 desiredDirection = CalculateCombinedBehavior(overrideTargetPosition);
-
-            // Apply orbit break jitter
             desiredDirection += orbitBreakJitter;
 
             if (desiredDirection.sqrMagnitude > 0.001f)
@@ -188,11 +219,8 @@ namespace Warmask.Ship
                 desiredDirection.Normalize();
 
                 float angle = Vector2.SignedAngle(velocity, desiredDirection);
-                
-                // Increase turn rate when in orbit break mode
                 float turnMultiplier = isInOrbitBreakMode ? aggressiveTurnMultiplier : 1f;
                 float maxTurnAngle = maxTurnAnglePerSecond * Time.deltaTime * turnMultiplier;
-                
                 angle = Mathf.Clamp(angle, -maxTurnAngle, maxTurnAngle);
 
                 Quaternion rotation = Quaternion.Euler(0, 0, angle);
@@ -206,22 +234,12 @@ namespace Warmask.Ship
             {
                 cachedTransform.up = velocity;
             }
-
-            // Debug visualization for orbit break mode
-            if (isInOrbitBreakMode)
-            {
-                //Debug.DrawRay(cachedTransform.position, orbitBreakJitter * 2f, Color.magenta);
-            }
         }
 
         private Vector2 CalculateCombinedBehavior(Vector3? overrideTargetPosition)
         {
-            // Boid-Verhalten kommt jetzt vom Job-System
             Vector2 result = boidResultFromJob;
-
-            // Target-Attraktion lokal berechnen (kann nicht parallelisiert werden)
             result += CalculateTargetAttraction(overrideTargetPosition) * targetWeight;
-
             return result;
         }
 
@@ -240,7 +258,9 @@ namespace Warmask.Ship
 
         private bool IsEnemyTargetValid()
         {
-            if (currentEnemyTarget == null) return false;
+            if (!currentEnemyTarget) return false;
+            if (!currentEnemyTarget.gameObject.activeInHierarchy) return false;
+            if (currentEnemyTarget.LifeId != currentEnemyTargetLifeId) return false;
 
             Vector2 toEnemy = (Vector2)currentEnemyTarget.cachedTransform.position - cachedPosition;
             return toEnemy.sqrMagnitude <= sqrDetectionRadius;
@@ -254,7 +274,6 @@ namespace Warmask.Ship
         public void TakeDamage(float damage)
         {
             currentHealth -= damage;
-            //Debug.Log($"Ship {name} took {damage} damage. Health: {currentHealth}/{maxHealth}");
 
             if (currentHealth <= 0)
             {
@@ -264,16 +283,8 @@ namespace Warmask.Ship
 
         private void Die()
         {
-            //Debug.Log($"Ship {name} destroyed!");
-
-            if (TryGetComponent(out PooledShip pooled))
-            {
-                pooled.ReturnToPool();
-            }
-            else
-            {
-                Destroy(gameObject);
-            }
+            if (pendingDeath) return;
+            pendingDeath = true;
         }
 
         private bool IsTooFarFromTarget()
@@ -293,30 +304,36 @@ namespace Warmask.Ship
 
             if (hit.collider != null && hit.collider != ownCollider)
             {
-                if (hit.collider.TryGetComponent(out ShipInstance hitShip) && hitShip.playerId != playerId)
+                if (hit.collider.TryGetComponent(out ShipInstance hitShip) &&
+                    hitShip.playerId != playerId &&
+                    hitShip.IsAlive)
                 {
-                    //Debug.DrawLine(cachedTransform.position, hit.point, Color.green);
-                    FireWeapon(hitShip);
+                    laserTargetDistance = hit.distance + raycastStartOffset;
+                    FireWeapon(hitShip, hit.point);
                 }
-                else
-                {
-                    //Debug.DrawRay(cachedTransform.position, direction * weaponRange, Color.yellow);
-                }
-            }else
-            {
-                //Debug.DrawRay(cachedTransform.position, direction * weaponRange, Color.white);
             }
         }
 
-        private void FireWeapon(ShipInstance targetShip)
+        private void FireWeapon(ShipInstance targetShip, Vector2 hitWOrldPosition)
         {
+            if (targetShip.pendingDeath) return;
+            
             if (Time.time - lastFireTime >= fireCooldown)
             {
-                //Debug.DrawRay(cachedTransform.position, cachedTransform.up * weaponRange, Color.red, 0.1f);
+                laserEndPosition = hitWOrldPosition;
+
+                Debug.DrawRay(cachedTransform.position, cachedTransform.up * weaponRange, Color.purple, 0.1f);
                 lastFireTime = Time.time;
-                lastSuccessfulHitTime = Time.time; // Reset orbit break timer on successful hit
+                lastSuccessfulHitTime = Time.time;
                 targetShip.TakeDamage(weaponDamage);
-                //Debug.Log($"Ship {name} fired at {targetShip.name}!");
+
+                if (laserVisual)
+                {
+                    laserVisual.SetPosition(0, transform.position);
+                    laserVisual.SetPosition(1, laserEndPosition);
+                    laserVisual.gameObject.SetActive(true);
+                }
+                showLaserThisFrame = true;
             }
         }
 
@@ -346,7 +363,6 @@ namespace Warmask.Ship
                 Vector2 directionToEnemy = toEnemy / distance;
                 float angleScore = Vector2.Dot(forward, directionToEnemy);
 
-                // Score based on angle and distance (prefer enemies in front and close)
                 float score = angleScore - (distance / detectionRadius);
 
                 if (score > closestScore)
@@ -355,6 +371,8 @@ namespace Warmask.Ship
                     closestScore = score;
                 }
             }
+
+            currentEnemyTargetLifeId = closestEnemy?.LifeId ?? -1;
 
             return closestEnemy;
         }
@@ -371,7 +389,6 @@ namespace Warmask.Ship
             return ((Vector2)target.position - cachedPosition).normalized;
         }
 
-        // Legacy method for compatibility - uses optimized neighbor detection
         private List<ShipInstance> GetNeighbors()
         {
             neighborCache.Clear();
@@ -393,12 +410,12 @@ namespace Warmask.Ship
 
             return neighborCache;
         }
-        
+
         public void SetPlayerId(int id)
         {
             playerId = id;
         }
-        
+
         public void FillJobData(out Vector2 position, out Vector2 vel, out int id)
         {
             position = cachedPosition;
@@ -409,6 +426,32 @@ namespace Warmask.Ship
         public void ApplyBoidResult(Vector2 boidDirection)
         {
             boidResultFromJob = boidDirection;
+        }
+
+        private void LateUpdate()
+        {
+            if (laserVisual && !showLaserThisFrame)
+            {
+                laserVisual.gameObject.SetActive(false);
+            }
+            showLaserThisFrame = false;
+
+            if (pendingDeath)
+            {
+                if (explosionPrefab)
+                {
+                    GameObject explosion = Instantiate(explosionPrefab, cachedTransform.position, Quaternion.identity);
+                    Destroy(explosion, 1.0f);
+                }
+
+                if (TryGetComponent(out PooledShip pooled))
+                {
+                    pooled.ReturnToPool();
+                }
+                else
+                {
+                    Destroy(gameObject);
+                }}
         }
     }
 }
