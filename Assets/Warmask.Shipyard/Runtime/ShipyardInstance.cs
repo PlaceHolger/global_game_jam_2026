@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Pool;
 using Warmask.Ship;
 using Warmask.Planet;
@@ -29,6 +30,10 @@ namespace Warmask.Shipyard
 
         [Header("Combat Settings")]
         [SerializeField] private float planetRadius = 2f;
+
+        private UnityEvent<Dictionary<int, int>> shipCountUpdate;
+        
+        private Dictionary<int,int> shipCountCache = new Dictionary<int, int>();
 
         public float PlanetRadius
         {
@@ -88,6 +93,8 @@ namespace Warmask.Shipyard
                 SpawnShip();
                 nextSpawnTime = Time.time + spawnInterval;
             }
+            
+            shipCountUpdate?.Invoke(shipCountCache);
         }
 
         public void SpawnShip()
@@ -125,12 +132,19 @@ namespace Warmask.Shipyard
         {
             if (ship && !ownedShips.Contains(ship))
             {
+                shipCountCache[ship.GetPlayerId()] = shipCountCache.GetValueOrDefault(ship.GetPlayerId(), 0) + 1;
+                
                 ownedShips.Add(ship);
             }
         }
 
         public void UnregisterShip(ShipInstance ship)
         {
+            if (ship && ownedShips.Contains(ship))
+            {
+                shipCountCache[ship.GetPlayerId()] = Mathf.Max(0, shipCountCache.GetValueOrDefault(ship.GetPlayerId(), 0) - 1);
+            } 
+            
             ownedShips.Remove(ship);
         }
 

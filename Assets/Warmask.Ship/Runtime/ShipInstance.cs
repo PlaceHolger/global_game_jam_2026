@@ -434,6 +434,11 @@ namespace Warmask.Ship
             playerId = id;
             spriteRenderer.sprite = Globals.Instance.GetPlayerSprite((Globals.ePlayer)playerId);
         }
+        
+        public int GetPlayerId()
+        {
+            return playerId;
+        }
 
         public void FillJobData(out Vector2 position, out Vector2 vel, out int id)
         {
