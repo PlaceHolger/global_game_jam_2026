@@ -6,11 +6,17 @@ namespace Warmask.Ship
 {
     public class ShipMaskFader : MonoBehaviour
     {
-        [SerializeField] private Globals.eType type;
+        private Globals.eType type = Globals.eType.Unknown;
 
         private void OnEnable()
         {
             Globals.Instance.OnMaskChanged.AddListener( MaskChanged );
+            MaskChanged(type);
+        }
+
+        public void SetType(Globals.eType newtype)
+        {
+            type = newtype;
             MaskChanged(type);
         }
 

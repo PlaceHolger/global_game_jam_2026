@@ -277,7 +277,10 @@ namespace Warmask.Ship
         public void SetType(Globals.eType type)
         {
             shipType = type;
-            OnTypeChanged(shipType);
+            if (TryGetComponent(out ShipMaskFader shipMaskFader))
+            {
+                shipMaskFader.SetType(type);
+            }
         }
 
 
@@ -292,27 +295,6 @@ namespace Warmask.Ship
             }
 
             return false;
-        }
-        
-        private void OnTypeChanged(Globals.eType newType)
-        {
-            Color c = Globals.Instance.GetTypeColor(newType);
-            SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
-            foreach (SpriteRenderer sr in spriteRenderers)
-            {
-                if (sr != null)
-                {
-                    sr.color = c;
-                }
-            }
-            TrailRenderer[] trailRenderers = GetComponentsInChildren<TrailRenderer>();
-            foreach (TrailRenderer tr in trailRenderers)
-            {
-                if (tr != null)
-                {
-                    tr.startColor = c;
-                }
-            }
         }
 
         private void Die()
