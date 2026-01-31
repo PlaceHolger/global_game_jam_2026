@@ -28,6 +28,14 @@ public class Globals : ScriptableObject
         Unknown
     }
     
+    public enum eMask
+    {
+        None,
+        Mask1, //red
+        Mask2, //blue 
+        Unknown = -1
+    }
+    
     public enum ePlayer
     {
         None,

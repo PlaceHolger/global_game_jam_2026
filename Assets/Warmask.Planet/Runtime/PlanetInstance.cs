@@ -23,6 +23,8 @@ namespace Warmask.Planet.Runtime
         private Globals.ePlayer owner = Globals.ePlayer.None;
         [SerializeField, Tooltip("Highlight GameObject for selection indication")]
         private GameObject selection_highlight;
+        [SerializeField, Tooltip("2 ui images showing the owner of the planet")]
+        private GameObject[] ownerIndicators;
         
         public Globals.eType PlanetType => planet_type;
         
@@ -34,6 +36,18 @@ namespace Warmask.Planet.Runtime
             InitializePlanet();
             // Adjust spawn interval based on size and global production factor
             unitSpawnInterval = Mathf.Max(0.1f, Globals.Instance.planetProductionFactor / planet_size);
+        }
+        
+        public void SetOwner(Globals.ePlayer newOwner)
+        {
+            owner = newOwner;
+            int newOwnerIndex = (int)owner - 1;
+            
+            // Update owner indicators gameobjects (from ownerIndicators)
+            for (int i = 0; i < ownerIndicators.Length; i++)
+            {
+                ownerIndicators[i].SetActive(i == newOwnerIndex);
+            }
         }
 
 
@@ -48,6 +62,8 @@ namespace Warmask.Planet.Runtime
             transform.localScale = new Vector3(planet_size, planet_size, 1f);
             
             UpdateDebugLabel(unitCount.ToString());
+            
+            SetOwner(owner);
         }
 
         void Update()
