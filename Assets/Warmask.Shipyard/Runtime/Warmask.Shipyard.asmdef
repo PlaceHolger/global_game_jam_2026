@@ -2,7 +2,8 @@
     "name": "Warmask.Shipyard",
     "rootNamespace": "",
     "references": [
-        "GUID:38bc5a01cf7e52c49b9295c47d73702f"
+        "GUID:38bc5a01cf7e52c49b9295c47d73702f",
+        "GUID:d8869d4aa165a5343819263b4f3dab13"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
