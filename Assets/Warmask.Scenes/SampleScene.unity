@@ -3144,7 +3144,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAi
   enemyPlayer: 1
   ownPlayer: 2
-  decisionInterval: 2
+  decisionInterval: 30
   IntervalAfterAttack: 4
   DistanceFactor: 11
   PreferEnemyPlanets: 3

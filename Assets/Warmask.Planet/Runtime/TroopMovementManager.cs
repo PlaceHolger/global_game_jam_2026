@@ -5,7 +5,7 @@ namespace Warmask.Planet
 {
     public class TroopMovementManager : MonoBehaviour
     {
-        static UnityEvent<PlanetInstance, PlanetInstance, int, Globals.ePlayer>
+        public static UnityEvent<PlanetInstance, PlanetInstance, int, Globals.ePlayer>
             OnTroopMovementStarted = new(); //from, to, num, who
 
         //for now, this class is just a placeholder for future troop movement management logic
