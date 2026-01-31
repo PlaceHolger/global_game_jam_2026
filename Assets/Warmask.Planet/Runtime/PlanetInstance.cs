@@ -65,11 +65,60 @@ namespace Warmask.Planet.Runtime
 
         public void OnPointerClick(PointerEventData eventData)
         {
+            var lineHelper = MouseLineHelper.Instance; //todo: make this a real manager for ship movement
+            if (!lineHelper.startTransform)
+            {
+                //no start pos, so we can be the start
+                lineHelper.SetLineType(planet_type);
+                lineHelper.SetStartPos(transform);
+                UpdateDebugLabel("Start");
+            }
+            else if (lineHelper.startTransform == transform)
+            {
+                //clicked the same planet, so clear the line
+                lineHelper.SetStartPos(null);
+                UpdateDebugLabel("Cleared");
+                if (selection_highlight)
+                    selection_highlight.SetActive(false);
+                return;
+            }
+            else if (!lineHelper.endTransform)  //okay, we have a start pos already but the end is empty, so the command is from somewhere to us, we can clear the line
+            {
+                lineHelper.SetLineType(Globals.eType.Unknown);
+                lineHelper.SetEndPos(transform);
+                // show the line for 1 second then clear it
+                DOVirtual.DelayedCall(0.5f, () =>
+                {
+                    lineHelper.SetStartPos(null);
+                    lineHelper.SetEndPos(null);
+                    UpdateDebugLabel("Cleared");
+                });
+                //disable selection highlight on start and end
+                if (selection_highlight)
+                    selection_highlight.SetActive(false);
+                if (lineHelper.startTransform.TryGetComponent(out PlanetInstance startPlanet))
+                {
+                    if (startPlanet.selection_highlight)
+                        startPlanet.selection_highlight.SetActive(false);
+                }
+                return;
+            }
+            else //we have both start and end already, so ignore this click (should never happen)
+            {
+                Debug.Log("should never happen");
+                return;
+            }
+            
             //toggle selection_highlight 
             if (selection_highlight)
             {
                 bool isActive = selection_highlight.activeSelf;
                 selection_highlight.SetActive(!isActive);
+                
+                if(!isActive)
+                    MouseLineHelper.Instance.SetStartPos(transform);
+                else 
+                    MouseLineHelper.Instance.SetStartPos(null);
             }
             
             UpdateDebugLabel("Click");

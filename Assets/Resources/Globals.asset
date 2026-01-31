@@ -12,4 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce8c00c67076cb2409cd3794f590e4cb, type: 3}
   m_Name: Globals
   m_EditorClassIdentifier: Assembly-CSharp::Globals
+  typeColors:
+  - {r: 1, g: 0, b: 0, a: 1}
+  - {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  - {r: 0, g: 0, b: 1, a: 1}
+  - {r: 0.5411765, g: 0.1686275, b: 0.8862746, a: 1}
   planetProductionFactor: 1

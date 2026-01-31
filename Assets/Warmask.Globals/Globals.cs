@@ -24,7 +24,8 @@ public class Globals : ScriptableObject
     {
         Red,
         Gray,
-        Blue
+        Blue,
+        Unknown
     }
     
     public enum ePlayer
@@ -35,11 +36,12 @@ public class Globals : ScriptableObject
     }
     
     // Configurable colors for each eType
-    public Color[] typeColors = new Color[3]
+    public Color[] typeColors = new Color[4]
     {
         Color.red,    // Default for Red
         Color.gray,   // Default for Gray
-        Color.blue    // Default for Blue
+        Color.blue,    // Default for Blue
+        Color.blueViolet // Default for Unknown
     };
 
     public float planetProductionFactor = 1.0f;
