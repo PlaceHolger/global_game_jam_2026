@@ -81,10 +81,22 @@ namespace Warmask.Ship
 
         // Cached position to avoid repeated transform access
         private Vector2 cachedPosition;
+        
+        private Vector2 boidResultFromJob;
 
         [SerializeField]
         private Transform target;
 
+        private void OnEnable()
+        {
+            ShipManagerInstance.Instance?.Register(this);
+        }
+
+        private void OnDisable()
+        {
+            ShipManagerInstance.Instance?.Unregister(this);
+        }
+        
         private void Awake()
         {
             cachedTransform = transform;
@@ -154,12 +166,12 @@ namespace Warmask.Ship
 
             if (currentEnemyTarget != null && !IsTooFarFromTarget())
             {
-                Debug.DrawLine(currentEnemyTarget.cachedTransform.position, cachedTransform.position, Color.green);
+                //Line(currentEnemyTarget.cachedTransform.position, cachedTransform.position, Color.green);
 
                 Vector2 enemyFlightDirection = currentEnemyTarget.velocity.normalized;
                 overrideTargetPosition = currentEnemyTarget.cachedTransform.position - (Vector3)(enemyFlightDirection * targetBehindDistance);
 
-                Debug.DrawLine(currentEnemyTarget.cachedTransform.position, overrideTargetPosition.Value, Color.yellow);
+                //Debug.DrawLine(currentEnemyTarget.cachedTransform.position, overrideTargetPosition.Value, Color.yellow);
             }
 
             Vector2 desiredDirection = CalculateCombinedBehavior(overrideTargetPosition);
@@ -194,84 +206,16 @@ namespace Warmask.Ship
             // Debug visualization for orbit break mode
             if (isInOrbitBreakMode)
             {
-                Debug.DrawRay(cachedTransform.position, orbitBreakJitter * 2f, Color.magenta);
+                //Debug.DrawRay(cachedTransform.position, orbitBreakJitter * 2f, Color.magenta);
             }
         }
 
-        /// <summary>
-        /// Combines all boid behaviors and target attraction into a single pass over neighbors.
-        /// </summary>
         private Vector2 CalculateCombinedBehavior(Vector3? overrideTargetPosition)
         {
-            CacheCollidersIfNeeded();
+            // Boid-Verhalten kommt jetzt vom Job-System
+            Vector2 result = boidResultFromJob;
 
-            Vector2 separation = Vector2.zero;
-            Vector2 alignment = Vector2.zero;
-            Vector2 cohesion = Vector2.zero;
-            Vector2 enemyAvoidance = Vector2.zero;
-
-            int neighborCount = 0;
-            int enemyCount = 0;
-
-            for (int i = 0; i < cachedColliderCount; i++)
-            {
-                Collider2D col = colliderBuffer[i];
-                if (col == null || col == ownCollider) continue;
-
-                if (!col.TryGetComponent(out ShipInstance ship)) continue;
-
-                Vector2 toOther = (Vector2)ship.cachedTransform.position - cachedPosition;
-                float sqrDistance = toOther.sqrMagnitude;
-
-                if (ship.playerId == playerId)
-                {
-                    // Friendly ship - apply boid behaviors
-                    if (sqrDistance <= sqrNeighborRadius)
-                    {
-                        // Separation
-                        if (sqrDistance <= sqrSeparationDistance && sqrDistance > 0.000001f)
-                        {
-                            float distance = Mathf.Sqrt(sqrDistance);
-                            separation -= toOther.normalized / distance;
-                        }
-
-                        // Alignment and Cohesion
-                        alignment += ship.velocity;
-                        cohesion += (Vector2)ship.cachedTransform.position;
-                        neighborCount++;
-                    }
-                }
-                else
-                {
-                    // Enemy ship - apply avoidance
-                    if (sqrDistance <= sqrEnemyAvoidanceRadius && sqrDistance > 0.000001f)
-                    {
-                        float distance = Mathf.Sqrt(sqrDistance);
-                        enemyAvoidance -= toOther.normalized / distance;
-                        enemyCount++;
-                    }
-                }
-            }
-
-            Vector2 result = Vector2.zero;
-
-            // Apply boid weights
-            if (neighborCount > 0)
-            {
-                separation = (separation / neighborCount) * separationWeight;
-                alignment = ((alignment / neighborCount).normalized) * alignmentWeight;
-                cohesion = (((cohesion / neighborCount) - cachedPosition).normalized) * cohesionWeight;
-                result += separation + alignment + cohesion;
-            }
-
-            // Apply enemy avoidance
-            if (enemyCount > 0)
-            {
-                enemyAvoidance = (enemyAvoidance / enemyCount) * enemyAvoidanceWeight;
-                result += enemyAvoidance;
-            }
-
-            // Apply target attraction
+            // Target-Attraktion lokal berechnen (kann nicht parallelisiert werden)
             result += CalculateTargetAttraction(overrideTargetPosition) * targetWeight;
 
             return result;
@@ -306,7 +250,7 @@ namespace Warmask.Ship
         public void TakeDamage(float damage)
         {
             currentHealth -= damage;
-            Debug.Log($"Ship {name} took {damage} damage. Health: {currentHealth}/{maxHealth}");
+            //Debug.Log($"Ship {name} took {damage} damage. Health: {currentHealth}/{maxHealth}");
 
             if (currentHealth <= 0)
             {
@@ -316,7 +260,7 @@ namespace Warmask.Ship
 
         private void Die()
         {
-            Debug.Log($"Ship {name} destroyed!");
+            //Debug.Log($"Ship {name} destroyed!");
 
             if (TryGetComponent(out PooledShip pooled))
             {
@@ -347,16 +291,16 @@ namespace Warmask.Ship
             {
                 if (hit.collider.TryGetComponent(out ShipInstance hitShip) && hitShip.playerId != playerId)
                 {
-                    Debug.DrawLine(cachedTransform.position, hit.point, Color.green);
+                    //Debug.DrawLine(cachedTransform.position, hit.point, Color.green);
                     FireWeapon(hitShip);
                 }
                 else
                 {
-                    Debug.DrawRay(cachedTransform.position, direction * weaponRange, Color.yellow);
+                    //Debug.DrawRay(cachedTransform.position, direction * weaponRange, Color.yellow);
                 }
             }else
             {
-                Debug.DrawRay(cachedTransform.position, direction * weaponRange, Color.white);
+                //Debug.DrawRay(cachedTransform.position, direction * weaponRange, Color.white);
             }
         }
 
@@ -364,11 +308,11 @@ namespace Warmask.Ship
         {
             if (Time.time - lastFireTime >= fireCooldown)
             {
-                Debug.DrawRay(cachedTransform.position, cachedTransform.up * weaponRange, Color.red, 0.1f);
+                //Debug.DrawRay(cachedTransform.position, cachedTransform.up * weaponRange, Color.red, 0.1f);
                 lastFireTime = Time.time;
                 lastSuccessfulHitTime = Time.time; // Reset orbit break timer on successful hit
                 targetShip.TakeDamage(weaponDamage);
-                Debug.Log($"Ship {name} fired at {targetShip.name}!");
+                //Debug.Log($"Ship {name} fired at {targetShip.name}!");
             }
         }
 
@@ -449,6 +393,18 @@ namespace Warmask.Ship
         public void SetPlayerId(int id)
         {
             playerId = id;
+        }
+        
+        public void FillJobData(out Vector2 position, out Vector2 vel, out int id)
+        {
+            position = cachedPosition;
+            vel = velocity;
+            id = playerId;
+        }
+
+        public void ApplyBoidResult(Vector2 boidDirection)
+        {
+            boidResultFromJob = boidDirection;
         }
     }
 }
