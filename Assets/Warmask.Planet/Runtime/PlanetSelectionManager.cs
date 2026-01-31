@@ -43,11 +43,14 @@ namespace Warmask.Planet.Runtime{
         public void HandlePlanetClick(PlanetInstance planet)
         {
             var lineHelper = MouseLineHelper.Instance;
-            if (lineHelper == null || planet == null) return;
+            if (!lineHelper || !planet) return;
 
             // No start set -> set start
-            if (_startPlanet == null)
+            if (!_startPlanet)
             {
+                if (planet.OwnedBy != Globals.ePlayer.Player1) //we are only allowing player 1 to select planets for now
+                    return;
+                
                 _startPlanet = planet;
                 lineHelper.SetLineType(planet.PlanetType);
                 lineHelper.SetStartPos(planet.transform);
@@ -73,6 +76,8 @@ namespace Warmask.Planet.Runtime{
             planet.UpdateDebugLabel("End");
             planet.SetSelection(true);
             _startPlanet.SetSelection(false);
+            
+            TroopMovementManager.GetInstance().MoveTroops(_startPlanet, planet, _startPlanet.UnitCount / 2, _startPlanet.OwnedBy);
 
             var capturedStart = _startPlanet;
             DOVirtual.DelayedCall(clearDelay, () =>

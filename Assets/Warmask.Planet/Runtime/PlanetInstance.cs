@@ -29,7 +29,12 @@ namespace Warmask.Planet.Runtime
         private GameObject[] ownerIndicators;
         
         public Globals.eType PlanetType => planet_type;
-        public int UnitCount => unitCount;
+        public int UnitCount
+        {
+            get => unitCount;
+            set { unitCount = value;  UpdateDebugLabel(); }
+        }
+
         public Globals.ePlayer OwnedBy => owner;
         public float PlanetSize => planet_size;
         
@@ -63,6 +68,17 @@ namespace Warmask.Planet.Runtime
         {
             owner = newOwner;
             int newOwnerIndex = (int)owner - 1;
+            
+            //we also update the color of the name label based on owner
+            if(planet_name_label)
+            {
+                if(owner == Globals.ePlayer.Player1)
+                    planet_name_label.color = Color.paleGreen;
+                else if(owner == Globals.ePlayer.Player2)
+                    planet_name_label.color = Color.paleVioletRed;
+                else
+                    planet_name_label.color = Color.white;
+            }
             
             // Update owner indicators gameobjects (from ownerIndicators)
             for (int i = 0; i < ownerIndicators.Length; i++)

@@ -18,6 +18,17 @@ public class EnemyAi : MonoBehaviour
     [SerializeField] private Globals.ePlayer ownPlayer = Globals.ePlayer.Player2;
     
     [SerializeField] float decisionInterval = 1f;
+    [SerializeField] float IntervalAfterAttack = 4f;
+    
+    [SerializeField, Tooltip("How much weight has a smaller distance in target evaluation")]
+    float DistanceFactor = 2f; //weight for distance in target evaluation
+    [SerializeField, Tooltip("How much bonus in points do we give to planets owned by the enemy in target evaluation")]
+    int PreferEnemyPlanets = 3; 
+    [SerializeField, Tooltip("How much weight has a smaller number of troops in target evaluation")]
+    float PreferPlanetsWithLessTroops = 2f; 
+    [SerializeField, Tooltip("How much weight has a bigger planet size in target evaluation")]
+    float PreferBiggerPlanets = 10f; //weight for planet size in target evaluation
+
 
     float nextDecisionTime;
 
@@ -60,6 +71,9 @@ public class EnemyAi : MonoBehaviour
         {
             //TODO: SendTroops(mostAvailableTroopsOnOnePlanetPlanet, targetPlanet);
             Debug.Log("Enemy AI: Attacking planet " + targetPlanet.name);
+            int neededTroops = Mathf.Min(targetPlanet.UnitCount + 2, mostAvailableTroopsOnOnePlanet) ; // Send enough troops to conquer
+            TroopMovementManager.GetInstance().MoveTroops(mostAvailableTroopsOnOnePlanetPlanet, targetPlanet, neededTroops, ownPlayer);
+            nextDecisionTime += IntervalAfterAttack; //wait a bit longer before next decision
             return;
         }
 
@@ -79,11 +93,11 @@ public class EnemyAi : MonoBehaviour
             if (defendingTroops >= availableTroops)
                 continue; // Can't attack this planet
             // Simple heuristic: prefer planets with fewer troops and closer distance
-            int ownedByEnemyBonus = (planet.OwnedBy == enemyPlayer) ? 5 : 0;
+            int ownedByEnemyBonus = (planet.OwnedBy == enemyPlayer) ? (int)PreferEnemyPlanets : 0;
             float distance = (troopPlanet) ? Vector3.Distance(planet.transform.position, troopPlanet.transform.position) : 0;
-            float score = (availableTroops - defendingTroops) * 2f +
-                          planet.PlanetSize * 10 -
-                          distance + // Larger planets are more valuable, nearer planets are easier to attack
+            float score = (availableTroops - defendingTroops) * PreferPlanetsWithLessTroops +
+                          planet.PlanetSize * PreferBiggerPlanets -
+                          distance * DistanceFactor + // Larger planets are more valuable, nearer planets are easier to attack
                           ownedByEnemyBonus; 
             if (score > bestScore)
             {
