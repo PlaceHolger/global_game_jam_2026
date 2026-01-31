@@ -6,50 +6,48 @@ namespace Warmask.Ship
     [RequireComponent(typeof(Collider2D))]
     public class ShipInstance : MonoBehaviour
     {
-        [Header("Movement")]
-        [SerializeField] private float moveSpeed = 5f;
+        [Header("Movement")] [SerializeField] private float moveSpeed = 5f;
         [SerializeField] private float maxTurnAnglePerSecond = 90f;
 
-        [Header("Boid Behavior")]
-        [SerializeField] private float neighborRadius = 5f;
+        [Header("Boid Behavior")] [SerializeField]
+        private float neighborRadius = 5f;
+
         [SerializeField] private float separationDistance = 2f;
         [SerializeField] private float alignmentWeight = 1f;
         [SerializeField] private float cohesionWeight = 1f;
         [SerializeField] private float separationWeight = 1.5f;
         [SerializeField] private float targetWeight = 2f;
 
-        [Header("Combat")]
-        [SerializeField] private int playerId;
-        [SerializeField] private float detectionRadius = 10f;
+        [Header("Combat")] [SerializeField] private float detectionRadius = 10f;
         [SerializeField] private float weaponRange = 5f;
         [SerializeField] private float fireCooldown = 1f;
         [SerializeField] private float weaponDamage = 20f;
         [SerializeField] private float raycastStartOffset = 0.5f;
         [SerializeField] private LineRenderer laserVisual;
 
-        [Header("Enemy Handling")]
-        [SerializeField] private float enemyAvoidanceWeight = 2f;
+        [Header("Enemy Handling")] [SerializeField]
+        private float enemyAvoidanceWeight = 2f;
+
         [SerializeField] private float enemyAvoidanceRadius = 3f;
         [SerializeField] private float maxDistanceFromTarget = 5f;
         [SerializeField] private float targetBehindDistance = 3f;
 
-        [Header("Health")]
-        [SerializeField] private float maxHealth = 100f;
+        [Header("Health")] [SerializeField] private float maxHealth = 100f;
 
-        [Header("Physics")]
-        [SerializeField] private LayerMask shipLayerMask = ~0;
+        [Header("Physics")] [SerializeField] private LayerMask shipLayerMask = ~0;
 
-        [Header("Performance")]
-        [SerializeField] private float aiUpdateInterval = 0.1f;
+        [Header("Performance")] [SerializeField]
+        private float aiUpdateInterval = 0.1f;
+
         [SerializeField] private int maxColliderBufferSize = 50;
 
-        [Header("Orbit Breaking")]
-        [SerializeField] private float orbitBreakTime = 3f;
+        [Header("Orbit Breaking")] [SerializeField]
+        private float orbitBreakTime = 3f;
+
         [SerializeField] private float aggressiveTurnMultiplier = 2f;
         [SerializeField] private float orbitBreakJitterStrength = 0.5f;
 
-        [Header("Effects")]
-        [SerializeField] private GameObject explosionPrefab;
+        [Header("Effects")] [SerializeField] private GameObject explosionPrefab;
 
         // Cached components
         private Transform cachedTransform;
@@ -62,6 +60,8 @@ namespace Warmask.Ship
         private float lastFireTime;
         private float nextAiUpdate;
         private bool pendingDeath;
+        private int playerId;
+        private Globals.eType shipType;
 
         // Orbit breaking state
         private float lastSuccessfulHitTime;
@@ -94,8 +94,7 @@ namespace Warmask.Ship
 
         public bool IsAlive => currentHealth > 0 && !pendingDeath;
 
-        [SerializeField]
-        private Transform target;
+        [SerializeField] private Transform target;
 
         private Vector3 laserEndPosition;
 
@@ -134,9 +133,11 @@ namespace Warmask.Ship
             {
                 laserVisual.gameObject.SetActive(false);
             }
+
             showLaserThisFrame = false;
             TrailRenderer trail = GetComponentInChildren<TrailRenderer>();
-            if (trail) {
+            if (trail)
+            {
                 trail.Clear();
             }
         }
@@ -209,7 +210,8 @@ namespace Warmask.Ship
             if (currentEnemyTarget != null && !IsTooFarFromTarget())
             {
                 Vector2 enemyFlightDirection = currentEnemyTarget.velocity.normalized;
-                overrideTargetPosition = currentEnemyTarget.cachedTransform.position - (Vector3)(enemyFlightDirection * targetBehindDistance);
+                overrideTargetPosition = currentEnemyTarget.cachedTransform.position -
+                                         (Vector3)(enemyFlightDirection * targetBehindDistance);
             }
 
             Vector2 desiredDirection = CalculateCombinedBehavior(overrideTargetPosition);
@@ -272,6 +274,11 @@ namespace Warmask.Ship
             target = newTarget;
         }
 
+        public void SetType(Globals.eType type)
+        {
+            shipType = type;
+        }
+
         public bool TakeDamage(float damage)
         {
             currentHealth -= damage;
@@ -321,7 +328,7 @@ namespace Warmask.Ship
         private void FireWeapon(ShipInstance targetShip, Vector2 hitWOrldPosition)
         {
             if (targetShip.pendingDeath) return;
-            
+
             if (Time.time - lastFireTime >= fireCooldown)
             {
                 laserEndPosition = hitWOrldPosition;
@@ -342,6 +349,7 @@ namespace Warmask.Ship
                     laserVisual.SetPosition(1, laserEndPosition);
                     laserVisual.gameObject.SetActive(true);
                 }
+
                 showLaserThisFrame = true;
             }
         }
@@ -443,6 +451,7 @@ namespace Warmask.Ship
             {
                 laserVisual.gameObject.SetActive(false);
             }
+
             showLaserThisFrame = false;
 
             if (pendingDeath)
@@ -460,7 +469,8 @@ namespace Warmask.Ship
                 else
                 {
                     Destroy(gameObject);
-                }}
+                }
+            }
         }
     }
 }

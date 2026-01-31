@@ -7,11 +7,11 @@ namespace Warmask.Ship
     public class ShipMaskFader : MonoBehaviour
     {
         [SerializeField] private Globals.eType type;
-        
 
         private void OnEnable()
         {
             Globals.Instance.OnMaskChanged.AddListener( MaskChanged );
+            MaskChanged(type);
         }
 
         private void OnDisable()

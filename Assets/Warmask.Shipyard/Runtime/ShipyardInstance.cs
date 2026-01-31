@@ -1,3 +1,4 @@
+using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Pool;
 using Warmask.Ship;
@@ -10,6 +11,7 @@ namespace Warmask.Shipyard
         [SerializeField] private int playerId;
 
         [Header("Production")]
+        [SerializeField] private Globals.eType type;
         [SerializeField] private GameObject shipPrefab;
         [SerializeField] private float spawnInterval = 2f;
         [SerializeField] private int maxActiveShips = 20;
@@ -63,6 +65,7 @@ namespace Warmask.Shipyard
             if (ship.TryGetComponent(out ShipInstance shipInstance))
             {
                 shipInstance.SetPlayerId(playerId);
+                shipInstance.SetType(type);
                 shipInstance.SetTarget(cachedTransform);
             }
 
