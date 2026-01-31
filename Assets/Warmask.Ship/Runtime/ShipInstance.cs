@@ -95,6 +95,10 @@ namespace Warmask.Ship
         private void OnDisable()
         {
             ShipManagerInstance.Instance?.Unregister(this);
+            TrailRenderer trail = GetComponentInChildren<TrailRenderer>();
+            if (trail) {
+                trail.Clear();
+            }
         }
         
         private void Awake()
