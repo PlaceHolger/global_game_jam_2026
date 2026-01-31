@@ -76,7 +76,7 @@ namespace Warmask.Planet.Runtime
 
             float adjustedSize = planet_size * maskModifier;
             // Scale the object based on planet_size (uniform x and y scaling)
-            transform.localScale = new Vector3(adjustedSize, adjustedSize, 1f);
+            transform.localScale = new Vector3(0.5f + 0.5f * adjustedSize, 0.5f + 0.5f * adjustedSize, 1f);
             
             UpdateDebugLabel(unitCount.ToString());
             
