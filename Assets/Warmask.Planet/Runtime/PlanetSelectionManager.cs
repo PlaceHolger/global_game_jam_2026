@@ -81,9 +81,15 @@ namespace Warmask.Planet
             planet.UpdateDebugLabel("End");
             planet.SetSelection(true);
             _startPlanet.SetSelection(false);
+            
+            int numTroopsToSend = _startPlanet.UnitCount / 2; // Send half of the troops by default
+            // but we are trying to be clever, if the target planet has more defense troops, we send more troops
+            if(planet.OwnedBy != _startPlanet.OwnedBy && planet.UnitCount >= numTroopsToSend)
+            {
+                numTroopsToSend = Mathf.Min(planet.UnitCount + 2, _startPlanet.UnitCount); //send enough troops to conquer
+            }
 
-            TroopMovementManager.GetInstance().MoveTroops(_startPlanet, planet, _startPlanet.UnitCount / 2,
-                _startPlanet.OwnedBy);
+            TroopMovementManager.GetInstance().MoveTroops(_startPlanet, planet, numTroopsToSend, _startPlanet.OwnedBy);
 
             var capturedStart = _startPlanet;
             DOVirtual.DelayedCall(clearDelay, () =>
