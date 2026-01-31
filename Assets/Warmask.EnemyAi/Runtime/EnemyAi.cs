@@ -71,8 +71,9 @@ public class EnemyAi : MonoBehaviour
         {
             //TODO: SendTroops(mostAvailableTroopsOnOnePlanetPlanet, targetPlanet);
             Debug.Log("Enemy AI: Attacking planet " + targetPlanet.name);
-            int neededTroops = Mathf.Min(targetPlanet.UnitCount + 2, mostAvailableTroopsOnOnePlanet) ; // Send enough troops to conquer
-            TroopMovementManager.GetInstance().MoveTroops(mostAvailableTroopsOnOnePlanetPlanet, targetPlanet, neededTroops, ownPlayer);
+            float neededTroops = Mathf.Min(targetPlanet.UnitCount + 4, mostAvailableTroopsOnOnePlanet) ; // Send enough troops to conquer
+            neededTroops = Mathf.Max(mostAvailableTroopsOnOnePlanet * 0.666f, neededTroops); //at least send half the troops, otherwise the new planet is too easy to be re-concquered
+            TroopMovementManager.GetInstance().MoveTroops(mostAvailableTroopsOnOnePlanetPlanet, targetPlanet, (int)neededTroops, ownPlayer);
             nextDecisionTime += IntervalAfterAttack; //wait a bit longer before next decision
             return;
         }
