@@ -27,6 +27,13 @@ public class Globals : ScriptableObject
         Blue
     }
     
+    public enum ePlayer
+    {
+        None,
+        Player1,
+        Player2,
+    }
+    
     // Configurable colors for each eType
     public Color[] typeColors = new Color[3]
     {
