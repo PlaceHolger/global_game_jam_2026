@@ -247,11 +247,11 @@ MonoBehaviour:
   playerId: 0
   shipPrefab: {fileID: 7002252218447778190, guid: b7d1b41f54c5b14498b6e97bc2b59c12, type: 3}
   spawnInterval: 0.25
-  maxActiveShips: 40
+  maxActiveShips: 100
   spawnOffset: {x: 1, y: 0}
   spawnRandomRadius: 0.5
   defaultPoolCapacity: 10
-  maxPoolSize: 50
+  maxPoolSize: 200
 --- !u!1 &126246930
 GameObject:
   m_ObjectHideFlags: 0
@@ -287,11 +287,11 @@ MonoBehaviour:
   playerId: 2
   shipPrefab: {fileID: 7161260867328003869, guid: 35879ef6dff8f964386ef5ec4d634654, type: 3}
   spawnInterval: 0.25
-  maxActiveShips: 40
+  maxActiveShips: 100
   spawnOffset: {x: 1, y: 0}
   spawnRandomRadius: 0.5
   defaultPoolCapacity: 10
-  maxPoolSize: 50
+  maxPoolSize: 200
 --- !u!65 &126246932
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -380,6 +380,62 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 3.17, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &631589372
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 631589374}
+  - component: {fileID: 631589373}
+  m_Layer: 0
+  m_Name: ShipManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &631589373
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 631589372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21149eb7924eb3142a6cf2e242030e6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Warmask.Ship::Warmask.Ship.ShipManagerInstance
+  neighborRadius: 1
+  separationDistance: 0.5
+  enemyAvoidanceRadius: 2
+  separationWeight: 1.5
+  alignmentWeight: 1
+  cohesionWeight: 1
+  enemyAvoidanceWeight: 2
+  shipLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  maxNeighborsPerShip: 20
+  overlapBufferSize: 100
+--- !u!4 &631589374
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 631589372}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.37287, y: -1.43402, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -513,11 +569,11 @@ MonoBehaviour:
   playerId: 1
   shipPrefab: {fileID: 6384861635870516307, guid: f5043d61b36b9dc4894c5fd7d4c01bbf, type: 3}
   spawnInterval: 0.25
-  maxActiveShips: 40
+  maxActiveShips: 100
   spawnOffset: {x: 1, y: 0}
   spawnRandomRadius: 0.5
   defaultPoolCapacity: 10
-  maxPoolSize: 50
+  maxPoolSize: 200
 --- !u!1 &1948713103
 GameObject:
   m_ObjectHideFlags: 0
@@ -660,6 +716,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1948713107}
+  - {fileID: 631589374}
   - {fileID: 56900092}
   - {fileID: 1643224192}
   - {fileID: 126246935}

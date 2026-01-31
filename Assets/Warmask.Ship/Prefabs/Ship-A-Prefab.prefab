@@ -199,7 +199,7 @@ MonoBehaviour:
   raycastStartOffset: 0.5
   enemyAvoidanceWeight: 2
   enemyAvoidanceRadius: 1
-  maxDistanceFromTarget: 2
+  maxDistanceFromTarget: 4
   targetBehindDistance: 0.5
   maxHealth: 40
   shipLayerMask:

@@ -81,10 +81,22 @@ namespace Warmask.Ship
 
         // Cached position to avoid repeated transform access
         private Vector2 cachedPosition;
+        
+        private Vector2 boidResultFromJob;
 
         [SerializeField]
         private Transform target;
 
+        private void OnEnable()
+        {
+            ShipManagerInstance.Instance?.Register(this);
+        }
+
+        private void OnDisable()
+        {
+            ShipManagerInstance.Instance?.Unregister(this);
+        }
+        
         private void Awake()
         {
             cachedTransform = transform;
@@ -198,80 +210,12 @@ namespace Warmask.Ship
             }
         }
 
-        /// <summary>
-        /// Combines all boid behaviors and target attraction into a single pass over neighbors.
-        /// </summary>
         private Vector2 CalculateCombinedBehavior(Vector3? overrideTargetPosition)
         {
-            CacheCollidersIfNeeded();
+            // Boid-Verhalten kommt jetzt vom Job-System
+            Vector2 result = boidResultFromJob;
 
-            Vector2 separation = Vector2.zero;
-            Vector2 alignment = Vector2.zero;
-            Vector2 cohesion = Vector2.zero;
-            Vector2 enemyAvoidance = Vector2.zero;
-
-            int neighborCount = 0;
-            int enemyCount = 0;
-
-            for (int i = 0; i < cachedColliderCount; i++)
-            {
-                Collider2D col = colliderBuffer[i];
-                if (!col || col == ownCollider) continue;
-
-                if (!col.TryGetComponent(out ShipInstance ship)) continue;
-
-                Vector2 toOther = (Vector2)ship.cachedTransform.position - cachedPosition;
-                float sqrDistance = toOther.sqrMagnitude;
-
-                if (ship.playerId == playerId)
-                {
-                    // Friendly ship - apply boid behaviors
-                    if (sqrDistance <= sqrNeighborRadius)
-                    {
-                        // Separation
-                        if (sqrDistance <= sqrSeparationDistance && sqrDistance > 0.000001f)
-                        {
-                            float distance = Mathf.Sqrt(sqrDistance);
-                            separation -= toOther.normalized / distance;
-                        }
-
-                        // Alignment and Cohesion
-                        alignment += ship.velocity;
-                        cohesion += (Vector2)ship.cachedTransform.position;
-                        neighborCount++;
-                    }
-                }
-                else
-                {
-                    // Enemy ship - apply avoidance
-                    if (sqrDistance <= sqrEnemyAvoidanceRadius && sqrDistance > 0.000001f)
-                    {
-                        float distance = Mathf.Sqrt(sqrDistance);
-                        enemyAvoidance -= toOther.normalized / distance;
-                        enemyCount++;
-                    }
-                }
-            }
-
-            Vector2 result = Vector2.zero;
-
-            // Apply boid weights
-            if (neighborCount > 0)
-            {
-                separation = (separation / neighborCount) * separationWeight;
-                alignment = ((alignment / neighborCount).normalized) * alignmentWeight;
-                cohesion = (((cohesion / neighborCount) - cachedPosition).normalized) * cohesionWeight;
-                result += separation + alignment + cohesion;
-            }
-
-            // Apply enemy avoidance
-            if (enemyCount > 0)
-            {
-                enemyAvoidance = (enemyAvoidance / enemyCount) * enemyAvoidanceWeight;
-                result += enemyAvoidance;
-            }
-
-            // Apply target attraction
+            // Target-Attraktion lokal berechnen (kann nicht parallelisiert werden)
             result += CalculateTargetAttraction(overrideTargetPosition) * targetWeight;
 
             return result;
@@ -449,6 +393,18 @@ namespace Warmask.Ship
         public void SetPlayerId(int id)
         {
             playerId = id;
+        }
+        
+        public void FillJobData(out Vector2 position, out Vector2 vel, out int id)
+        {
+            position = cachedPosition;
+            vel = velocity;
+            id = playerId;
+        }
+
+        public void ApplyBoidResult(Vector2 boidDirection)
+        {
+            boidResultFromJob = boidDirection;
         }
     }
 }
