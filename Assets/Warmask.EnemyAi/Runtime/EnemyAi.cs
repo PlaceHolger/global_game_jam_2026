@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using Warmask.Planet;
 
@@ -29,8 +31,14 @@ public class EnemyAi : MonoBehaviour
     [SerializeField, Tooltip("How much weight has a bigger planet size in target evaluation")]
     float PreferBiggerPlanets = 10f; //weight for planet size in target evaluation
 
-
     float nextDecisionTime;
+    
+    MouseLineHelper _mouseLineHelper;
+
+    private void Awake()
+    {
+        _mouseLineHelper = GetComponentInChildren<MouseLineHelper>();
+    }
 
     void Update()
     {
@@ -73,9 +81,25 @@ public class EnemyAi : MonoBehaviour
             Debug.Log("Enemy AI: Attacking planet " + targetPlanet.name);
             float neededTroops = Mathf.Min(targetPlanet.UnitCount + 4, mostAvailableTroopsOnOnePlanet) ; // Send enough troops to conquer
             neededTroops = Mathf.Max(mostAvailableTroopsOnOnePlanet * 0.666f, neededTroops); //at least send half the troops, otherwise the new planet is too easy to be re-concquered
-            TroopMovementManager.GetInstance().MoveTroops(mostAvailableTroopsOnOnePlanetPlanet, targetPlanet, (int)neededTroops, ownPlayer);
-            nextDecisionTime += IntervalAfterAttack; //wait a bit longer before next decision
-            return;
+            int sendTroops = TroopMovementManager.GetInstance().MoveTroops(mostAvailableTroopsOnOnePlanetPlanet, targetPlanet, (int)neededTroops, ownPlayer);
+            if(sendTroops > 0)
+            {
+                //update mouse line for debug visualization
+                if (_mouseLineHelper && mostAvailableTroopsOnOnePlanetPlanet)
+                {
+                    _mouseLineHelper.SetLineType(mostAvailableTroopsOnOnePlanetPlanet.PlanetType, targetPlanet.PlanetType);
+                    _mouseLineHelper.SetStartPos(mostAvailableTroopsOnOnePlanetPlanet.transform);
+                    _mouseLineHelper.SetEndPos(targetPlanet.transform);
+                    Debug.Log($"Enemy AI: Sent {sendTroops} troops from {mostAvailableTroopsOnOnePlanetPlanet.name} to {targetPlanet.name}");
+                    DOVirtual.DelayedCall(decisionInterval * 0.66f, () =>
+                    {
+                        _mouseLineHelper.SetStartPos(null);
+                        _mouseLineHelper.SetEndPos(null);
+                    });
+                }
+                nextDecisionTime += IntervalAfterAttack; //wait a bit longer before next decision
+                return;
+            }
         }
 
         // 3. No good attack target - consider repositioning

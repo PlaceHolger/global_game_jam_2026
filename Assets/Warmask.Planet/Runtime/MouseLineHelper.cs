@@ -5,23 +5,13 @@ namespace Warmask.Planet
 {
     public class MouseLineHelper : MonoBehaviour
     {
-        private static MouseLineHelper _instance;
-
-        public static MouseLineHelper Instance
-        {
-            get
-            {
-                if (!_instance)
-                    _instance = FindFirstObjectByType<MouseLineHelper>();
-                return _instance;
-            }
-        }
-
         public LineRenderer lineRenderer;
-        public Transform startTransform;
-        public Transform endTransform;
-        public Gradient lineColorGradient;
         private Camera _camera;
+        private readonly Gradient _lineGradient = new Gradient();
+        private Transform _endPoint;
+        
+        [SerializeField]
+        private bool EndPointFollowsMouseWhenNotSet = true;
 
         public void SetLineType(Globals.eType starttype, Globals.eType endtype = Globals.eType.Unknown)
         {
@@ -33,12 +23,12 @@ namespace Warmask.Planet
                 endColor = Color.white;
 
             //lines should change color based on type, and always end with white, therefore we update the gradient
-            lineColorGradient.colorKeys = new GradientColorKey[]
+            _lineGradient.colorKeys = new GradientColorKey[]
             {
                 new GradientColorKey(startColor, 0f),
                 new GradientColorKey(endColor, 1f),
             };
-            lineRenderer.colorGradient = lineColorGradient;
+            lineRenderer.colorGradient = _lineGradient;
         }
 
         void Start()
@@ -46,41 +36,38 @@ namespace Warmask.Planet
             _camera = Camera.main;
             if (lineRenderer)
             {
+                lineRenderer.colorGradient = _lineGradient;
                 lineRenderer.positionCount = 2;
-                lineRenderer.colorGradient = lineColorGradient;
             }
         }
 
         void Update()
         {
-            if (lineRenderer && startTransform)
+            if (EndPointFollowsMouseWhenNotSet && lineRenderer && !_endPoint)
             {
-                lineRenderer.SetPosition(0, startTransform.position);
-                if (endTransform)
-                {
-                    lineRenderer.SetPosition(1, endTransform.position);
-                }
-                else
-                {
-                    // Follow mouse cursor when end is not set
-                    Vector2 mousePos = Mouse.current.position.ReadValue();
-                    Vector3 mouseWorldPos =
-                        _camera.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, _camera.nearClipPlane));
-                    mouseWorldPos.z = 0f; // Assuming 2D plane
-                    lineRenderer.SetPosition(1, mouseWorldPos);
-                }
+                // Follow mouse cursor when end is not set
+                Vector2 mousePos = Mouse.current.position.ReadValue();
+                Vector3 mouseWorldPos =
+                    _camera.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, _camera.nearClipPlane));
+                mouseWorldPos.z = 0f; // Assuming 2D plane
+                lineRenderer.SetPosition(1, mouseWorldPos);
             }
         }
 
         public void SetStartPos(Transform rectTransform)
         {
-            startTransform = rectTransform;
-            lineRenderer.enabled = startTransform;
+            if(rectTransform)
+                lineRenderer.SetPosition(0, rectTransform.position);
+            if(EndPointFollowsMouseWhenNotSet || !rectTransform)
+                lineRenderer.enabled = rectTransform;
         }
 
         public void SetEndPos(Transform rectTransform)
         {
-            endTransform = rectTransform;
+            _endPoint = rectTransform;
+            lineRenderer.enabled = rectTransform;
+            if (rectTransform)
+                lineRenderer.SetPosition(1, rectTransform.position);
         }
     }
 }

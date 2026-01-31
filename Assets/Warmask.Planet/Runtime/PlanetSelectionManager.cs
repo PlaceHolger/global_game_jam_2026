@@ -20,31 +20,35 @@ namespace Warmask.Planet
         }
 
         private PlanetInstance _startPlanet;
+        
+        private MouseLineHelper _mouseLineHelper;
 
+        private void Awake()
+        {
+            _mouseLineHelper = GetComponentInChildren<MouseLineHelper>();
+        }
+        
         public void HandlePlanetHoverStart(PlanetInstance planet)
         {
-            var lineHelper = MouseLineHelper.Instance;
-            if (!lineHelper || !planet)
+            if (!_mouseLineHelper || !planet)
                 return;
             //update line color on hover
             if (_startPlanet)
-                lineHelper.SetLineType(_startPlanet.PlanetType, planet.PlanetType);
+                _mouseLineHelper.SetLineType(_startPlanet.PlanetType, planet.PlanetType);
         }
 
         public void HandlePlanetHoverEnd(PlanetInstance planet)
         {
-            var lineHelper = MouseLineHelper.Instance;
-            if (!lineHelper || !planet)
+            if (!_mouseLineHelper || !planet)
                 return;
             //update line color on hover
             if (_startPlanet)
-                lineHelper.SetLineType(_startPlanet.PlanetType);
+                _mouseLineHelper.SetLineType(_startPlanet.PlanetType);
         }
 
         public void HandlePlanetClick(PlanetInstance planet)
         {
-            var lineHelper = MouseLineHelper.Instance;
-            if (!lineHelper || !planet) return;
+            if (!_mouseLineHelper || !planet) return;
 
             // No start set -> set start
             if (!_startPlanet)
@@ -53,8 +57,8 @@ namespace Warmask.Planet
                     return;
 
                 _startPlanet = planet;
-                lineHelper.SetLineType(planet.PlanetType);
-                lineHelper.SetStartPos(planet.transform);
+                _mouseLineHelper.SetLineType(planet.PlanetType);
+                _mouseLineHelper.SetStartPos(planet.transform);
                 planet.SetSelection(true);
                 planet.UpdateDebugLabel("Start");
                 return;
@@ -63,7 +67,7 @@ namespace Warmask.Planet
             // Clicked same planet -> clear
             if (_startPlanet == planet)
             {
-                lineHelper.SetStartPos(null);
+                _mouseLineHelper.SetStartPos(null);
                 planet.SetSelection(false);
                 planet.UpdateDebugLabel(null);
                 _startPlanet = null;
@@ -71,8 +75,8 @@ namespace Warmask.Planet
             }
 
             // Start set, end empty -> set end and clear after delay
-            lineHelper.SetLineType(Globals.eType.Unknown);
-            lineHelper.SetEndPos(planet.transform);
+            _mouseLineHelper.SetLineType(Globals.eType.Unknown);
+            _mouseLineHelper.SetEndPos(planet.transform);
 
             planet.UpdateDebugLabel("End");
             planet.SetSelection(true);
@@ -84,8 +88,8 @@ namespace Warmask.Planet
             var capturedStart = _startPlanet;
             DOVirtual.DelayedCall(clearDelay, () =>
             {
-                lineHelper.SetStartPos(null);
-                lineHelper.SetEndPos(null);
+                _mouseLineHelper.SetStartPos(null);
+                _mouseLineHelper.SetEndPos(null);
                 planet.UpdateDebugLabel(null);
                 planet.SetSelection(false);
                 capturedStart.SetSelection(false);

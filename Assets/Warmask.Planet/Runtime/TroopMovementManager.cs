@@ -23,17 +23,18 @@ namespace Warmask.Planet
             return Instance;
         }
 
-        public void MoveTroops(PlanetInstance fromPlanet, PlanetInstance toPlanet, int numberOfTroops,
+        // returns number of troops moved, or -1 on error
+        public int MoveTroops(PlanetInstance fromPlanet, PlanetInstance toPlanet, int numberOfTroops,
             Globals.ePlayer movingPlayer)
         {
             if (!fromPlanet || !toPlanet || numberOfTroops <= 0)
             {
                 Debug.LogError("Troops can't be null or less than zero");
-                return;
+                return -1;
             }
 
             if (fromPlanet.OwnedBy != movingPlayer)
-                return; // Can't move troops from a planet you don't own
+                return -1; // Can't move troops from a planet you don't own
 
             if (fromPlanet.UnitCount < numberOfTroops)
                 numberOfTroops = fromPlanet.UnitCount; // Adjust to available troops
@@ -62,6 +63,8 @@ namespace Warmask.Planet
                     toPlanet.UnitCount -= numberOfTroops;
                 }
             }
+
+            return numberOfTroops;
         }
     }
 }

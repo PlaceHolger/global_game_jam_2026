@@ -40,7 +40,8 @@ public class Globals : ScriptableObject
     }
     
     // Configurable colors for each eType
-    public Color[] typeColors = new Color[5]
+    [SerializeField]
+    private Color[] typeColors = new Color[5]
     {
         Color.red,
         Color.blue,
