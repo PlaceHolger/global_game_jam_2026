@@ -49,11 +49,10 @@ namespace Warmask.Planet.Runtime
             Globals.Instance.OnMaskChanged.AddListener(OnMaskChanged);
         }
 
-        private void OnMaskChanged(Globals.eMask arg0)
+        private void OnMaskChanged(Globals.eType arg0)
         {
             //if the mask matches the planet type, double the production speed
-            if((arg0 == Globals.eMask.Mask1 && planet_type == Globals.eType.Red) ||
-               (arg0 == Globals.eMask.Mask2 && planet_type == Globals.eType.Blue))
+            if(arg0 == planet_type ) 
             {
                 maskModifier = 1.5f;
             }

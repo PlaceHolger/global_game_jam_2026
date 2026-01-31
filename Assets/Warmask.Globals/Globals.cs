@@ -21,22 +21,15 @@ public class Globals : ScriptableObject
         }
     }
 
-    public UnityEvent<eMask> OnMaskChanged = new UnityEvent<eMask>();
+    public UnityEvent<eType> OnMaskChanged = new UnityEvent<eType>();
 
     public enum eType
     {
-        Red,
-        Gray,
-        Blue,
+        TypeA,
+        TypeB,
+        TypeC,
+        TypeD,
         Unknown
-    }
-    
-    public enum eMask
-    {
-        None,
-        Mask1, //red
-        Mask2, //blue 
-        Unknown = -1
     }
     
     public enum ePlayer
@@ -50,10 +43,14 @@ public class Globals : ScriptableObject
     public Color[] typeColors = new Color[4]
     {
         Color.red,    // Default for Red
-        Color.gray,   // Default for Gray
-        Color.blue,    // Default for Blue
+        Color.blue,   // Default for Gray
+        Color.gray,    // Default for Blue
         Color.blueViolet // Default for Unknown
     };
 
+    public Color GetTypeColor(eType type) => typeColors[(int)type];
+
     public float planetProductionFactor = 1.0f;
+
+    public eType currentMask = eType.TypeA;
 }

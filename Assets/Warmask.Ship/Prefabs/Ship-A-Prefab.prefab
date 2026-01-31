@@ -395,6 +395,7 @@ GameObject:
   - component: {fileID: 1550009586407896181}
   - component: {fileID: 3033895697598742012}
   - component: {fileID: 908503741807268844}
+  - component: {fileID: 563015513100742773}
   m_Layer: 0
   m_Name: Ship-A-Prefab
   m_TagString: Untagged
@@ -508,3 +509,15 @@ MonoBehaviour:
   orbitBreakJitterStrength: 3
   explosionPrefab: {fileID: 1243820870854775725, guid: 90e6bec796d1d37438f99ad4b9a2739c, type: 3}
   target: {fileID: 0}
+--- !u!114 &563015513100742773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7002252218447778190}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58e1bfb01ac3d7b498558047d18a6b44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Warmask.Ship::ShipMaskFader

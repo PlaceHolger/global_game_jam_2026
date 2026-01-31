@@ -1,53 +1,54 @@
+using System;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Rendering;
+using UnityEngine.UI;
 
-public class MaskManager : MonoBehaviour
+namespace Warmask.Mask
 {
-    [SerializeField]
-    Volume Mask1Volume;
-    [SerializeField]
-    Volume Mask2Volume;
-    
-    Globals.eMask currentMask = Globals.eMask.None;
-    
-    public void ToggleMask(Globals.eMask mask)
+    public class MaskManager : MonoBehaviour
     {
-        if (currentMask == Globals.eMask.Mask1)
-            ActivateMask2();
-        else //if (currentMask == Globals.eMask.Red)  //also handles none case
-            ActivateMask1();
-    }
-    
-    public void Mask1Activate(bool value)
-    {
-        if (value)
-            ActivateMask1();
-        else
-            ActivateMask2();
-    }
+        [SerializeField] Volume Mask1Volume;
+        [SerializeField] Volume Mask2Volume;
 
-    public void ActivateMask1()
-    {
-        currentMask = Globals.eMask.Mask1;
-        Globals.Instance.OnMaskChanged.Invoke(currentMask);
-        //tween volume weights
-        if (Mask1Volume && Mask2Volume)
+        public void ToggleMask(Globals.eType type)
         {
-            DOTween.To(() => Mask1Volume.weight, x => Mask1Volume.weight = x, 1f, 0.5f);
-            DOTween.To(() => Mask2Volume.weight, x => Mask2Volume.weight = x, 0f, 0.5f);
+            if (Globals.Instance.currentMask != type)
+                UpdateMask(type);
         }
-    }
 
-    public void ActivateMask2()
-    {
-        currentMask = Globals.eMask.Mask2;
-        Globals.Instance.OnMaskChanged.Invoke(currentMask);
-        if (Mask1Volume && Mask2Volume)
+        public void Mask1Activate(bool value)
         {
-            DOTween.To(() => Mask1Volume.weight, x => Mask1Volume.weight = x, 0f, 0.5f);
-            DOTween.To(() => Mask2Volume.weight, x => Mask2Volume.weight = x, 1f, 0.5f);
+            if (value)
+                ToggleMask(Globals.eType.TypeA);
+            else
+                ToggleMask(Globals.eType.TypeB);
+        }
+
+        private void UpdateMask(Globals.eType type)
+        {
+            Globals.Instance.OnMaskChanged.Invoke(type);
+            //tween volume weights
+            if (Mask1Volume && Mask2Volume)
+            {
+                DOTween.To(() => Mask1Volume.weight, x => Mask1Volume.weight = x, type == Globals.eType.TypeA ? 1f : 0f,
+                    0.5f);
+                DOTween.To(() => Mask2Volume.weight, x => Mask2Volume.weight = x, type == Globals.eType.TypeB ? 1f : 0,
+                    0.5f);
+            }
+        }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                ToggleMask(Globals.eType.TypeA);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                ToggleMask(Globals.eType.TypeB);
+            }
         }
     }
 }
