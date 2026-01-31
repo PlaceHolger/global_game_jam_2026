@@ -7,7 +7,7 @@ using UnityEngine.Serialization;
 
 namespace Warmask.Planet.Runtime
 {
-    public class PlanetInstance : MonoBehaviour, IPointerClickHandler
+    public class PlanetInstance : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
     {
         [SerializeField, Tooltip("Event triggered when a new unit is created. Passes the planet type as an integer.")]
         private UnityEvent<int> onUnitCreated;
@@ -23,6 +23,8 @@ namespace Warmask.Planet.Runtime
         private Globals.ePlayer owner = Globals.ePlayer.None;
         [SerializeField, Tooltip("Highlight GameObject for selection indication")]
         private GameObject selection_highlight;
+        
+        public Globals.eType PlanetType => planet_type;
         
         private float unitSpawnInterval;
         private float timer = 0f;
@@ -50,8 +52,8 @@ namespace Warmask.Planet.Runtime
 
         void Update()
         {
-            if(owner == Globals.ePlayer.None)
-                return; // No production if no owner
+            //if(owner == Globals.ePlayer.None)
+               // return; // No production if no owner
             
             timer += Time.deltaTime;
             if (timer >= unitSpawnInterval)
@@ -62,67 +64,16 @@ namespace Warmask.Planet.Runtime
                 onUnitCreated.Invoke((int)planet_type);
             }
         }
+        
+        public void SetSelection(bool isSelected)
+        {
+            if (selection_highlight)
+                selection_highlight.SetActive(isSelected);
+        }
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            var lineHelper = MouseLineHelper.Instance; //todo: make this a real manager for ship movement
-            if (!lineHelper.startTransform)
-            {
-                //no start pos, so we can be the start
-                lineHelper.SetLineType(planet_type);
-                lineHelper.SetStartPos(transform);
-                UpdateDebugLabel("Start");
-            }
-            else if (lineHelper.startTransform == transform)
-            {
-                //clicked the same planet, so clear the line
-                lineHelper.SetStartPos(null);
-                UpdateDebugLabel("Cleared");
-                if (selection_highlight)
-                    selection_highlight.SetActive(false);
-                return;
-            }
-            else if (!lineHelper.endTransform)  //okay, we have a start pos already but the end is empty, so the command is from somewhere to us, we can clear the line
-            {
-                lineHelper.SetLineType(Globals.eType.Unknown);
-                lineHelper.SetEndPos(transform);
-                // show the line for 1 second then clear it
-                DOVirtual.DelayedCall(0.5f, () =>
-                {
-                    lineHelper.SetStartPos(null);
-                    lineHelper.SetEndPos(null);
-                    UpdateDebugLabel("Cleared");
-                });
-                //disable selection highlight on start and end
-                if (selection_highlight)
-                    selection_highlight.SetActive(false);
-                if (lineHelper.startTransform.TryGetComponent(out PlanetInstance startPlanet))
-                {
-                    if (startPlanet.selection_highlight)
-                        startPlanet.selection_highlight.SetActive(false);
-                }
-                return;
-            }
-            else //we have both start and end already, so ignore this click (should never happen)
-            {
-                Debug.Log("should never happen");
-                return;
-            }
-            
-            //toggle selection_highlight 
-            if (selection_highlight)
-            {
-                bool isActive = selection_highlight.activeSelf;
-                selection_highlight.SetActive(!isActive);
-                
-                if(!isActive)
-                    MouseLineHelper.Instance.SetStartPos(transform);
-                else 
-                    MouseLineHelper.Instance.SetStartPos(null);
-            }
-            
-            UpdateDebugLabel("Click");
-            Debug.Log("clicked");
+            PlanetSelectionManager.Instance?.HandlePlanetClick(this);
         }
         
         void OnValidate()
@@ -131,10 +82,23 @@ namespace Warmask.Planet.Runtime
             InitializePlanet();
         }
 
-        void UpdateDebugLabel(string text = null)
+        public void UpdateDebugLabel(string text = null)
         {
             if (text_label)
-                text_label.text = text;
+                if(!string.IsNullOrEmpty(text))
+                    text_label.text = text;
+                else //by default show unit count
+                    text_label.text = unitCount.ToString();
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            PlanetSelectionManager.Instance?.HandlePlanetHoverStart(this);
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            PlanetSelectionManager.Instance?.HandlePlanetHoverEnd(this);
         }
     }
 }

@@ -9,9 +9,7 @@ public class MouseLineHelper : MonoBehaviour
         get
         {
             if (_instance == null)
-            {
-                _instance = FindObjectOfType<MouseLineHelper>();
-            }
+                _instance = FindFirstObjectByType<MouseLineHelper>();
             return _instance;
         }
     }
@@ -22,14 +20,22 @@ public class MouseLineHelper : MonoBehaviour
     public Gradient lineColorGradient;
     private Camera _camera;
 
-    public void SetLineType(Globals.eType type)
+    public void SetLineType(Globals.eType starttype, Globals.eType endtype = Globals.eType.Unknown)
     {
+        var startColor = Globals.Instance.typeColors[(int)starttype];
+        var endColor = Globals.Instance.typeColors[(int)endtype];
+        if(starttype == endtype) //make the end color brighter if same type
+            endColor = Color.Lerp(startColor, Color.white, 0.5f);
+        else if(endtype == Globals.eType.Unknown)
+            endColor = Color.white;
+        
         //lines should change color based on type, and always end with white, therefore we update the gradient
         lineColorGradient.colorKeys = new GradientColorKey[]
         {
-            new GradientColorKey(Globals.Instance.typeColors[(int)type], 0f),
-            lineColorGradient.colorKeys[1] // keep the white at the end
+            new GradientColorKey(startColor, 0f),
+            new GradientColorKey(endColor, 1f),
         };
+        lineRenderer.colorGradient = lineColorGradient;
     }
 
     void Start()
