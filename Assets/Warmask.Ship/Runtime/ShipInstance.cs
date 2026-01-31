@@ -154,12 +154,12 @@ namespace Warmask.Ship
 
             if (currentEnemyTarget != null && !IsTooFarFromTarget())
             {
-                Debug.DrawLine(currentEnemyTarget.cachedTransform.position, cachedTransform.position, Color.green);
+                //Line(currentEnemyTarget.cachedTransform.position, cachedTransform.position, Color.green);
 
                 Vector2 enemyFlightDirection = currentEnemyTarget.velocity.normalized;
                 overrideTargetPosition = currentEnemyTarget.cachedTransform.position - (Vector3)(enemyFlightDirection * targetBehindDistance);
 
-                Debug.DrawLine(currentEnemyTarget.cachedTransform.position, overrideTargetPosition.Value, Color.yellow);
+                //Debug.DrawLine(currentEnemyTarget.cachedTransform.position, overrideTargetPosition.Value, Color.yellow);
             }
 
             Vector2 desiredDirection = CalculateCombinedBehavior(overrideTargetPosition);
@@ -194,7 +194,7 @@ namespace Warmask.Ship
             // Debug visualization for orbit break mode
             if (isInOrbitBreakMode)
             {
-                Debug.DrawRay(cachedTransform.position, orbitBreakJitter * 2f, Color.magenta);
+                //Debug.DrawRay(cachedTransform.position, orbitBreakJitter * 2f, Color.magenta);
             }
         }
 
@@ -216,7 +216,7 @@ namespace Warmask.Ship
             for (int i = 0; i < cachedColliderCount; i++)
             {
                 Collider2D col = colliderBuffer[i];
-                if (col == null || col == ownCollider) continue;
+                if (!col || col == ownCollider) continue;
 
                 if (!col.TryGetComponent(out ShipInstance ship)) continue;
 
@@ -306,7 +306,7 @@ namespace Warmask.Ship
         public void TakeDamage(float damage)
         {
             currentHealth -= damage;
-            Debug.Log($"Ship {name} took {damage} damage. Health: {currentHealth}/{maxHealth}");
+            //Debug.Log($"Ship {name} took {damage} damage. Health: {currentHealth}/{maxHealth}");
 
             if (currentHealth <= 0)
             {
@@ -316,7 +316,7 @@ namespace Warmask.Ship
 
         private void Die()
         {
-            Debug.Log($"Ship {name} destroyed!");
+            //Debug.Log($"Ship {name} destroyed!");
 
             if (TryGetComponent(out PooledShip pooled))
             {
@@ -347,16 +347,16 @@ namespace Warmask.Ship
             {
                 if (hit.collider.TryGetComponent(out ShipInstance hitShip) && hitShip.playerId != playerId)
                 {
-                    Debug.DrawLine(cachedTransform.position, hit.point, Color.green);
+                    //Debug.DrawLine(cachedTransform.position, hit.point, Color.green);
                     FireWeapon(hitShip);
                 }
                 else
                 {
-                    Debug.DrawRay(cachedTransform.position, direction * weaponRange, Color.yellow);
+                    //Debug.DrawRay(cachedTransform.position, direction * weaponRange, Color.yellow);
                 }
             }else
             {
-                Debug.DrawRay(cachedTransform.position, direction * weaponRange, Color.white);
+                //Debug.DrawRay(cachedTransform.position, direction * weaponRange, Color.white);
             }
         }
 
@@ -364,11 +364,11 @@ namespace Warmask.Ship
         {
             if (Time.time - lastFireTime >= fireCooldown)
             {
-                Debug.DrawRay(cachedTransform.position, cachedTransform.up * weaponRange, Color.red, 0.1f);
+                //Debug.DrawRay(cachedTransform.position, cachedTransform.up * weaponRange, Color.red, 0.1f);
                 lastFireTime = Time.time;
                 lastSuccessfulHitTime = Time.time; // Reset orbit break timer on successful hit
                 targetShip.TakeDamage(weaponDamage);
-                Debug.Log($"Ship {name} fired at {targetShip.name}!");
+                //Debug.Log($"Ship {name} fired at {targetShip.name}!");
             }
         }
 

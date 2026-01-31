@@ -119,7 +119,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 3.84, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 9160500633768937649}
@@ -185,22 +185,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Warmask.Ship::Warmask.Ship.ShipInstance
   moveSpeed: 1
   maxTurnAnglePerSecond: 90
-  neighborRadius: 5
-  separationDistance: 2
+  neighborRadius: 1
+  separationDistance: 0.5
   alignmentWeight: 1
   cohesionWeight: 1
   separationWeight: 1.5
   targetWeight: 2
   playerId: 1
-  detectionRadius: 10
-  weaponRange: 5
-  fireCooldown: 1
-  weaponDamage: 20
+  detectionRadius: 3
+  weaponRange: 1
+  fireCooldown: 0.5
+  weaponDamage: 5
   raycastStartOffset: 0.5
   enemyAvoidanceWeight: 2
-  enemyAvoidanceRadius: 3
-  maxDistanceFromTarget: 5
-  targetBehindDistance: 1
+  enemyAvoidanceRadius: 1
+  maxDistanceFromTarget: 2
+  targetBehindDistance: 0.5
   maxHealth: 40
   shipLayerMask:
     serializedVersion: 2

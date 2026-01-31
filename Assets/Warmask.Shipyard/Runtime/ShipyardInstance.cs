@@ -68,7 +68,7 @@ namespace Warmask.Shipyard
             if (!ship.TryGetComponent(out PooledShip _))
             {
                 PooledShip pooled = ship.AddComponent<PooledShip>();
-                pooled.Initialize(this);
+                pooled.Initialize(this, transform);
             }
 
             activeShipCount++;
@@ -78,7 +78,7 @@ namespace Warmask.Shipyard
         {
             GameObject ship = Instantiate(shipPrefab);
             PooledShip pooled = ship.AddComponent<PooledShip>();
-            pooled.Initialize(this);
+            pooled.Initialize(this, transform);
             return ship;
         }
 
