@@ -41,6 +41,8 @@ namespace Warmask.Shipyard
         private int activeShipCount;
         private Transform cachedTransform;
         private readonly List<ShipInstance> ownedShips = new();
+        
+        private PlanetInstance planetInstance = default;
 
         public IReadOnlyList<ShipInstance> OwnedShips => ownedShips;
         public int OwnedShipCount => ownedShips.Count;
@@ -58,10 +60,24 @@ namespace Warmask.Shipyard
                 maxSize: maxPoolSize
             );
 
-            if (TryGetComponent(out PlanetInstance planetInstance))
+            planetInstance = GetComponent<PlanetInstance>();
+            
+            spawnRandomRadius = planetInstance.PlanetSize;
+            planetRadius = planetInstance.PlanetSize;
+
+            TroopMovementManager.OnTroopMovementStarted.AddListener(MoveTroops);
+        }
+
+        private void OnDestroy()
+        {
+            TroopMovementManager.OnTroopMovementStarted.RemoveListener(MoveTroops);
+        }
+
+        private void MoveTroops(PlanetInstance fromPlanet, PlanetInstance toPlanet, int troopCount, Globals.ePlayer movingPlayer)
+        {
+            if (fromPlanet && fromPlanet.gameObject == this.gameObject)
             {
-                spawnRandomRadius = planetInstance.PlanetSize;
-                planetRadius = planetInstance.PlanetSize;
+                TransferShipsTo(toPlanet.GetComponent<ShipyardInstance>(), troopCount);
             }
         }
 
@@ -78,6 +94,8 @@ namespace Warmask.Shipyard
         {
             if (activeShipCount >= maxActiveShips) return;
 
+            
+            
             GameObject ship = shipPool.Get();
             Vector2 spawnPos = (Vector2)cachedTransform.position + spawnOffset + Random.insideUnitCircle * spawnRandomRadius;
             ship.transform.position = spawnPos;
@@ -85,7 +103,7 @@ namespace Warmask.Shipyard
 
             if (ship.TryGetComponent(out ShipInstance shipInstance))
             {
-                shipInstance.SetPlayerId(playerId);
+                shipInstance.SetPlayerId((int)planetInstance.OwnedBy);
                 shipInstance.SetType(type);
                 shipInstance.SetTarget(cachedTransform);
                 shipInstance.SetMinTargetDistance(planetRadius);
@@ -134,7 +152,6 @@ namespace Warmask.Shipyard
                     targetShipyard.RegisterShip(ship);
                     ship.SetTarget(targetShipyard.cachedTransform);
                     ship.SetMinTargetDistance(targetShipyard.planetRadius);
-                    ship.SetPlayerId(targetShipyard.playerId);
                 }
             }
         }
