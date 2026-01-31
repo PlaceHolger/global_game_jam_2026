@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Warmask.Planet.Runtime;
+using Warmask.Planet;
 
 //okay, so enemyAi current approach:
 // 1. check available troops (starhips waiting at a planet)

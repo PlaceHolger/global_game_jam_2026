@@ -1,13 +1,14 @@
-namespace Warmask.Planet.Runtime{
-    using DG.Tweening;
-    using UnityEngine;
+using DG.Tweening;
+using UnityEngine;
 
-    public class PlanetSelectionManager : MonoBehaviour 
+namespace Warmask.Planet
+{
+    public class PlanetSelectionManager : MonoBehaviour
     {
-        [SerializeField] 
-        private float clearDelay = 0.5f;
+        [SerializeField] private float clearDelay = 0.5f;
 
         private static PlanetSelectionManager _instance;
+
         public static PlanetSelectionManager Instance
         {
             get
@@ -17,23 +18,23 @@ namespace Warmask.Planet.Runtime{
                 return _instance;
             }
         }
-        
+
         private PlanetInstance _startPlanet;
-        
+
         public void HandlePlanetHoverStart(PlanetInstance planet)
         {
             var lineHelper = MouseLineHelper.Instance;
-            if (!lineHelper || !planet) 
+            if (!lineHelper || !planet)
                 return;
             //update line color on hover
             if (_startPlanet)
                 lineHelper.SetLineType(_startPlanet.PlanetType, planet.PlanetType);
         }
-        
+
         public void HandlePlanetHoverEnd(PlanetInstance planet)
         {
             var lineHelper = MouseLineHelper.Instance;
-            if (!lineHelper || !planet) 
+            if (!lineHelper || !planet)
                 return;
             //update line color on hover
             if (_startPlanet)
@@ -50,7 +51,7 @@ namespace Warmask.Planet.Runtime{
             {
                 if (!Globals.Instance.IsPlayer(planet.OwnedBy))
                     return;
-                
+
                 _startPlanet = planet;
                 lineHelper.SetLineType(planet.PlanetType);
                 lineHelper.SetStartPos(planet.transform);
@@ -76,8 +77,9 @@ namespace Warmask.Planet.Runtime{
             planet.UpdateDebugLabel("End");
             planet.SetSelection(true);
             _startPlanet.SetSelection(false);
-            
-            TroopMovementManager.GetInstance().MoveTroops(_startPlanet, planet, _startPlanet.UnitCount / 2, _startPlanet.OwnedBy);
+
+            TroopMovementManager.GetInstance().MoveTroops(_startPlanet, planet, _startPlanet.UnitCount / 2,
+                _startPlanet.OwnedBy);
 
             var capturedStart = _startPlanet;
             DOVirtual.DelayedCall(clearDelay, () =>

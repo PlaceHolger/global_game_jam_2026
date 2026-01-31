@@ -374,6 +374,7 @@ GameObject:
   - component: {fileID: 4469381740653827523}
   - component: {fileID: 7977471512161003402}
   - component: {fileID: 3089242591562160354}
+  - component: {fileID: 709195870120840830}
   m_Layer: 0
   m_Name: Planet
   m_TagString: Untagged
@@ -412,7 +413,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Planet
   onUnitCreated:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 709195870120840830}
+        m_TargetAssemblyTypeName: Warmask.Shipyard.ShipyardInstance, Warmask.Shipyard
+        m_MethodName: SpawnShip
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   text_label: {fileID: 1778210683128888036}
   planet_name_label: {fileID: 1701935146280941312}
   planet_size: 1
@@ -518,6 +531,28 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 1.25
+--- !u!114 &709195870120840830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8506309251168395980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 576fcc325b2fb124b86fb5b8db5ea7f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Warmask.Shipyard::Warmask.Shipyard.ShipyardInstance
+  playerId: 0
+  type: 0
+  shipPrefab: {fileID: 7002252218447778190, guid: b7d1b41f54c5b14498b6e97bc2b59c12, type: 3}
+  spawnInterval: 0
+  maxActiveShips: 20
+  spawnOffset: {x: 0, y: 0}
+  spawnRandomRadius: 0.5
+  defaultPoolCapacity: 10
+  maxPoolSize: 50
+  planetRadius: 1.25
 --- !u!1 &8718394881700472737
 GameObject:
   m_ObjectHideFlags: 0

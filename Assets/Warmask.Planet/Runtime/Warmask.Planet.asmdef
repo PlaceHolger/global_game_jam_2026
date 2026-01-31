@@ -1,11 +1,11 @@
 {
-    "name": "Warmask.Ship",
+    "name": "Warmask.Planet",
     "rootNamespace": "",
     "references": [
-        "Unity.Burst",
-        "Unity.Mathematics",
-        "Unity.Collections",
-        "Warmask.Globals"
+        "Warmask.Globals",
+        "Unity.TextMeshPro",
+        "Unity.InputSystem",
+        "GUID:35e9521616a7e83438e7f89883d870ed"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

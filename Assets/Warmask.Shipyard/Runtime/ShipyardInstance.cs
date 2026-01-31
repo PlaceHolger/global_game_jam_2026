@@ -1,10 +1,13 @@
 using NUnit.Framework;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
 using Warmask.Ship;
+using Warmask.Planet;
 
 namespace Warmask.Shipyard
 {
+    [RequireComponent(typeof(PlanetInstance))]
     public class ShipyardInstance : MonoBehaviour, IShipPool
     {
         [Header("Owner")]
@@ -24,10 +27,23 @@ namespace Warmask.Shipyard
         [SerializeField] private int defaultPoolCapacity = 10;
         [SerializeField] private int maxPoolSize = 50;
 
+        [Header("Combat Settings")]
+        [SerializeField] private float planetRadius = 2f;
+
+        public float PlanetRadius
+        {
+            get => planetRadius;
+            set => planetRadius = value;
+        }
+
         private ObjectPool<GameObject> shipPool;
         private float nextSpawnTime;
         private int activeShipCount;
         private Transform cachedTransform;
+        private readonly List<ShipInstance> ownedShips = new();
+
+        public IReadOnlyList<ShipInstance> OwnedShips => ownedShips;
+        public int OwnedShipCount => ownedShips.Count;
 
         private void Awake()
         {
@@ -41,6 +57,12 @@ namespace Warmask.Shipyard
                 defaultCapacity: defaultPoolCapacity,
                 maxSize: maxPoolSize
             );
+
+            if (TryGetComponent(out PlanetInstance planetInstance))
+            {
+                spawnRandomRadius = planetInstance.PlanetSize;
+                planetRadius = planetInstance.PlanetSize;
+            }
         }
 
         private void Update()
@@ -55,28 +77,71 @@ namespace Warmask.Shipyard
         public void SpawnShip()
         {
             if (activeShipCount >= maxActiveShips) return;
-            
+
             GameObject ship = shipPool.Get();
             Vector2 spawnPos = (Vector2)cachedTransform.position + spawnOffset + Random.insideUnitCircle * spawnRandomRadius;
             ship.transform.position = spawnPos;
             ship.transform.rotation = cachedTransform.rotation;
 
-            // Configure ship with player ID and target
             if (ship.TryGetComponent(out ShipInstance shipInstance))
             {
                 shipInstance.SetPlayerId(playerId);
                 shipInstance.SetType(type);
                 shipInstance.SetTarget(cachedTransform);
+                shipInstance.SetMinTargetDistance(planetRadius);
+                RegisterShip(shipInstance);
             }
 
-            // Ensure PooledShip component exists
             if (!ship.TryGetComponent(out PooledShip _))
             {
                 PooledShip pooled = ship.AddComponent<PooledShip>();
                 pooled.Initialize(this, transform);
             }
+            
+            
 
             activeShipCount++;
+        }
+
+        public void RegisterShip(ShipInstance ship)
+        {
+            if (ship && !ownedShips.Contains(ship))
+            {
+                ownedShips.Add(ship);
+            }
+        }
+
+        public void UnregisterShip(ShipInstance ship)
+        {
+            ownedShips.Remove(ship);
+        }
+
+        public void TransferShipsTo(ShipyardInstance targetShipyard, int count)
+        {
+            if (!targetShipyard || targetShipyard == this || count <= 0) return;
+
+            int transferCount = Mathf.Min(count, ownedShips.Count);
+
+            for (int i = 0; i < transferCount; i++)
+            {
+                if (ownedShips.Count == 0) break;
+
+                ShipInstance ship = ownedShips[ownedShips.Count - 1];
+                ownedShips.RemoveAt(ownedShips.Count - 1);
+
+                if (ship != null)
+                {
+                    targetShipyard.RegisterShip(ship);
+                    ship.SetTarget(targetShipyard.cachedTransform);
+                    ship.SetMinTargetDistance(targetShipyard.planetRadius);
+                    ship.SetPlayerId(targetShipyard.playerId);
+                }
+            }
+        }
+
+        public void TransferAllShipsTo(ShipyardInstance targetShipyard)
+        {
+            TransferShipsTo(targetShipyard, ownedShips.Count);
         }
 
         private GameObject CreateShip()
@@ -90,7 +155,12 @@ namespace Warmask.Shipyard
         public void ReturnShipToPool(GameObject ship)
         {
             if (ship == null || !ship.activeInHierarchy) return;
-    
+
+            if (ship.TryGetComponent(out ShipInstance shipInstance))
+            {
+                UnregisterShip(shipInstance);
+            }
+
             shipPool.Release(ship);
             activeShipCount = Mathf.Max(0, activeShipCount - 1);
         }

@@ -30,6 +30,7 @@ namespace Warmask.Ship
 
         [SerializeField] private float enemyAvoidanceRadius = 3f;
         [SerializeField] private float maxDistanceFromTarget = 5f;
+        [SerializeField] private float minDistanceFromTarget = 2f;
         [SerializeField] private float targetBehindDistance = 3f;
 
         [Header("Health")] [SerializeField] private float maxHealth = 100f;
@@ -74,6 +75,7 @@ namespace Warmask.Ship
         private float sqrSeparationDistance;
         private float sqrEnemyAvoidanceRadius;
         private float sqrMaxDistanceFromTarget;
+        private float sqrMinDistanceFromTarget;
 
         // Collider caching to reduce allocations
         private Collider2D[] colliderBuffer;
@@ -81,16 +83,12 @@ namespace Warmask.Ship
         private int frameOfLastCache = -1;
         private float cachedMaxRadius;
 
-        // Neighbor caching to avoid list allocations
-        private readonly List<ShipInstance> neighborCache = new List<ShipInstance>();
-
         // Cached position to avoid repeated transform access
         private Vector2 cachedPosition;
 
         private Vector2 boidResultFromJob;
 
         private bool showLaserThisFrame;
-        private float laserTargetDistance;
 
         public bool IsAlive => currentHealth > 0 && !pendingDeath;
 
@@ -153,6 +151,7 @@ namespace Warmask.Ship
             sqrSeparationDistance = separationDistance * separationDistance;
             sqrEnemyAvoidanceRadius = enemyAvoidanceRadius * enemyAvoidanceRadius;
             sqrMaxDistanceFromTarget = maxDistanceFromTarget * maxDistanceFromTarget;
+            sqrMinDistanceFromTarget = minDistanceFromTarget * minDistanceFromTarget;
 
             cachedMaxRadius = Mathf.Max(neighborRadius, detectionRadius, enemyAvoidanceRadius);
             showLaserThisFrame = false;
@@ -193,7 +192,7 @@ namespace Warmask.Ship
         private void UpdateMovement()
         {
             float timeSinceHit = Time.time - lastSuccessfulHitTime;
-            bool isInOrbitBreakMode = timeSinceHit > orbitBreakTime && currentEnemyTarget != null;
+            bool isInOrbitBreakMode = timeSinceHit > orbitBreakTime && currentEnemyTarget;
 
             if (isInOrbitBreakMode && Time.time >= nextJitterUpdateTime)
             {
@@ -207,7 +206,7 @@ namespace Warmask.Ship
 
             Vector3? overrideTargetPosition = null;
 
-            if (currentEnemyTarget != null && !IsTooFarFromTarget())
+            if (currentEnemyTarget && !IsTooFarFromTarget())
             {
                 Vector2 enemyFlightDirection = currentEnemyTarget.velocity.normalized;
                 overrideTargetPosition = currentEnemyTarget.cachedTransform.position -
@@ -313,13 +312,12 @@ namespace Warmask.Ship
 
             RaycastHit2D hit = Physics2D.Raycast(startPos, direction, weaponRange - raycastStartOffset, shipLayerMask);
 
-            if (hit.collider != null && hit.collider != ownCollider)
+            if (hit.collider && hit.collider != ownCollider)
             {
                 if (hit.collider.TryGetComponent(out ShipInstance hitShip) &&
                     hitShip.playerId != playerId &&
                     hitShip.IsAlive)
                 {
-                    laserTargetDistance = hit.distance + raycastStartOffset;
                     FireWeapon(hitShip, hit.point);
                 }
             }
@@ -366,7 +364,7 @@ namespace Warmask.Ship
             for (int i = 0; i < cachedColliderCount; i++)
             {
                 Collider2D col = colliderBuffer[i];
-                if (col == null || col == ownCollider) continue;
+                if (!col || col == ownCollider) continue;
 
                 if (!col.TryGetComponent(out ShipInstance ship)) continue;
                 if (ship.playerId == playerId) continue;
@@ -396,37 +394,34 @@ namespace Warmask.Ship
 
         private Vector2 CalculateTargetAttraction(Vector3? overridePosition)
         {
+            Vector2 targetPos;
+    
             if (overridePosition.HasValue)
             {
-                return ((Vector2)overridePosition.Value - cachedPosition).normalized;
+                targetPos = overridePosition.Value;
             }
-
-            if (target == null) return Vector2.zero;
-
-            return ((Vector2)target.position - cachedPosition).normalized;
-        }
-
-        private List<ShipInstance> GetNeighbors()
-        {
-            neighborCache.Clear();
-            CacheCollidersIfNeeded();
-
-            for (int i = 0; i < cachedColliderCount; i++)
+            else if (target)
             {
-                Collider2D col = colliderBuffer[i];
-                if (col == null || col == ownCollider) continue;
-
-                Vector2 toOther = (Vector2)col.transform.position - cachedPosition;
-                if (toOther.sqrMagnitude > sqrNeighborRadius) continue;
-
-                if (col.TryGetComponent(out ShipInstance ship) && ship.playerId == playerId)
-                {
-                    neighborCache.Add(ship);
-                }
+                targetPos = target.position;
+            }
+            else
+            {
+                return Vector2.zero;
             }
 
-            return neighborCache;
+            Vector2 toTarget = targetPos - cachedPosition;
+            float sqrDistance = toTarget.sqrMagnitude;
+
+            // Zu nah -> abstoßen
+            if (sqrDistance < sqrMinDistanceFromTarget && sqrDistance > 0.001f)
+            {
+                return -toTarget.normalized;
+            }
+
+            // Normalfall -> anziehen
+            return toTarget.normalized;
         }
+
 
         public void SetPlayerId(int id)
         {
@@ -471,6 +466,12 @@ namespace Warmask.Ship
                     Destroy(gameObject);
                 }
             }
+        }
+
+        public void SetMinTargetDistance(float distance)
+        {
+            minDistanceFromTarget = distance + 0.5f;
+            sqrMinDistanceFromTarget = (distance + 0.5f) * (distance + 0.5f);
         }
     }
 }
