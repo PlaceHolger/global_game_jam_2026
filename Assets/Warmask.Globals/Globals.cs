@@ -52,6 +52,14 @@ public class Globals : ScriptableObject
 
     [SerializeField] private Sprite[] playerSprites;
 
+    [SerializeField] private Color[] playerColors = new Color[3]
+    {
+        Color.white,
+        Color.paleGreen,
+        Color.paleVioletRed
+    };
+
+    public Color GetPlayerColor(ePlayer player) => playerColors[(int)player];
 
     public Color GetTypeColor(eType type) => typeColors[(int)type];
     

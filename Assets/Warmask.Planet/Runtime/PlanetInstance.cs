@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 using Warmask.Planet;
 
 namespace Warmask.Planet
@@ -72,18 +73,15 @@ namespace Warmask.Planet
             //we also update the color of the name label based on owner
             if(planet_name_label)
             {
-                if(owner == Globals.ePlayer.Player1)
-                    planet_name_label.color = Color.paleGreen;
-                else if(owner == Globals.ePlayer.Player2)
-                    planet_name_label.color = Color.paleVioletRed;
-                else
-                    planet_name_label.color = Color.white;
+                planet_name_label.color = Globals.Instance.GetPlayerColor(owner);
             }
             
             // Update owner indicators gameobjects (from ownerIndicators)
             for (int i = 0; i < ownerIndicators.Length; i++)
             {
                 ownerIndicators[i].SetActive(i == newOwnerIndex);
+                if(ownerIndicators[i].TryGetComponent<Image>(out var uiImage))
+                    uiImage.color = Globals.Instance.GetPlayerColor(owner);
             }
         }
 
