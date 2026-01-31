@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 [CreateAssetMenu(fileName = "Globals", menuName = "WarMaster/Globals", order = 1)]
 public class Globals : ScriptableObject
@@ -20,12 +21,22 @@ public class Globals : ScriptableObject
         }
     }
 
+    public UnityEvent<eMask> OnMaskChanged = new UnityEvent<eMask>();
+
     public enum eType
     {
         Red,
         Gray,
         Blue,
         Unknown
+    }
+    
+    public enum eMask
+    {
+        None,
+        Mask1, //red
+        Mask2, //blue 
+        Unknown = -1
     }
     
     public enum ePlayer

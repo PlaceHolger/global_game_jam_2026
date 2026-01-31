@@ -23,17 +23,47 @@ namespace Warmask.Planet.Runtime
         private Globals.ePlayer owner = Globals.ePlayer.None;
         [SerializeField, Tooltip("Highlight GameObject for selection indication")]
         private GameObject selection_highlight;
+        [SerializeField, Tooltip("2 ui images showing the owner of the planet")]
+        private GameObject[] ownerIndicators;
         
         public Globals.eType PlanetType => planet_type;
         
         private float unitSpawnInterval;
         private float timer = 0f;
+        private float maskModifier = 1f;
 
         void Start()
         {
             InitializePlanet();
-            // Adjust spawn interval based on size and global production factor
-            unitSpawnInterval = Mathf.Max(0.1f, Globals.Instance.planetProductionFactor / planet_size);
+            
+            Globals.Instance.OnMaskChanged.AddListener(OnMaskChanged);
+        }
+
+        private void OnMaskChanged(Globals.eMask arg0)
+        {
+            //if the mask matches the planet type, double the production speed
+            if((arg0 == Globals.eMask.Mask1 && planet_type == Globals.eType.Red) ||
+               (arg0 == Globals.eMask.Mask2 && planet_type == Globals.eType.Blue))
+            {
+                maskModifier = 1.5f;
+            }
+            else
+            {
+                maskModifier = 0.66f;
+            }
+            InitializePlanet(); //reinitialize to apply new spawn interval
+        }
+
+        public void SetOwner(Globals.ePlayer newOwner)
+        {
+            owner = newOwner;
+            int newOwnerIndex = (int)owner - 1;
+            
+            // Update owner indicators gameobjects (from ownerIndicators)
+            for (int i = 0; i < ownerIndicators.Length; i++)
+            {
+                ownerIndicators[i].SetActive(i == newOwnerIndex);
+            }
         }
 
 
@@ -44,10 +74,16 @@ namespace Warmask.Planet.Runtime
             if(TryGetComponent(out SpriteRenderer sr))
                 sr.color = planetColor;
 
+            float adjustedSize = planet_size * maskModifier;
             // Scale the object based on planet_size (uniform x and y scaling)
-            transform.localScale = new Vector3(planet_size, planet_size, 1f);
+            transform.localScale = new Vector3(adjustedSize, adjustedSize, 1f);
             
             UpdateDebugLabel(unitCount.ToString());
+            
+            SetOwner(owner);
+            
+            // Adjust spawn interval based on size and global production factor
+            unitSpawnInterval = Mathf.Max(0.1f, Globals.Instance.planetProductionFactor / adjustedSize);
         }
 
         void Update()

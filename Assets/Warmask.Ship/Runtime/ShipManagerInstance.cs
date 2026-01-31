@@ -163,7 +163,7 @@ namespace Warmask.Ship
                 for (int j = 0; j < hitCount && neighborCount < maxNeighborsPerShip; j++)
                 {
                     Collider2D col = overlapBuffer[j];
-                    if (col == null) continue;
+                    if (!col) continue;
                     
                     // Schneller Dictionary-Lookup statt TryGetComponent
                     if (!colliderToShip.TryGetValue(col, out ShipInstance neighbor)) continue;
