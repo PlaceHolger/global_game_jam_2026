@@ -11,8 +11,10 @@ namespace Warmask.Planet.Runtime
     {
         [SerializeField, Tooltip("Event triggered when a new unit is created. Passes the planet type as an integer.")]
         private UnityEvent<int> onUnitCreated;
-        [FormerlySerializedAs("debug_label")] [SerializeField, Tooltip("Label which displays debug information on the planet")]
+        [SerializeField, Tooltip("Label which displays debug information on the planet")]
         private TMP_Text text_label;
+        [SerializeField, Tooltip("Label which displays the planet name")]
+        private TMP_Text planet_name_label;
         [SerializeField, Range(0.2f, 5f), Tooltip("Size of the planet which affects its scale and unit production rate")]
         private float planet_size = 1f;
         [SerializeField, Tooltip("Type of the planet which determines its color and the units it produces")]
@@ -27,6 +29,9 @@ namespace Warmask.Planet.Runtime
         private GameObject[] ownerIndicators;
         
         public Globals.eType PlanetType => planet_type;
+        public int UnitCount => unitCount;
+        public Globals.ePlayer OwnedBy => owner;
+        public float PlanetSize => planet_size;
         
         private float unitSpawnInterval;
         private float timer = 0f;
@@ -66,7 +71,6 @@ namespace Warmask.Planet.Runtime
             }
         }
 
-
         private void InitializePlanet()
         {
             // Set planet color based on type using Globals
@@ -84,12 +88,14 @@ namespace Warmask.Planet.Runtime
             
             // Adjust spawn interval based on size and global production factor
             unitSpawnInterval = Mathf.Max(0.1f, Globals.Instance.planetProductionFactor / adjustedSize);
+            
+            planet_name_label.text = gameObject.name;
         }
 
         void Update()
         {
-            //if(owner == Globals.ePlayer.None)
-               // return; // No production if no owner
+            if(owner == Globals.ePlayer.None)
+                return; // No production if no owner
             
             timer += Time.deltaTime;
             if (timer >= unitSpawnInterval)
