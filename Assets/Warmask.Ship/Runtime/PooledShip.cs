@@ -11,10 +11,7 @@ namespace Warmask.Ship
             ownerPool = pool;
             if (shipyardTransform != null)
             {
-                // Richtung vom Shipyard weg berechnen
                 Vector3 directionAway = (transform.position - shipyardTransform.position).normalized;
-                
-                // Schiff in diese Richtung ausrichten
                 if (directionAway != Vector3.zero)
                 {
                     transform.rotation = Quaternion.LookRotation(directionAway);
@@ -24,7 +21,9 @@ namespace Warmask.Ship
 
         public void ReturnToPool()
         {
-            ownerPool.ReturnShipToPool(gameObject);
+            // Schiff-spezifische Aufräumarbeiten wurden bereits in 
+            // ShipInstance.HandleDeath erledigt
+            ownerPool?.ReturnShipToPool(gameObject);
         }
     }
 }

@@ -4,7 +4,8 @@
     "references": [
         "Warmask.Ship",
         "Warmask.Globals",
-        "Warmask.Planet"
+        "Warmask.Planet",
+        "Warmask.Core"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

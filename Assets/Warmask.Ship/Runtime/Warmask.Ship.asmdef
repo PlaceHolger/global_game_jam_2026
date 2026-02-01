@@ -5,7 +5,8 @@
         "Unity.Burst",
         "Unity.Mathematics",
         "Unity.Collections",
-        "Warmask.Globals"
+        "Warmask.Globals",
+        "Warmask.Core"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

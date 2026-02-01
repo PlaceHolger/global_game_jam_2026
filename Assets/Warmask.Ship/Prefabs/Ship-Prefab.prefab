@@ -488,13 +488,13 @@ MonoBehaviour:
   separationWeight: 1.5
   targetWeight: 2
   detectionRadius: 3
-  weaponRange: 1
+  weaponRange: 2
   fireCooldown: 0.25
   weaponDamage: 5
   raycastStartOffset: 0.5
   laserVisual: {fileID: 4063727898533936639}
-  enemyAvoidanceWeight: 2
-  enemyAvoidanceRadius: 1
+  enemyAvoidanceWeight: 1
+  enemyAvoidanceRadius: 0.5
   maxDistanceFromTarget: 4
   minDistanceFromTarget: 2
   targetBehindDistance: 0.5
@@ -522,4 +522,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58e1bfb01ac3d7b498558047d18a6b44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Warmask.Ship::ShipMaskFader
-  type: 0
