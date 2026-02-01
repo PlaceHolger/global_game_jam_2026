@@ -35,7 +35,8 @@ namespace Warmask.Ship
             {
                 if (sr)
                 {
-                    sr.color = c;
+                    //for sprites just set color directly, we keep the player color intact
+                    sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, c.a);
                 }
             }
             TrailRenderer[] trailRenderers = GetComponentsInChildren<TrailRenderer>();
