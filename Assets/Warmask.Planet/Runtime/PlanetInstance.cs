@@ -1,12 +1,9 @@
 using System.Collections.Generic;
-using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
-using Warmask.Planet;
 
 namespace Warmask.Planet
 {
@@ -14,28 +11,42 @@ namespace Warmask.Planet
     {
         [SerializeField, Tooltip("Event triggered when a new unit is created. Passes the planet type as an integer.")]
         private UnityEvent<int> onUnitCreated;
-        [SerializeField, Tooltip("Label which displays debug information on the planet")]
+
+        [SerializeField, Tooltip("Label which displays debug information on the planet.")]
         private TMP_Text text_label;
+
+        [SerializeField, Tooltip("Label which rotates when the planet is controlled.")]
+        private Transform textTransform;
+
         [SerializeField, Tooltip("Label which displays the planet name")]
         private TMP_Text planet_name_label;
-        [SerializeField, Range(0.2f, 5f), Tooltip("Size of the planet which affects its scale and unit production rate")]
+
+        [SerializeField, Range(0.2f, 5f),
+         Tooltip("Size of the planet which affects its scale and unit production rate")]
         private float planet_size = 1f;
+
         [SerializeField, Tooltip("Type of the planet which determines its color and the units it produces")]
         private Globals.eType planet_type;
+
         [SerializeField, Tooltip("Current number of units on the planet")]
         private int unitCount = 5;
-        [SerializeField]
-        private Globals.ePlayer owner = Globals.ePlayer.None;
+
+        [SerializeField] private Globals.ePlayer owner = Globals.ePlayer.None;
+
         [SerializeField, Tooltip("Highlight GameObject for selection indication")]
         private GameObject selection_highlight;
+
         [SerializeField, Tooltip("2 ui images showing the owner of the planet")]
         private GameObject[] ownerIndicators;
+
         [SerializeField, Tooltip("if enemy ships are in orbit, the stored units will be damaged over time")]
         private float unitReductionIntervalWhenAttacked = 1f;
+
         [SerializeField, Tooltip("Maximum units that can be stored on the planet")]
         private int maxUnitCount = 100;
-        
+
         public Globals.eType PlanetType => planet_type;
+
         public int DefendingShipsInOrbit //these are the ships in orbit, not the ships on the planet
         {
             get => numOwnShipsInOrbit;
@@ -49,7 +60,7 @@ namespace Warmask.Planet
 
         public Globals.ePlayer OwnedBy => owner;
         public float PlanetSize => planet_size;
-        
+
         private float unitSpawnInterval;
         private float timer = 0f;
         private float maskModifier = 1f;
@@ -57,18 +68,18 @@ namespace Warmask.Planet
         private int numEnemyShipsInOrbit = 0;
         private int numOwnShipsInOrbit = 0;
         private Globals.ePlayer lastAttacker = Globals.ePlayer.None;
-        
+
         void Start()
         {
             InitializePlanet();
-            
+
             Globals.Instance.OnMaskChanged.AddListener(OnMaskChanged);
         }
 
         private void OnMaskChanged(Globals.eType arg0)
         {
             //if the mask matches the planet type, double the production speed
-            if(arg0 == planet_type ) 
+            if (arg0 == planet_type)
             {
                 maskModifier = 1.0f;
             }
@@ -76,6 +87,7 @@ namespace Warmask.Planet
             {
                 maskModifier = 0.666f;
             }
+
             InitializePlanet(); //reinitialize to apply new spawn interval
         }
 
@@ -83,18 +95,18 @@ namespace Warmask.Planet
         {
             owner = newOwner;
             int newOwnerIndex = (int)owner - 1;
-            
+
             //we also update the color of the name label based on owner
-            if(planet_name_label)
+            if (planet_name_label)
             {
                 planet_name_label.color = Globals.Instance.GetPlayerColor(owner);
             }
-            
-            if(text_label)
+
+            if (text_label)
             {
                 text_label.color = Globals.Instance.GetPlayerColor(owner);
             }
-            
+
             // Update owner indicators gameobjects (from ownerIndicators)
             for (int i = 0; i < ownerIndicators.Length; i++)
             {
@@ -111,29 +123,30 @@ namespace Warmask.Planet
         {
             // Set planet color based on type using Globals
             Color planetColor = Globals.Instance.GetTypeColor(planet_type);
-            if(TryGetComponent(out SpriteRenderer sr))
+            if (TryGetComponent(out SpriteRenderer sr))
                 sr.color = planetColor;
 
             float adjustedSize = planet_size * maskModifier;
             // Scale the object based on planet_size (uniform x and y scaling)
             transform.localScale = new Vector3(0.6f + 0.4f * adjustedSize, 0.6f + 0.4f * adjustedSize, 1f);
-            
+
             UpdateDebugLabel(unitCount.ToString());
-            
+
             SetOwner(owner);
-            
+
             // Adjust spawn interval based on size and global production factor
             unitSpawnInterval = Mathf.Max(0.1f, Globals.Instance.planetProductionFactor / adjustedSize);
-            
+
             planet_name_label.text = gameObject.name;
         }
 
         void Update()
         {
-            if(numEnemyShipsInOrbit > 0 && numOwnShipsInOrbit > 0)
+            if (numEnemyShipsInOrbit > 0 && numOwnShipsInOrbit > 0)
             {
                 // Under attack, do not produce units
-                UpdateDebugLabel("Under Attack! (" + numOwnShipsInOrbit + " vs " + numEnemyShipsInOrbit + ")", lastAttacker);
+                UpdateDebugLabel("Under Attack! (" + numOwnShipsInOrbit + " vs " + numEnemyShipsInOrbit + ")",
+                    lastAttacker);
                 return;
             }
 
@@ -147,8 +160,8 @@ namespace Warmask.Planet
                     unitCount = Mathf.Max(0, unitCount - 1);
                     UpdateDebugLabel("Falling: " + unitCount.ToString(), lastAttacker);
                 }
-                
-                if(unitCount == 0)
+
+                if (unitCount == 0)
                 {
                     // Change ownership to the attacking player
                     SetOwner(lastAttacker);
@@ -156,12 +169,13 @@ namespace Warmask.Planet
                     numEnemyShipsInOrbit = 0; //reset enemy ships count
                     UpdateDebugLabel("Victory", lastAttacker);
                 }
+
                 return;
             }
-            
-            if(owner == Globals.ePlayer.None)
+
+            if (owner == Globals.ePlayer.None)
                 return; // No production if no owner
-            
+
             timer += Time.deltaTime;
             if (timer >= unitSpawnInterval)
             {
@@ -171,10 +185,16 @@ namespace Warmask.Planet
                     unitCount++;
                     UpdateDebugLabel(unitCount.ToString());
                 }
+
                 onUnitCreated.Invoke((int)planet_type);
             }
+            else
+            {
+                Vector3 dir = (owner == Globals.ePlayer.Player1) ? Vector3.forward : Vector3.back;
+                textTransform.Rotate(dir, Time.deltaTime * unitCount);
+            }
         }
-        
+
         public void SetSelection(bool isSelected)
         {
             if (selection_highlight)
@@ -185,7 +205,7 @@ namespace Warmask.Planet
         {
             PlanetSelectionManager.Instance?.HandlePlanetClick(this);
         }
-        
+
         void OnValidate()
         {
             // Update color and scale in edit mode when values change
@@ -196,12 +216,12 @@ namespace Warmask.Planet
         {
             if (text_label)
             {
-                if(textOwner != Globals.ePlayer.None)
+                if (textOwner != Globals.ePlayer.None)
                     text_label.color = Globals.Instance.GetPlayerColor(textOwner);
                 else //reset to owner color
                     text_label.color = Globals.Instance.GetPlayerColor(owner);
-                
-                if(!string.IsNullOrEmpty(text))
+
+                if (!string.IsNullOrEmpty(text))
                     text_label.text = text;
                 else //by default show unit count
                     text_label.text = unitCount.ToString();
@@ -222,7 +242,7 @@ namespace Warmask.Planet
         {
             numOwnShipsInOrbit = 0;
             numEnemyShipsInOrbit = 0;
-            
+
             foreach (var kvp in shipCountCache)
             {
                 if ((Globals.ePlayer)kvp.Key == owner)
