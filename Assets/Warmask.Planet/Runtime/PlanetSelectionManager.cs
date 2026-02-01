@@ -65,7 +65,7 @@ namespace Warmask.Planet
             }
 
             // Clicked same planet -> clear
-            if (_startPlanet == planet || _startPlanet.UnitCount <= 0)
+            if (_startPlanet == planet || _startPlanet.DefendingShipsInOrbit <= 0)
             {
                 _mouseLineHelper.SetStartPos(null);
                 planet.SetSelection(false);
@@ -82,11 +82,11 @@ namespace Warmask.Planet
             planet.SetSelection(true);
             _startPlanet.SetSelection(false);
             
-            int numTroopsToSend = _startPlanet.UnitCount / 2; // Send half of the troops by default
+            int numTroopsToSend = _startPlanet.DefendingShipsInOrbit / 2; // Send half of the troops by default
             // but we are trying to be clever, if the target planet has more defense troops, we send more troops
-            if(planet.OwnedBy != _startPlanet.OwnedBy && planet.UnitCount >= numTroopsToSend)
+            if(planet.OwnedBy != _startPlanet.OwnedBy && planet.DefendingShipsInOrbit >= numTroopsToSend)
             {
-                numTroopsToSend = Mathf.Min(planet.UnitCount + 2, _startPlanet.UnitCount); //send enough troops to conquer
+                numTroopsToSend = Mathf.Min(planet.DefendingShipsInOrbit + 2, _startPlanet.DefendingShipsInOrbit); //send enough troops to conquer
             }
 
             TroopMovementManager.GetInstance().MoveTroops(_startPlanet, planet, numTroopsToSend, _startPlanet.OwnedBy);

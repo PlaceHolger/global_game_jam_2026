@@ -27,7 +27,7 @@ namespace Warmask.Planet
         public int MoveTroops(PlanetInstance fromPlanet, PlanetInstance toPlanet, int numberOfTroops,
             Globals.ePlayer movingPlayer)
         {
-            if (!fromPlanet || !toPlanet || numberOfTroops <= 0 || fromPlanet.UnitCount <= 0)
+            if (!fromPlanet || !toPlanet || numberOfTroops <= 0 || fromPlanet.DefendingShipsInOrbit <= 0)
             {
                 Debug.LogError("Troops can't be null or less than zero");
                 return -1;
@@ -36,33 +36,33 @@ namespace Warmask.Planet
             if (fromPlanet.OwnedBy != movingPlayer)
                 return -1; // Can't move troops from a planet you don't own
 
-            if (fromPlanet.UnitCount < numberOfTroops)
-                numberOfTroops = fromPlanet.UnitCount; // Adjust to available troops
+            if (fromPlanet.DefendingShipsInOrbit < numberOfTroops)
+                numberOfTroops = fromPlanet.DefendingShipsInOrbit; // Adjust to available troops
 
             OnTroopMovementStarted.Invoke(fromPlanet, toPlanet, numberOfTroops, movingPlayer);
 
-            fromPlanet.UnitCount -= numberOfTroops;
-
-            if (toPlanet.OwnedBy == movingPlayer)
-            {
-                // Reinforce own planet
-                toPlanet.UnitCount += numberOfTroops;
-            }
-            else
-            {
-                // Attack enemy or neutral planet
-                if (numberOfTroops > toPlanet.UnitCount)
-                {
-                    // Successful attack
-                    toPlanet.SetOwner(movingPlayer);
-                    toPlanet.UnitCount = numberOfTroops - toPlanet.UnitCount;
-                }
-                else
-                {
-                    // Failed attack
-                    toPlanet.UnitCount -= numberOfTroops;
-                }
-            }
+            // fromPlanet.UnitCount -= numberOfTroops;
+            //
+            // if (toPlanet.OwnedBy == movingPlayer)
+            // {
+            //     // Reinforce own planet
+            //     toPlanet.UnitCount += numberOfTroops;
+            // }
+            // else
+            // {
+            //     // Attack enemy or neutral planet
+            //     if (numberOfTroops > toPlanet.UnitCount)
+            //     {
+            //         // Successful attack
+            //         toPlanet.SetOwner(movingPlayer);
+            //         toPlanet.UnitCount = numberOfTroops - toPlanet.UnitCount;
+            //     }
+            //     else
+            //     {
+            //         // Failed attack
+            //         toPlanet.UnitCount -= numberOfTroops;
+            //     }
+            // }
 
             return numberOfTroops;
         }

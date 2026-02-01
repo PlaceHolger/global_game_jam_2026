@@ -31,7 +31,7 @@ namespace Warmask.Shipyard
         [Header("Combat Settings")]
         [SerializeField] private float planetRadius = 2f;
 
-        private UnityEvent<Dictionary<int, int>> shipCountUpdate;
+        //private UnityEvent<Dictionary<int, int>> shipCountUpdate;
         
         private Dictionary<int,int> shipCountCache = new Dictionary<int, int>();
 
@@ -93,8 +93,9 @@ namespace Warmask.Shipyard
                 SpawnShip();
                 nextSpawnTime = Time.time + spawnInterval;
             }
-            
-            shipCountUpdate?.Invoke(shipCountCache);
+
+            planetInstance.OnShipCountChanged(shipCountCache);
+            //shipCountUpdate?.Invoke(shipCountCache);
         }
 
         public void SpawnShip()

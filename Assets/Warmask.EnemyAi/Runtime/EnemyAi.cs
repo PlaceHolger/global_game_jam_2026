@@ -59,7 +59,7 @@ public class EnemyAi : MonoBehaviour
         int mostAvailableTroopsOnOnePlanet = 0;
         foreach (var planet in ourPlanets)
         {
-            int availableTroops = planet.UnitCount - 1; // Keep at least 1 troop for defense
+            int availableTroops = planet.DefendingShipsInOrbit - 1; // Keep at least 1 troop for defense
             if (availableTroops > 0)
             {
                 totalAvailableTroops += availableTroops;
@@ -79,7 +79,7 @@ public class EnemyAi : MonoBehaviour
         {
             //TODO: SendTroops(mostAvailableTroopsOnOnePlanetPlanet, targetPlanet);
             Debug.Log("Enemy AI: Attacking planet " + targetPlanet.name);
-            float neededTroops = Mathf.Min(targetPlanet.UnitCount + 4, mostAvailableTroopsOnOnePlanet) ; // Send enough troops to conquer
+            float neededTroops = Mathf.Min(targetPlanet.DefendingShipsInOrbit + 4, mostAvailableTroopsOnOnePlanet) ; // Send enough troops to conquer
             neededTroops = Mathf.Max(mostAvailableTroopsOnOnePlanet * 0.666f, neededTroops); //at least send half the troops, otherwise the new planet is too easy to be re-concquered
             int sendTroops = TroopMovementManager.GetInstance().MoveTroops(mostAvailableTroopsOnOnePlanetPlanet, targetPlanet, (int)neededTroops, ownPlayer);
             if(sendTroops > 0)
@@ -114,7 +114,7 @@ public class EnemyAi : MonoBehaviour
         float bestScore = float.MinValue;
         foreach (var planet in ourPlanets)
         {
-            int defendingTroops = planet.UnitCount;
+            int defendingTroops = planet.DefendingShipsInOrbit;
             if (defendingTroops >= availableTroops)
                 continue; // Can't attack this planet
             // Simple heuristic: prefer planets with fewer troops and closer distance

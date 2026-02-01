@@ -248,7 +248,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 36.15
+      value: 28
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_size
@@ -664,6 +664,18 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1532743690402279524, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_Color.b
+      value: 0.5764706
+      objectReference: {fileID: 0}
+    - target: {fileID: 1532743690402279524, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_Color.g
+      value: 0.4392157
+      objectReference: {fileID: 0}
+    - target: {fileID: 1532743690402279524, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_Color.r
+      value: 0.8588236
+      objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
       value: McNopeFace
@@ -690,7 +702,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 36.15
+      value: 28
+      objectReference: {fileID: 0}
+    - target: {fileID: 1963434011279927983, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_Color.b
+      value: 0.5764706
+      objectReference: {fileID: 0}
+    - target: {fileID: 1963434011279927983, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_Color.g
+      value: 0.4392157
+      objectReference: {fileID: 0}
+    - target: {fileID: 1963434011279927983, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_Color.r
+      value: 0.8588236
+      objectReference: {fileID: 0}
+    - target: {fileID: 3637299931600586546, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: owner
@@ -796,7 +824,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 36.15
+      value: 28
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_size
@@ -998,7 +1026,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 36.15
+      value: 28
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_size
@@ -1635,7 +1663,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 36.15
+      value: 28
       objectReference: {fileID: 0}
     - target: {fileID: 4909586255671823781, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_LocalScale.x
@@ -2195,7 +2223,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 23.7
+      value: 28
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: unitCount
@@ -2670,7 +2698,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 36.15
+      value: 28
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_size
@@ -3016,8 +3044,8 @@ LineRenderer:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.98679477
-        value: 1
+        time: 1
+        value: 0.75438595
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -3168,7 +3196,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAi
   enemyPlayer: 1
   ownPlayer: 2
-  decisionInterval: 30
+  decisionInterval: 2
   IntervalAfterAttack: 4
   DistanceFactor: 11
   PreferEnemyPlanets: 3
@@ -3431,7 +3459,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 36.15
+      value: 28
       objectReference: {fileID: 0}
     - target: {fileID: 4909586255671823781, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_LocalScale.x
@@ -3523,6 +3551,18 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1532743690402279524, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_Color.b
+      value: 0.5960785
+      objectReference: {fileID: 0}
+    - target: {fileID: 1532743690402279524, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_Color.g
+      value: 0.9843138
+      objectReference: {fileID: 0}
+    - target: {fileID: 1532743690402279524, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_Color.r
+      value: 0.5960785
+      objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
       value: Planet McPlanetface
@@ -3553,7 +3593,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 36.15
+      value: 28
+      objectReference: {fileID: 0}
+    - target: {fileID: 1963434011279927983, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_Color.b
+      value: 0.5960785
+      objectReference: {fileID: 0}
+    - target: {fileID: 1963434011279927983, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_Color.g
+      value: 0.9843138
+      objectReference: {fileID: 0}
+    - target: {fileID: 1963434011279927983, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_Color.r
+      value: 0.5960785
       objectReference: {fileID: 0}
     - target: {fileID: 3637299931600586546, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_IsActive

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -29,12 +30,19 @@ namespace Warmask.Planet
         private GameObject selection_highlight;
         [SerializeField, Tooltip("2 ui images showing the owner of the planet")]
         private GameObject[] ownerIndicators;
+        [SerializeField, Tooltip("if enemy ships are in orbit, the stored units will be damaged over time")]
+        private float unitReductionIntervalWhenAttacked = 1f;
         
         public Globals.eType PlanetType => planet_type;
-        public int UnitCount
+        public int DefendingShipsInOrbit //these are the ships in orbit, not the ships on the planet
+        {
+            get => numOwnShipsInOrbit;
+            //set { unitCount = value;  UpdateDebugLabel(); }
+        }
+
+        public int DefendingUnityOnGround
         {
             get => unitCount;
-            set { unitCount = value;  UpdateDebugLabel(); }
         }
 
         public Globals.ePlayer OwnedBy => owner;
@@ -44,6 +52,10 @@ namespace Warmask.Planet
         private float timer = 0f;
         private float maskModifier = 1f;
 
+        private int numEnemyShipsInOrbit = 0;
+        private int numOwnShipsInOrbit = 0;
+        private Globals.ePlayer lastAttacker = Globals.ePlayer.None;
+        
         void Start()
         {
             InitializePlanet();
@@ -108,6 +120,34 @@ namespace Warmask.Planet
 
         void Update()
         {
+            if(numEnemyShipsInOrbit > 0 && numOwnShipsInOrbit > 0)
+            {
+                // Under attack, do not produce units
+                UpdateDebugLabel("Under Attack! (" + numOwnShipsInOrbit + " vs " + numEnemyShipsInOrbit + ")");
+                return;
+            }
+
+            if (numEnemyShipsInOrbit > 0 && numOwnShipsInOrbit <= 0)
+            {
+                // Under attack, reduce unit count over time
+                timer += Time.deltaTime;
+                if (timer >= unitReductionIntervalWhenAttacked)
+                {
+                    timer = 0f;
+                    unitCount = Mathf.Max(0, unitCount - 1);
+                    UpdateDebugLabel("Destruction: " + unitCount.ToString());
+                }
+                
+                if(unitCount == 0)
+                {
+                    // Change ownership to the attacking player
+                    SetOwner(lastAttacker);
+                    lastAttacker = Globals.ePlayer.None;
+                    numEnemyShipsInOrbit = 0; //reset enemy ships count
+                }
+                return;
+            }
+            
             if(owner == Globals.ePlayer.None)
                 return; // No production if no owner
             
@@ -155,6 +195,33 @@ namespace Warmask.Planet
         public void OnPointerExit(PointerEventData eventData)
         {
             PlanetSelectionManager.Instance?.HandlePlanetHoverEnd(this);
+        }
+
+        public void OnShipCountChanged(Dictionary<int, int> shipCountCache)
+        {
+            numOwnShipsInOrbit = 0;
+            numEnemyShipsInOrbit = 0;
+            
+            foreach (var kvp in shipCountCache)
+            {
+                if ((Globals.ePlayer)kvp.Key == owner)
+                    numOwnShipsInOrbit += kvp.Value;
+                else
+                {
+                    lastAttacker = (Globals.ePlayer)kvp.Key;
+                    numEnemyShipsInOrbit += kvp.Value;
+                }
+            }
+
+            if (numEnemyShipsInOrbit > 0)
+            {
+                //UpdateDebugLabel("Under Attack!");
+            }
+            else
+            {
+                UpdateDebugLabel(unitCount.ToString());
+                lastAttacker = Globals.ePlayer.None;
+            }
         }
     }
 }
