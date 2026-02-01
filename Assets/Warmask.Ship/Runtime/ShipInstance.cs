@@ -107,6 +107,8 @@ namespace Warmask.Ship
         private int ownerShipyardIdAtRegistration = -1;
         private bool isRegisteredWithShipyard;
         private bool isBeingDestroyed;
+        
+        [SerializeField] private AudioSource laserAudioEffect;
 
         public bool IsAlive => currentHealth > 0 && !pendingDeath && !isBeingDestroyed;
 
@@ -407,6 +409,10 @@ namespace Warmask.Ship
                     laserVisual.SetPosition(0, transform.position);
                     laserVisual.SetPosition(1, laserEndPosition);
                     laserVisual.gameObject.SetActive(true);
+                    if (laserAudioEffect )
+                    {
+                        laserAudioEffect.PlayOneShot(laserAudioEffect.clip);
+                    }
                 }
 
                 showLaserThisFrame = true;
