@@ -63,6 +63,8 @@ public class Globals : ScriptableObject
 
     public Color GetTypeColor(eType type) => typeColors[(int)type];
     
+    public bool EasyMode = false;
+    
     public Sprite GetPlayerSprite(ePlayer player) => playerSprites[(int)player];
     
     public bool IsPlayer(ePlayer player) => player == ePlayer.Player1;

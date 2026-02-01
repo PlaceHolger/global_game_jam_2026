@@ -38,6 +38,8 @@ public class EnemyAi : MonoBehaviour
     private void Awake()
     {
         _mouseLineHelper = GetComponentInChildren<MouseLineHelper>();
+        if(Globals.Instance.EasyMode)
+            decisionInterval *= 2.666f; //easier mode for player, enemy thinks slower
     }
 
     void Update()
