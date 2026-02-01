@@ -123,7 +123,8 @@ public class EnemyAi : MonoBehaviour
             float score = (availableTroops - defendingTroops) * PreferPlanetsWithLessTroops +
                           planet.PlanetSize * PreferBiggerPlanets -
                           distance * DistanceFactor + // Larger planets are more valuable, nearer planets are easier to attack
-                          ownedByEnemyBonus; 
+                          ownedByEnemyBonus -
+                          planet.DefendingUnityOnGround * 0.05f; // Penalize planets with more ground troops
             if (score > bestScore)
             {
                 bestScore = score;

@@ -60,7 +60,7 @@ namespace Warmask.Planet
                 _mouseLineHelper.SetLineType(planet.PlanetType);
                 _mouseLineHelper.SetStartPos(planet.transform);
                 planet.SetSelection(true);
-                planet.UpdateDebugLabel("Start");
+                //planet.UpdateDebugLabel("Start");
                 return;
             }
 
@@ -69,7 +69,7 @@ namespace Warmask.Planet
             {
                 _mouseLineHelper.SetStartPos(null);
                 planet.SetSelection(false);
-                planet.UpdateDebugLabel(null);
+                //planet.UpdateDebugLabel(null);
                 _startPlanet = null;
                 return;
             }
@@ -78,7 +78,7 @@ namespace Warmask.Planet
             _mouseLineHelper.SetLineType(Globals.eType.TypeD, Globals.eType.TypeD); // special color to show "locked in" attack
             _mouseLineHelper.SetEndPos(planet.transform);
 
-            planet.UpdateDebugLabel("End");
+            //planet.UpdateDebugLabel("End");
             planet.SetSelection(true);
             _startPlanet.SetSelection(false);
             
@@ -96,10 +96,10 @@ namespace Warmask.Planet
             {
                 _mouseLineHelper.SetStartPos(null);
                 _mouseLineHelper.SetEndPos(null);
-                planet.UpdateDebugLabel(null);
+                //planet.UpdateDebugLabel(null);
                 planet.SetSelection(false);
                 capturedStart.SetSelection(false);
-                capturedStart.UpdateDebugLabel(null);
+                //capturedStart.UpdateDebugLabel(null);
             });
 
             _startPlanet = null;

@@ -32,6 +32,8 @@ namespace Warmask.Planet
         private GameObject[] ownerIndicators;
         [SerializeField, Tooltip("if enemy ships are in orbit, the stored units will be damaged over time")]
         private float unitReductionIntervalWhenAttacked = 1f;
+        [SerializeField, Tooltip("Maximum units that can be stored on the planet")]
+        private int maxUnitCount = 100;
         
         public Globals.eType PlanetType => planet_type;
         public int DefendingShipsInOrbit //these are the ships in orbit, not the ships on the planet
@@ -88,6 +90,11 @@ namespace Warmask.Planet
                 planet_name_label.color = Globals.Instance.GetPlayerColor(owner);
             }
             
+            if(text_label)
+            {
+                text_label.color = Globals.Instance.GetPlayerColor(owner);
+            }
+            
             // Update owner indicators gameobjects (from ownerIndicators)
             for (int i = 0; i < ownerIndicators.Length; i++)
             {
@@ -106,7 +113,7 @@ namespace Warmask.Planet
 
             float adjustedSize = planet_size * maskModifier;
             // Scale the object based on planet_size (uniform x and y scaling)
-            transform.localScale = new Vector3(0.5f + 0.5f * adjustedSize, 0.5f + 0.5f * adjustedSize, 1f);
+            transform.localScale = new Vector3(0.6f + 0.4f * adjustedSize, 0.6f + 0.4f * adjustedSize, 1f);
             
             UpdateDebugLabel(unitCount.ToString());
             
@@ -135,7 +142,7 @@ namespace Warmask.Planet
                 {
                     timer = 0f;
                     unitCount = Mathf.Max(0, unitCount - 1);
-                    UpdateDebugLabel("Destruction: " + unitCount.ToString());
+                    UpdateDebugLabel("Falling: " + unitCount.ToString());
                 }
                 
                 if(unitCount == 0)
@@ -144,6 +151,7 @@ namespace Warmask.Planet
                     SetOwner(lastAttacker);
                     lastAttacker = Globals.ePlayer.None;
                     numEnemyShipsInOrbit = 0; //reset enemy ships count
+                    UpdateDebugLabel("Victory");
                 }
                 return;
             }
@@ -155,8 +163,11 @@ namespace Warmask.Planet
             if (timer >= unitSpawnInterval)
             {
                 timer = 0f;
-                unitCount++;
-                UpdateDebugLabel(unitCount.ToString());
+                if (unitCount <= maxUnitCount)
+                {
+                    unitCount++;
+                    UpdateDebugLabel(unitCount.ToString());
+                }
                 onUnitCreated.Invoke((int)planet_type);
             }
         }

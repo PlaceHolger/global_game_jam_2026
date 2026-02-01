@@ -1,21 +1,31 @@
-using System;
-using System.Runtime.InteropServices.ComTypes;
+using System.Collections;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
-using UnityEngine.UI;
 
 namespace Warmask.Mask
 {
     public class MaskManager : MonoBehaviour
     {
+        [SerializeField] Globals.eType startingMask = Globals.eType.TypeA;
+        
         [SerializeField] Volume Mask1Volume;
         [SerializeField] Volume Mask2Volume;
+        
+        public UnityEvent OnMask1Activated;
+        public UnityEvent OnMask2Activated;
 
         [SerializeField] private InputActionReference mask1Action;
         [SerializeField] private InputActionReference mask2Action;
+
+        private IEnumerator Start()
+        {
+            yield return null; // Wait one frame
+            //initialize mask based on globals
+            UpdateMask(startingMask);
+        }
 
         public void ToggleMask(Globals.eType type)
         {
