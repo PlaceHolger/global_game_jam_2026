@@ -69,6 +69,7 @@ namespace Warmask.Planet
             {
                 _mouseLineHelper.SetStartPos(null);
                 planet.SetSelection(false);
+                _startPlanet.SetSelection(false);
                 //planet.UpdateDebugLabel(null);
                 _startPlanet = null;
                 return;
