@@ -150,11 +150,14 @@ namespace Warmask.Planet
                 
                 if(unitCount == 0)
                 {
+                    var lastOwner = owner;
                     // Change ownership to the attacking player
                     SetOwner(lastAttacker);
                     lastAttacker = Globals.ePlayer.None;
                     numEnemyShipsInOrbit = 0; //reset enemy ships count
                     UpdateDebugLabel("Victory", lastAttacker);
+                    
+                    PlanetsManager.Instance.CheckIfPlayerLostAllPlanets(lastOwner);
                 }
                 return;
             }

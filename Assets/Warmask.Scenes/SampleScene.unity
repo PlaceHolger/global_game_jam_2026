@@ -693,19 +693,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor.b
-      value: 0.35686275
+      value: 0.98106766
       objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor.g
-      value: 0.712203
+      value: 0.75
       objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor.r
-      value: 0.99607843
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor32.rgba
-      value: 4284200702
+      value: 4294623231
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
@@ -713,19 +713,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor.b
-      value: 0.35686275
+      value: 0.98106766
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor.g
-      value: 0.712203
+      value: 0.75
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor.r
-      value: 0.99607843
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor32.rgba
-      value: 4284200702
+      value: 4294623231
       objectReference: {fileID: 0}
     - target: {fileID: 1963434011279927983, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.b
@@ -1639,7 +1639,7 @@ MonoBehaviour:
   m_BlendStyleIndex: 0
   m_FalloffIntensity: 0.5
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 1
+  m_Intensity: 1.5
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
   m_ApplyToSortingLayers: 00000000
@@ -2960,6 +2960,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4909586255671823781, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
   m_PrefabInstance: {fileID: 1623409241}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1636927202 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6069890037901666771, guid: d795477e19e98a54e880a2f05b6b3e69, type: 3}
+  m_PrefabInstance: {fileID: 8599862442758066573}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1654686584
 GameObject:
   m_ObjectHideFlags: 0
@@ -3007,6 +3012,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   lineRenderer: {fileID: 42052971}
   EndPointFollowsMouseWhenNotSet: 0
+--- !u!1 &1663171796 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 75809941389832194, guid: d795477e19e98a54e880a2f05b6b3e69, type: 3}
+  m_PrefabInstance: {fileID: 8599862442758066573}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1738318187
 GameObject:
   m_ObjectHideFlags: 0
@@ -3158,6 +3168,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 859343765}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1827431718 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3055277052588939658, guid: d795477e19e98a54e880a2f05b6b3e69, type: 3}
+  m_PrefabInstance: {fileID: 8599862442758066573}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1863545544
 GameObject:
   m_ObjectHideFlags: 0
@@ -3213,6 +3228,60 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20653932a71019946909732618f602c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlanetsManager
+  OnPlayerLost:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1636927202}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 1663171796}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+  OnPlayerWin:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1636927202}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 1827431718}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
 --- !u!1 &1905601653
 GameObject:
   m_ObjectHideFlags: 0
@@ -3768,6 +3837,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 75809941389832194, guid: d795477e19e98a54e880a2f05b6b3e69, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3055277052588939658, guid: d795477e19e98a54e880a2f05b6b3e69, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3470983691287918177, guid: d795477e19e98a54e880a2f05b6b3e69, type: 3}
       propertyPath: m_AnchorMax.x
       value: 1
@@ -3778,7 +3855,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3470983691287918177, guid: d795477e19e98a54e880a2f05b6b3e69, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0.12426758
+      value: 1.2602539
       objectReference: {fileID: 0}
     - target: {fileID: 6069890037901666771, guid: d795477e19e98a54e880a2f05b6b3e69, type: 3}
       propertyPath: m_Name

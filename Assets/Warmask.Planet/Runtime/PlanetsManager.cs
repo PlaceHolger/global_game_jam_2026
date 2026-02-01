@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 /// Manages all planets in the scene, providing a centralized point for planet-related operations and for providing the planets for systems that that need them (enemyAI)
 
@@ -8,6 +9,10 @@ namespace Warmask.Planet
     public class PlanetsManager : MonoBehaviour
     {
         private static PlanetsManager _instance;
+        
+        //public UnityEvent<Globals.ePlayer> OnPlayerLost = new UnityEvent<Globals.ePlayer>();
+        public UnityEvent OnPlayerLost = new();
+        public UnityEvent OnPlayerWin = new();
 
         public static PlanetsManager Instance
         {
@@ -56,6 +61,28 @@ namespace Warmask.Planet
             }
 
             return result;
+        }
+
+        public void CheckIfPlayerLostAllPlanets(Globals.ePlayer playerThatLostPlanet)
+        {
+            if(playerThatLostPlanet == Globals.ePlayer.None)
+                return;  //we don't care about neutral planets
+            
+            foreach (var planet in _allPlanets)
+            {
+                if (planet.OwnedBy == playerThatLostPlanet)
+                    return; //player still has at least one planet
+            }
+
+            //if we reach here, player has no planets left
+            if(!Globals.Instance.IsPlayer(playerThatLostPlanet))
+            {
+                OnPlayerWin.Invoke();
+            }
+            else
+            {
+                OnPlayerLost.Invoke();
+            }
         }
     }
 }
