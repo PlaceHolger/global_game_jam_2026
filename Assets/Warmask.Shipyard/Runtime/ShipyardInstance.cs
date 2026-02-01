@@ -102,7 +102,7 @@ namespace Warmask.Shipyard
         {
             if (fromPlanet && fromPlanet.gameObject == this.gameObject)
             {
-                TransferShipsTo(toPlanet.GetComponent<ShipyardInstance>(), troopCount);
+                TransferShipsTo(toPlanet.GetComponent<ShipyardInstance>(), troopCount, movingPlayer);
             }
         }
 
@@ -197,7 +197,7 @@ namespace Warmask.Shipyard
             }
         }
 
-        public void TransferShipsTo(ShipyardInstance targetShipyard, int count)
+        public void TransferShipsTo(ShipyardInstance targetShipyard, int count, Globals.ePlayer executingPlayer )
         {
             if (!targetShipyard || targetShipyard == this || count <= 0) return;
 
@@ -211,7 +211,11 @@ namespace Warmask.Shipyard
                 // Validierung: Schiff existiert, gehört uns, und ist noch am Leben
                 if (ship == null || !ship.IsAlive) continue;
                 if (ship.GetPlayerId() != ownerPlayerId) continue;
-                if (ship.ShipType != Globals.Instance.currentMask) continue;
+                if (Globals.Instance.IsPlayer(executingPlayer))
+                {
+                    if (ship.ShipType != Globals.Instance.currentMask) continue;    
+                }
+                
 
                 // Aus alter Liste entfernen
                 UnregisterShip(ship);
@@ -226,11 +230,6 @@ namespace Warmask.Shipyard
 
                 transferred++;
             }
-        }
-
-        public void TransferAllShipsTo(ShipyardInstance targetShipyard)
-        {
-            TransferShipsTo(targetShipyard, ownedShips.Count);
         }
 
         private GameObject CreateShip()
