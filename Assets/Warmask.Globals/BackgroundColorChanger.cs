@@ -2,8 +2,9 @@ using UnityEngine;
 
 public class BackgroundColorChanger : MonoBehaviour
 {
-    public Color mask1Color;
-    public Color mask2Color;
+    // public Color mask1Color;
+    // public Color mask2Color;
+    public float colorModifier = 1.0f;
     public SpriteRenderer imageToChange;
     
     public bool rotateBackground = false;
@@ -18,15 +19,16 @@ public class BackgroundColorChanger : MonoBehaviour
         if (imageToChange == null)
             return;
 
+        // based on modifier, adjust color brightness by lerp with white
+        imageToChange.color = Color.Lerp(Color.white, Globals.Instance.GetTypeColor(arg0), colorModifier);
+        
         if (arg0 == Globals.eType.TypeA)
         {
-            imageToChange.color = mask1Color;
             if (rotateBackground)
                 imageToChange.transform.rotation = Quaternion.Euler(0, 180, 0);
         }
         else if (arg0 == Globals.eType.TypeB)
         {
-            imageToChange.color = mask2Color;
             if (rotateBackground)
                 imageToChange.transform.rotation = Quaternion.Euler(0, 0, 0);
         }
