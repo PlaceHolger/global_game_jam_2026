@@ -65,6 +65,8 @@ namespace Warmask.Ship
         private bool pendingDeath;
         private int playerId;
         private Globals.eType shipType;
+        
+        public Globals.eType ShipType => shipType;
 
         // Orbit breaking state
         private float lastSuccessfulHitTime;
@@ -202,6 +204,8 @@ namespace Warmask.Ship
             {
                 laserVisual.gameObject.SetActive(false);
             }
+            
+            
         }
 
         private void Start()

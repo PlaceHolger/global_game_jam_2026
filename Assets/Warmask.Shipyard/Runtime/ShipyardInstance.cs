@@ -37,6 +37,7 @@ namespace Warmask.Shipyard
         private Dictionary<int,int> shipCountCache = new Dictionary<int, int>();
         
         private int instanceId;
+        private float sqrPlanetShipOwnershipRadius = 1.0f;
 
         public int OwnerId => instanceId;
         
@@ -51,7 +52,11 @@ namespace Warmask.Shipyard
         public float PlanetRadius
         {
             get => planetRadius;
-            set => planetRadius = value;
+            set
+            {
+                planetRadius = value;
+            }
+        
         }
 
         private ObjectPool<GameObject> shipPool;
@@ -83,6 +88,7 @@ namespace Warmask.Shipyard
             
             spawnRandomRadius = planetInstance.PlanetSize;
             planetRadius = planetInstance.PlanetSize;
+            sqrPlanetShipOwnershipRadius = (2 * 1.28f * planetInstance.gameObject.transform.localScale.x) * (2 * 1.528f * planetInstance.gameObject.transform.localScale.x);
 
             TroopMovementManager.OnTroopMovementStarted.AddListener(MoveTroops);
         }
@@ -108,22 +114,24 @@ namespace Warmask.Shipyard
                 nextSpawnTime = Time.time + spawnInterval;
             }
 
-            /*
+            UpdateProximityShipCache();
+            planetInstance.OnShipCountChanged(shipCountCache);
+        }
+
+        private void UpdateProximityShipCache()
+        {
+            shipCountCache.Clear();
+            
             foreach (ShipInstance ship in ownedShips)
             {
-                if (ship.GetPlayerId() == (int)planetInstance.OwnedBy)
-                {
-                    Debug.DrawLine(transform.position, ship.transform.position, Color.cyan);    
-                }
-                else
-                {
-                    Debug.DrawLine(transform.position, ship.transform.position, Color.orangeRed);
-                }
+                if (!ship) continue;
                 
-            }*/
+                float sqrShipDistance = (ship.transform.position - cachedTransform.position).sqrMagnitude;
+                if (sqrShipDistance > sqrPlanetShipOwnershipRadius ) continue;
 
-            planetInstance.OnShipCountChanged(shipCountCache);
-            //shipCountUpdate?.Invoke(shipCountCache);
+                int shipPlayerId = ship.GetPlayerId();
+                shipCountCache[shipPlayerId] = shipCountCache.GetValueOrDefault(shipPlayerId, 0) + 1;
+            }
         }
 
         public void SpawnShip()
@@ -203,6 +211,7 @@ namespace Warmask.Shipyard
                 // Validierung: Schiff existiert, gehört uns, und ist noch am Leben
                 if (ship == null || !ship.IsAlive) continue;
                 if (ship.GetPlayerId() != ownerPlayerId) continue;
+                if (ship.ShipType != Globals.Instance.currentMask) continue;
 
                 // Aus alter Liste entfernen
                 UnregisterShip(ship);
