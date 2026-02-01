@@ -572,6 +572,7 @@ GameObject:
   - component: {fileID: 355978065389682774}
   - component: {fileID: 3137567574208212149}
   - component: {fileID: 5658320557010173351}
+  - component: {fileID: 322706302056788491}
   m_Layer: 5
   m_Name: End Screen
   m_TagString: Untagged
@@ -666,3 +667,20 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!111 &322706302056788491
+Animation:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6069890037901666771}
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Animation: {fileID: 7400000, guid: cc47a214d4b3e7e41a7035fcaa50af51, type: 2}
+  m_Animations:
+  - {fileID: 7400000, guid: cc47a214d4b3e7e41a7035fcaa50af51, type: 2}
+  m_WrapMode: 0
+  m_PlayAutomatically: 1
+  m_AnimatePhysics: 0
+  m_UpdateMode: 0
+  m_CullingType: 0
