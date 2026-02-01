@@ -133,7 +133,7 @@ namespace Warmask.Planet
             if(numEnemyShipsInOrbit > 0 && numOwnShipsInOrbit > 0)
             {
                 // Under attack, do not produce units
-                UpdateDebugLabel("Under Attack! (" + numOwnShipsInOrbit + " vs " + numEnemyShipsInOrbit + ")");
+                UpdateDebugLabel("Under Attack! (" + numOwnShipsInOrbit + " vs " + numEnemyShipsInOrbit + ")", lastAttacker);
                 return;
             }
 
@@ -145,7 +145,7 @@ namespace Warmask.Planet
                 {
                     timer = 0f;
                     unitCount = Mathf.Max(0, unitCount - 1);
-                    UpdateDebugLabel("Falling: " + unitCount.ToString());
+                    UpdateDebugLabel("Falling: " + unitCount.ToString(), lastAttacker);
                 }
                 
                 if(unitCount == 0)
@@ -154,7 +154,7 @@ namespace Warmask.Planet
                     SetOwner(lastAttacker);
                     lastAttacker = Globals.ePlayer.None;
                     numEnemyShipsInOrbit = 0; //reset enemy ships count
-                    UpdateDebugLabel("Victory");
+                    UpdateDebugLabel("Victory", lastAttacker);
                 }
                 return;
             }
@@ -192,13 +192,20 @@ namespace Warmask.Planet
             InitializePlanet();
         }
 
-        public void UpdateDebugLabel(string text = null)
+        public void UpdateDebugLabel(string text = null, Globals.ePlayer textOwner = Globals.ePlayer.None)
         {
             if (text_label)
+            {
+                if(textOwner != Globals.ePlayer.None)
+                    text_label.color = Globals.Instance.GetPlayerColor(textOwner);
+                else //reset to owner color
+                    text_label.color = Globals.Instance.GetPlayerColor(owner);
+                
                 if(!string.IsNullOrEmpty(text))
                     text_label.text = text;
                 else //by default show unit count
                     text_label.text = unitCount.ToString();
+            }
         }
 
         public void OnPointerEnter(PointerEventData eventData)

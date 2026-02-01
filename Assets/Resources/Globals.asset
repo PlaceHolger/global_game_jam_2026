@@ -28,6 +28,6 @@ MonoBehaviour:
   playerColors:
   - {r: 1, g: 1, b: 1, a: 1}
   - {r: 0.5960785, g: 0.9843138, b: 0.5960785, a: 1}
-  - {r: 0.9669811, g: 0.51998043, b: 0.87033236, a: 1}
+  - {r: 0.9292453, g: 0.51722145, b: 0.84273833, a: 1}
   planetProductionFactor: 1
-  currentMask: 0
+  currentMask: 1
