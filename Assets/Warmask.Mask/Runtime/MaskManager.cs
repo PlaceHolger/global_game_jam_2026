@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using DG.Tweening;
 using UnityEngine;
@@ -25,6 +26,12 @@ namespace Warmask.Mask
             yield return null; // Wait one frame
             //initialize mask based on globals
             UpdateMask(startingMask);
+        }
+
+        private void Update()
+        {
+            if(Keyboard.current.spaceKey.wasPressedThisFrame)
+                ToggleMask(Globals.Instance.currentMask == Globals.eType.TypeA ? Globals.eType.TypeB : Globals.eType.TypeA);
         }
 
         public void ToggleMask(Globals.eType type)
