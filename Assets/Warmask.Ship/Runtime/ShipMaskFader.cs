@@ -28,15 +28,17 @@ namespace Warmask.Ship
 
         private void MaskChanged(Globals.eType newType)
         {
-            Color c = Globals.Instance.GetTypeColor(type);
-            c.a = (newType == type && type == Globals.Instance.currentMask) ? 1f : 0f;
+            Color typeColor = Globals.Instance.GetTypeColor(type);
+            typeColor.a = (newType == type && type == Globals.Instance.currentMask) ? 1f : 0f;
             SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
             foreach (SpriteRenderer sr in spriteRenderers)
             {
                 if (sr)
                 {
-                    //for sprites just set color directly, we keep the player color intact
-                    sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, c.a);
+                    if(Globals.trailInPlayerColor)
+                        sr.color = typeColor;
+                    else 
+                        sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, typeColor.a);  ////for sprites just set color directly, we keep the player color intact
                 }
             }
             TrailRenderer[] trailRenderers = GetComponentsInChildren<TrailRenderer>();
@@ -44,7 +46,15 @@ namespace Warmask.Ship
             {
                 if (tr)
                 {
-                    tr.startColor = c;
+                    if (Globals.trailInPlayerColor)
+                    {
+                        //for trails just set color directly, we keep the player color intact
+                        tr.startColor = new Color(tr.startColor.r, tr.startColor.g, tr.startColor.b, typeColor.a);
+                    }
+                    else
+                    {
+                        tr.startColor = typeColor;
+                    }
                 }
             }
         }

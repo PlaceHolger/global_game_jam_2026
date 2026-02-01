@@ -70,4 +70,6 @@ public class Globals : ScriptableObject
     public float planetProductionFactor = 1.0f;
 
     public eType currentMask = eType.TypeA;
+    
+    public const bool trailInPlayerColor = false;
 }

@@ -51,7 +51,7 @@ namespace Warmask.Ship
 
         [Header("Effects")] [SerializeField] private GameObject explosionPrefab;
         [SerializeField] private SpriteRenderer spriteRenderer;
-
+        
         // Cached components
         private Transform cachedTransform;
         private Collider2D ownCollider;
@@ -175,7 +175,8 @@ namespace Warmask.Ship
 
             showLaserThisFrame = false;
 
-            if (TryGetComponent(out TrailRenderer trail))
+            var trailCompsInChildren = GetComponentsInChildren<TrailRenderer>();
+            foreach (var trail in trailCompsInChildren)
             {
                 trail.Clear();
             }
@@ -488,6 +489,14 @@ namespace Warmask.Ship
             playerId = id;
             spriteRenderer.sprite = Globals.Instance.GetPlayerSprite((Globals.ePlayer)playerId);
             spriteRenderer.color = Globals.Instance.GetPlayerColor((Globals.ePlayer)playerId);
+            if (Globals.trailInPlayerColor)
+            {
+                var trailCompsInChildren = GetComponentsInChildren<TrailRenderer>();
+                foreach (var trail in trailCompsInChildren)
+                {
+                    trail.startColor = Globals.Instance.GetPlayerColor((Globals.ePlayer)playerId);
+                }
+            }
         }
         
         public int GetPlayerId()
