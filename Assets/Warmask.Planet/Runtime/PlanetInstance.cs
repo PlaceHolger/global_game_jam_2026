@@ -70,11 +70,11 @@ namespace Warmask.Planet
             //if the mask matches the planet type, double the production speed
             if(arg0 == planet_type ) 
             {
-                maskModifier = 1.5f;
+                maskModifier = 1.0f;
             }
             else
             {
-                maskModifier = 0.66f;
+                maskModifier = 0.666f;
             }
             InitializePlanet(); //reinitialize to apply new spawn interval
         }

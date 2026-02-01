@@ -11,13 +11,14 @@ namespace Warmask.Ship
         private void OnEnable()
         {
             Globals.Instance.OnMaskChanged.AddListener( MaskChanged );
-            MaskChanged(type);
+            MaskChanged(Globals.Instance.currentMask);
         }
 
         public void SetType(Globals.eType newtype)
         {
             type = newtype;
-            MaskChanged(type);
+            //MaskChanged(type);
+            MaskChanged(Globals.Instance.currentMask);
         }
 
         private void OnDisable()
@@ -32,7 +33,7 @@ namespace Warmask.Ship
             SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
             foreach (SpriteRenderer sr in spriteRenderers)
             {
-                if (sr != null)
+                if (sr)
                 {
                     sr.color = c;
                 }
@@ -40,7 +41,7 @@ namespace Warmask.Ship
             TrailRenderer[] trailRenderers = GetComponentsInChildren<TrailRenderer>();
             foreach (TrailRenderer tr in trailRenderers)
             {
-                if (tr != null)
+                if (tr)
                 {
                     tr.startColor = c;
                 }
