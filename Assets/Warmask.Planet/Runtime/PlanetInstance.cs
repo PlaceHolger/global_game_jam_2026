@@ -99,8 +99,11 @@ namespace Warmask.Planet
             for (int i = 0; i < ownerIndicators.Length; i++)
             {
                 ownerIndicators[i].SetActive(i == newOwnerIndex);
-                if(ownerIndicators[i].TryGetComponent<Image>(out var uiImage))
+                if (ownerIndicators[i].TryGetComponent<Image>(out var uiImage))
+                {
                     uiImage.color = Globals.Instance.GetPlayerColor(owner);
+                    uiImage.color = new Color(uiImage.color.r, uiImage.color.g, uiImage.color.b, 0.5f);
+                }
             }
         }
 

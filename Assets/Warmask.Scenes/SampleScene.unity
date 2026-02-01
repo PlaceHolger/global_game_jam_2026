@@ -1047,6 +1047,7 @@ MonoBehaviour:
   mask1Color: {r: 0.990566, g: 0.4812656, b: 0.4812656, a: 1}
   mask2Color: {r: 0.47897387, g: 0.53646827, b: 0.9858491, a: 1}
   imageToChange: {fileID: 356005114}
+  rotateBackground: 1
 --- !u!1001 &400542496
 PrefabInstance:
   m_ObjectHideFlags: 0
