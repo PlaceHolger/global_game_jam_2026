@@ -27,7 +27,7 @@ namespace Warmask.Planet
         public int MoveTroops(PlanetInstance fromPlanet, PlanetInstance toPlanet, int numberOfTroops,
             Globals.ePlayer movingPlayer)
         {
-            if (!fromPlanet || !toPlanet || numberOfTroops <= 0)
+            if (!fromPlanet || !toPlanet || numberOfTroops <= 0 || fromPlanet.UnitCount <= 0)
             {
                 Debug.LogError("Troops can't be null or less than zero");
                 return -1;

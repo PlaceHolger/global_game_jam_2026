@@ -65,7 +65,7 @@ namespace Warmask.Planet
             }
 
             // Clicked same planet -> clear
-            if (_startPlanet == planet)
+            if (_startPlanet == planet || _startPlanet.UnitCount <= 0)
             {
                 _mouseLineHelper.SetStartPos(null);
                 planet.SetSelection(false);
@@ -75,7 +75,7 @@ namespace Warmask.Planet
             }
 
             // Start set, end empty -> set end and clear after delay
-            _mouseLineHelper.SetLineType(Globals.eType.Unknown);
+            _mouseLineHelper.SetLineType(Globals.eType.TypeD, Globals.eType.TypeD); // special color to show "locked in" attack
             _mouseLineHelper.SetEndPos(planet.transform);
 
             planet.UpdateDebugLabel("End");

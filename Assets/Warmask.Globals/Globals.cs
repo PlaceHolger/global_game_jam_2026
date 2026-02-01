@@ -46,7 +46,7 @@ public class Globals : ScriptableObject
         Color.red,
         Color.blue,
         Color.gray,
-        Color.blueViolet,
+        Color.softYellow,
         Color.white // Default for Unknown
     };
 
