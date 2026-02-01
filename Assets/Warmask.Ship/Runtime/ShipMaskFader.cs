@@ -29,7 +29,7 @@ namespace Warmask.Ship
         private void MaskChanged(Globals.eType newType)
         {
             Color c = Globals.Instance.GetTypeColor(type);
-            c.a = (newType == type) ? 1f : 0f;
+            c.a = (newType == type && type == Globals.Instance.currentMask) ? 1f : 0f;
             SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
             foreach (SpriteRenderer sr in spriteRenderers)
             {
