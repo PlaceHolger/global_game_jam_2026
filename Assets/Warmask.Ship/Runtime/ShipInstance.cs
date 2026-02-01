@@ -483,6 +483,7 @@ namespace Warmask.Ship
         {
             playerId = id;
             spriteRenderer.sprite = Globals.Instance.GetPlayerSprite((Globals.ePlayer)playerId);
+            spriteRenderer.color = Globals.Instance.GetPlayerColor((Globals.ePlayer)playerId);
         }
         
         public int GetPlayerId()
