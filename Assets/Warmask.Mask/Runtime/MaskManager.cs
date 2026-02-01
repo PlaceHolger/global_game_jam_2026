@@ -31,8 +31,14 @@ namespace Warmask.Mask
         private void Update()
         {
             if(Keyboard.current.spaceKey.wasPressedThisFrame)
-                ToggleMask(Globals.Instance.currentMask == Globals.eType.TypeA ? Globals.eType.TypeB : Globals.eType.TypeA);
+                ToggleMask();
         }
+
+        public void ToggleMask()
+        {
+            ToggleMask(Globals.Instance.currentMask == Globals.eType.TypeA ? Globals.eType.TypeB : Globals.eType.TypeA);
+        }
+        
 
         public void ToggleMask(Globals.eType type)
         {
