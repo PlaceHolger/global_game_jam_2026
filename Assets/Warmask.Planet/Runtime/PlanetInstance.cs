@@ -80,13 +80,9 @@ namespace Warmask.Planet
         {
             //if the mask matches the planet type, double the production speed
             if (arg0 == planet_type)
-            {
                 maskModifier = 1.0f;
-            }
             else
-            {
                 maskModifier = 0.666f;
-            }
 
             InitializePlanet(); //reinitialize to apply new spawn interval
         }
@@ -124,7 +120,13 @@ namespace Warmask.Planet
             // Set planet color based on type using Globals
             Color planetColor = Globals.Instance.GetTypeColor(planet_type);
             if (TryGetComponent(out SpriteRenderer sr))
-                sr.color = planetColor;
+            {
+                bool isCurrentMask = (Globals.Instance.currentMask == planet_type);
+                if (isCurrentMask)
+                    sr.color = planetColor;
+                else //dim color if not matching mask
+                    sr.color = Color.Lerp(planetColor, Color.gray, 0.825f);
+            }
 
             float adjustedSize = planet_size * maskModifier;
             // Scale the object based on planet_size (uniform x and y scaling)
