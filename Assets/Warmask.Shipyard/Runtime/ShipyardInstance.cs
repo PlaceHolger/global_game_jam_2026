@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Pool;
+using Warmask.Core;
 using Warmask.Ship;
 using Warmask.Planet;
 
 namespace Warmask.Shipyard
 {
     [RequireComponent(typeof(PlanetInstance))]
-    public class ShipyardInstance : MonoBehaviour, IShipPool
+    public class ShipyardInstance : MonoBehaviour, IShipPool, IShipOwner
     {
         [Header("Owner")]
         [SerializeField] private int playerId;
@@ -34,7 +35,19 @@ namespace Warmask.Shipyard
         //private UnityEvent<Dictionary<int, int>> shipCountUpdate;
         
         private Dictionary<int,int> shipCountCache = new Dictionary<int, int>();
+        
+        private int instanceId;
 
+        public int OwnerId => instanceId;
+        
+        public void UnregisterShip(object ship)
+        {
+            if (ship is ShipInstance shipInstance)
+            {
+                ownedShips.Remove(shipInstance);
+            }
+        }
+        
         public float PlanetRadius
         {
             get => planetRadius;
@@ -54,6 +67,7 @@ namespace Warmask.Shipyard
 
         private void Awake()
         {
+            instanceId = GetInstanceID();
             cachedTransform = transform;
             shipPool = new ObjectPool<GameObject>(
                 createFunc: CreateShip,
@@ -94,6 +108,20 @@ namespace Warmask.Shipyard
                 nextSpawnTime = Time.time + spawnInterval;
             }
 
+            /*
+            foreach (ShipInstance ship in ownedShips)
+            {
+                if (ship.GetPlayerId() == (int)planetInstance.OwnedBy)
+                {
+                    Debug.DrawLine(transform.position, ship.transform.position, Color.cyan);    
+                }
+                else
+                {
+                    Debug.DrawLine(transform.position, ship.transform.position, Color.orangeRed);
+                }
+                
+            }*/
+
             planetInstance.OnShipCountChanged(shipCountCache);
             //shipCountUpdate?.Invoke(shipCountCache);
         }
@@ -102,15 +130,16 @@ namespace Warmask.Shipyard
         {
             if (activeShipCount >= maxActiveShips) return;
 
-            
-            
             GameObject ship = shipPool.Get();
-            Vector2 spawnPos = (Vector2)cachedTransform.position + spawnOffset + Random.insideUnitCircle * spawnRandomRadius;
+            Vector2 spawnPos = (Vector2)cachedTransform.position + spawnOffset + 
+                               Random.insideUnitCircle * spawnRandomRadius;
             ship.transform.position = spawnPos;
             ship.transform.rotation = cachedTransform.rotation;
 
             if (ship.TryGetComponent(out ShipInstance shipInstance))
             {
+                // Erst Owner setzen, dann registrieren
+                shipInstance.SetOwnerShipyard(this);
                 shipInstance.SetPlayerId((int)planetInstance.OwnedBy);
                 shipInstance.SetType(type);
                 shipInstance.SetTarget(cachedTransform);
@@ -123,30 +152,41 @@ namespace Warmask.Shipyard
                 PooledShip pooled = ship.AddComponent<PooledShip>();
                 pooled.Initialize(this, transform);
             }
-            
-            
 
             activeShipCount++;
         }
 
         public void RegisterShip(ShipInstance ship)
         {
-            if (ship && !ownedShips.Contains(ship))
-            {
-                shipCountCache[ship.GetPlayerId()] = shipCountCache.GetValueOrDefault(ship.GetPlayerId(), 0) + 1;
-                
-                ownedShips.Add(ship);
-            }
+            if (!ship || ownedShips.Contains(ship)) return;
+
+            int shipPlayerId = ship.GetPlayerId();
+            shipCountCache[shipPlayerId] = shipCountCache.GetValueOrDefault(shipPlayerId, 0) + 1;
+            ownedShips.Add(ship);
         }
 
         public void UnregisterShip(ShipInstance ship)
         {
-            if (ship && ownedShips.Contains(ship))
+            if (!ship) return;
+
+            int index = ownedShips.IndexOf(ship);
+            if (index < 0)
             {
-                shipCountCache[ship.GetPlayerId()] = Mathf.Max(0, shipCountCache.GetValueOrDefault(ship.GetPlayerId(), 0) - 1);
-            } 
-            
-            ownedShips.Remove(ship);
+                // Schiff war nicht registriert - kein Fehler, kann bei Race Conditions passieren
+                return;
+            }
+
+            int shipPlayerId = ship.GetPlayerId();
+            shipCountCache[shipPlayerId] = Mathf.Max(0, shipCountCache.GetValueOrDefault(shipPlayerId, 0) - 1);
+            ownedShips.RemoveAt(index);
+        }
+        
+        void IShipOwner.UnregisterShip(object ship)
+        {
+            if (ship is ShipInstance shipInstance)
+            {
+                UnregisterShip(shipInstance);
+            }
         }
 
         public void TransferShipsTo(ShipyardInstance targetShipyard, int count)
@@ -154,19 +194,28 @@ namespace Warmask.Shipyard
             if (!targetShipyard || targetShipyard == this || count <= 0) return;
 
             int transferred = 0;
-    
+            int ownerPlayerId = (int)planetInstance.OwnedBy;
+
             for (int i = ownedShips.Count - 1; i >= 0 && transferred < count; i--)
             {
                 ShipInstance ship = ownedShips[i];
-        
-                if (ship != null && ship.GetPlayerId() == (int)planetInstance.OwnedBy)
-                {
-                    UnregisterShip(ship);
-                    targetShipyard.RegisterShip(ship);
-                    ship.SetTarget(targetShipyard.cachedTransform);
-                    ship.SetMinTargetDistance(targetShipyard.planetRadius);
-                    transferred++;
-                }
+
+                // Validierung: Schiff existiert, gehört uns, und ist noch am Leben
+                if (ship == null || !ship.IsAlive) continue;
+                if (ship.GetPlayerId() != ownerPlayerId) continue;
+
+                // Aus alter Liste entfernen
+                UnregisterShip(ship);
+
+                // Neue Zuordnung setzen
+                ship.TransferToNewOwner(targetShipyard);
+
+                // In neue Liste eintragen
+                targetShipyard.RegisterShip(ship);
+                ship.SetTarget(targetShipyard.cachedTransform);
+                ship.SetMinTargetDistance(targetShipyard.planetRadius);
+
+                transferred++;
             }
         }
 
@@ -187,10 +236,8 @@ namespace Warmask.Shipyard
         {
             if (ship == null || !ship.activeInHierarchy) return;
 
-            if (ship.TryGetComponent(out ShipInstance shipInstance))
-            {
-                UnregisterShip(shipInstance);
-            }
+            // UnregisterShip wird NICHT hier aufgerufen!
+            // Das hat bereits HandleDeath in ShipInstance gemacht
 
             shipPool.Release(ship);
             activeShipCount = Mathf.Max(0, activeShipCount - 1);

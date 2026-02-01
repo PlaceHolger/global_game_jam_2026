@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Warmask.Core;
 
 namespace Warmask.Ship
 {
@@ -91,8 +92,6 @@ namespace Warmask.Ship
 
         private bool showLaserThisFrame;
 
-        public bool IsAlive => currentHealth > 0 && !pendingDeath;
-
         [SerializeField] private Transform target;
 
         private Vector3 laserEndPosition;
@@ -101,15 +100,50 @@ namespace Warmask.Ship
         private int currentEnemyTargetLifeId = -1;
 
         public int LifeId => lifeId;
+        
+        private IShipOwner ownerShipyard;
+        private int ownerShipyardIdAtRegistration = -1;
+        private bool isRegisteredWithShipyard;
+        private bool isBeingDestroyed;
+
+        public bool IsAlive => currentHealth > 0 && !pendingDeath && !isBeingDestroyed;
+
+        public void SetOwnerShipyard(IShipOwner shipyard)
+        {
+            // Alte Registrierung aufräumen
+            if (isRegisteredWithShipyard && ownerShipyard != null)
+            {
+                Debug.LogWarning($"[ShipInstance] Überschreibe Shipyard-Referenz ohne vorherige Abmeldung!");
+            }
+
+            ownerShipyard = shipyard;
+            ownerShipyardIdAtRegistration = shipyard?.OwnerId ?? -1;
+            isRegisteredWithShipyard = shipyard != null;
+        }
+        
+        public void ClearOwnerShipyard()
+        {
+            ownerShipyard = null;
+            ownerShipyardIdAtRegistration = -1;
+            isRegisteredWithShipyard = false;
+        }
 
         private void OnEnable()
         {
+            // Reset aller Zustände für Pool-Wiederverwendung
             lifeId = (lifeId == int.MaxValue) ? 0 : lifeId + 1;
 
             ShipManagerInstance.Instance?.Register(this);
 
+            // Zustand komplett zurücksetzen
+            ResetState();
+        }
+
+        private void ResetState()
+        {
             showLaserThisFrame = false;
             pendingDeath = false;
+            isBeingDestroyed = false;
             currentHealth = maxHealth;
             lastFireTime = 0f;
             lastSuccessfulHitTime = Time.time;
@@ -118,6 +152,9 @@ namespace Warmask.Ship
             orbitBreakJitter = Vector2.zero;
             laserEndPosition = Vector3.zero;
             maxTurnAnglePerSecond = 90.0f;
+
+            // Shipyard-Referenz wird NICHT hier zurückgesetzt
+            // Das macht SpawnShip/RegisterShip
 
             if (laserVisual != null)
             {
@@ -128,17 +165,21 @@ namespace Warmask.Ship
         private void OnDisable()
         {
             ShipManagerInstance.Instance?.Unregister(this);
+
             if (laserVisual != null)
             {
                 laserVisual.gameObject.SetActive(false);
             }
 
             showLaserThisFrame = false;
-            TrailRenderer trail = GetComponentInChildren<TrailRenderer>();
-            if (trail)
+
+            if (TryGetComponent(out TrailRenderer trail))
             {
                 trail.Clear();
             }
+
+            // Wichtig: Shipyard-Referenz hier NICHT löschen
+            // Das wurde bereits in HandleDeath gemacht
         }
 
         private void Awake()
@@ -286,15 +327,24 @@ namespace Warmask.Ship
 
         public bool TakeDamage(float damage)
         {
+            // Frühzeitiger Abbruch wenn bereits tot
+            if (!IsAlive) return false;
+
             currentHealth -= damage;
 
             if (currentHealth <= 0)
             {
-                Die();
-                return true; // Dieser Treffer hat das Schiff zerstört
+                RequestDeath();
+                return true;
             }
 
             return false;
+        }
+        
+        private void RequestDeath()
+        {
+            if (pendingDeath || isBeingDestroyed) return;
+            pendingDeath = true;
         }
 
         private void Die()
@@ -461,23 +511,69 @@ namespace Warmask.Ship
 
             showLaserThisFrame = false;
 
-            if (pendingDeath)
+            if (pendingDeath && !isBeingDestroyed)
             {
-                if (explosionPrefab)
-                {
-                    GameObject explosion = Instantiate(explosionPrefab, cachedTransform.position, Quaternion.identity);
-                    Destroy(explosion, 1.0f);
-                }
-
-                if (TryGetComponent(out PooledShip pooled))
-                {
-                    pooled.ReturnToPool();
-                }
-                else
-                {
-                    Destroy(gameObject);
-                }
+                HandleDeath();
             }
+        }
+        
+        private void HandleDeath()
+        {
+            // Verhindere mehrfache Ausführung
+            isBeingDestroyed = true;
+
+            // Explosion spawnen
+            if (explosionPrefab)
+            {
+                GameObject explosion = Instantiate(explosionPrefab, cachedTransform.position, Quaternion.identity);
+                Destroy(explosion, 1.0f);
+            }
+
+            // Sicher aus Shipyard abmelden
+            UnregisterFromShipyardSafely();
+
+            // In Pool zurückgeben oder zerstören
+            if (TryGetComponent(out PooledShip pooled))
+            {
+                pooled.ReturnToPool();
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+        
+        private void UnregisterFromShipyardSafely()
+        {
+            if (!isRegisteredWithShipyard || ownerShipyard == null)
+            {
+                return;
+            }
+
+            // Validierung: Gehört das Schiff noch zum gleichen Shipyard?
+            if (ownerShipyard.OwnerId != ownerShipyardIdAtRegistration)
+            {
+                Debug.LogWarning($"[ShipInstance] Shipyard-ID mismatch bei Abmeldung. " +
+                                 $"Erwartet: {ownerShipyardIdAtRegistration}, Aktuell: {ownerShipyard.OwnerId}");
+            }
+
+            ownerShipyard.UnregisterShip(this);
+            ClearOwnerShipyard();
+        }
+        
+        public void TransferToNewOwner(IShipOwner newOwner)
+        {
+            if (isBeingDestroyed || pendingDeath)
+            {
+                Debug.LogWarning("[ShipInstance] Kann totes Schiff nicht transferieren");
+                return;
+            }
+
+            // Alte Registrierung aufräumen (ohne UnregisterShip - das macht TransferShipsTo)
+            ClearOwnerShipyard();
+
+            // Neue Registrierung setzen
+            SetOwnerShipyard(newOwner);
         }
 
         public void SetMinTargetDistance(float distance)
