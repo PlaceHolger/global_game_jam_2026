@@ -153,20 +153,19 @@ namespace Warmask.Shipyard
         {
             if (!targetShipyard || targetShipyard == this || count <= 0) return;
 
-            int transferCount = Mathf.Min(count, ownedShips.Count);
-
-            for (int i = 0; i < transferCount; i++)
+            int transferred = 0;
+    
+            for (int i = ownedShips.Count - 1; i >= 0 && transferred < count; i--)
             {
-                if (ownedShips.Count == 0) break;
-
-                ShipInstance ship = ownedShips[ownedShips.Count - 1];
-                ownedShips.RemoveAt(ownedShips.Count - 1);
-
-                if (ship != null)
+                ShipInstance ship = ownedShips[i];
+        
+                if (ship != null && ship.GetPlayerId() == (int)planetInstance.OwnedBy)
                 {
+                    UnregisterShip(ship);
                     targetShipyard.RegisterShip(ship);
                     ship.SetTarget(targetShipyard.cachedTransform);
                     ship.SetMinTargetDistance(targetShipyard.planetRadius);
+                    transferred++;
                 }
             }
         }
