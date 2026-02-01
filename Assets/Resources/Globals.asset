@@ -19,7 +19,7 @@ MonoBehaviour:
   - {r: 1, g: 0, b: 0, a: 1}
   - {r: 0, g: 0, b: 1, a: 1}
   - {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  - {r: 0.9528302, g: 0.9467533, b: 0.503382, a: 1}
+  - {r: 0.8537736, g: 0.8463495, b: 0.4268868, a: 1}
   - {r: 1, g: 1, b: 1, a: 1}
   playerSprites:
   - {fileID: 21300000, guid: a0f122d527fea5d4b8acb090321377d0, type: 3}
@@ -28,6 +28,6 @@ MonoBehaviour:
   playerColors:
   - {r: 1, g: 1, b: 1, a: 1}
   - {r: 0.5960785, g: 0.9843138, b: 0.5960785, a: 1}
-  - {r: 0.9292453, g: 0.51722145, b: 0.84273833, a: 1}
+  - {r: 1, g: 0.75, b: 0.98106766, a: 1}
   planetProductionFactor: 1
-  currentMask: 1
+  currentMask: 0
