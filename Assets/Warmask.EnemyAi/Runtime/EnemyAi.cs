@@ -44,6 +44,7 @@ public class EnemyAi : MonoBehaviour
 
     void Update()
     {
+        if (Globals.Instance.localMultiplayer) return;
         if (Time.time < nextDecisionTime) return;
         nextDecisionTime = Time.time + decisionInterval;
 

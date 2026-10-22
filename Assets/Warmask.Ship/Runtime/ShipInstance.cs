@@ -104,7 +104,7 @@ namespace Warmask.Ship
         public int LifeId => lifeId;
         
         private IShipOwner ownerShipyard;
-        private int ownerShipyardIdAtRegistration = -1;
+        private EntityId ownerShipyardIdAtRegistration = EntityId.None;
         private bool isRegisteredWithShipyard;
         private bool isBeingDestroyed;
         
@@ -121,14 +121,14 @@ namespace Warmask.Ship
             }
 
             ownerShipyard = shipyard;
-            ownerShipyardIdAtRegistration = shipyard?.OwnerId ?? -1;
+            ownerShipyardIdAtRegistration = shipyard?.OwnerId ?? EntityId.None;
             isRegisteredWithShipyard = shipyard != null;
         }
         
         public void ClearOwnerShipyard()
         {
             ownerShipyard = null;
-            ownerShipyardIdAtRegistration = -1;
+            ownerShipyardIdAtRegistration = EntityId.None;
             isRegisteredWithShipyard = false;
         }
 

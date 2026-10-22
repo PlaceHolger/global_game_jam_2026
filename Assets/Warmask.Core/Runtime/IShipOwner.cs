@@ -1,8 +1,10 @@
+using UnityEngine;
+
 namespace Warmask.Core
 {
     public interface IShipOwner
     {
         void UnregisterShip(object ship);
-        int OwnerId { get; }
+        EntityId OwnerId { get; }
     }
 }

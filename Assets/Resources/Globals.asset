@@ -31,3 +31,7 @@ MonoBehaviour:
   - {r: 0.27843142, g: 0.88841856, b: 1, a: 1}
   planetProductionFactor: 1
   currentMask: 0
+  inactiveShipAlpha: 0
+  maskSwitchCooldown: 0
+  localMultiplayerGhostAlpha: 0.15
+  localMultiplayerMaskCooldown: 8

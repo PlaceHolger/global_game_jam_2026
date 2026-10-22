@@ -19,7 +19,7 @@ namespace Warmask.Planet
             get
             {
                 if (!_instance)
-                    _instance = FindFirstObjectByType<PlanetsManager>();
+                    _instance = FindAnyObjectByType<PlanetsManager>();
                 return _instance;
             }
         }

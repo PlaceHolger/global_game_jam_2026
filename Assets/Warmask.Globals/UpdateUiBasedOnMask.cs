@@ -13,6 +13,12 @@ public class UpdateUiBasedOnMask : MonoBehaviour
         OnMaskChanged(Globals.Instance.currentMask); //initialize on start
     }
 
+    private void OnDestroy()
+    {
+        if (Globals.Instance != null)
+            Globals.Instance.OnMaskChanged.RemoveListener(OnMaskChanged);
+    }
+
     private void OnMaskChanged(Globals.eType newMaskType)
     {
         if (imageToChange == null || sprites.Length < 2)

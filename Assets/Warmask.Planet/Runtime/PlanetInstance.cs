@@ -1,8 +1,12 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace Warmask.Planet
@@ -53,6 +57,9 @@ namespace Warmask.Planet
             //set { unitCount = value;  UpdateDebugLabel(); }
         }
 
+        public int TransferableShips { get; private set; }
+        public void SetTransferableShipCount(int count) => TransferableShips = count;
+
         public int DefendingUnityOnGround
         {
             get => unitCount;
@@ -60,10 +67,22 @@ namespace Warmask.Planet
 
         public Globals.ePlayer OwnedBy => owner;
         public float PlanetSize => planet_size;
+        public event Action<Globals.ePlayer, Globals.ePlayer> OwnerChanged;
 
         private float unitSpawnInterval;
         private float timer = 0f;
         private float maskModifier = 1f;
+
+        private SpriteRenderer planetRenderer;
+        private SpriteRenderer shipTypeIcon;
+        private Coroutine feedbackRoutine;
+        private float feedbackUntil;
+        private string feedbackText;
+        private Color feedbackColor;
+        private bool _hovered;
+        private Vector3 _baseScale;
+
+        private const float HoverScale = 1.1f;
 
         private int numEnemyShipsInOrbit = 0;
         private int numOwnShipsInOrbit = 0;
@@ -89,6 +108,7 @@ namespace Warmask.Planet
 
         public void SetOwner(Globals.ePlayer newOwner)
         {
+            Globals.ePlayer oldOwner = owner;
             owner = newOwner;
             int newOwnerIndex = (int)owner - 1;
 
@@ -113,24 +133,33 @@ namespace Warmask.Planet
                     uiImage.color = new Color(uiImage.color.r, uiImage.color.g, uiImage.color.b, 0.5f);
                 }
             }
+
+            if (oldOwner != newOwner)
+                OwnerChanged?.Invoke(oldOwner, newOwner);
         }
 
         private void InitializePlanet()
         {
             // Set planet color based on type using Globals
             Color planetColor = Globals.Instance.GetTypeColor(planet_type);
-            if (TryGetComponent(out SpriteRenderer sr))
+            if (!planetRenderer)
+                TryGetComponent(out planetRenderer);
+            if (planetRenderer)
             {
                 bool isCurrentMask = (Globals.Instance.currentMask == planet_type);
                 if (isCurrentMask)
-                    sr.color = planetColor;
+                    planetRenderer.color = planetColor;
                 else //dim color if not matching mask
-                    sr.color = Color.Lerp(planetColor, Color.gray, 0.825f);
+                    planetRenderer.color = Color.Lerp(planetColor, Color.gray, 0.825f);
             }
 
+            UpdateShipTypeIcon(planetColor);
+
+            // The mask changes production speed, not the planet's visual size.
             float adjustedSize = planet_size * maskModifier;
-            // Scale the object based on planet_size (uniform x and y scaling)
-            transform.localScale = new Vector3(0.6f + 0.4f * adjustedSize, 0.6f + 0.4f * adjustedSize, 1f);
+            float visualScale = 0.6f + 0.4f * planet_size;
+            _baseScale = new Vector3(visualScale, visualScale, 1f);
+            transform.localScale = _hovered ? _baseScale * HoverScale : _baseScale;
 
             UpdateDebugLabel(unitCount.ToString());
 
@@ -140,6 +169,31 @@ namespace Warmask.Planet
             unitSpawnInterval = Mathf.Max(0.1f, Globals.Instance.planetProductionFactor / adjustedSize);
 
             planet_name_label.text = gameObject.name;
+        }
+
+        private void UpdateShipTypeIcon(Color typeColor)
+        {
+            if (!Application.isPlaying)
+                return;
+
+            if (!shipTypeIcon)
+            {
+                Sprite shipSprite = Globals.Instance.ShipSprite;
+                if (!shipSprite)
+                    return;
+
+                var icon = new GameObject("ShipTypeIcon");
+                icon.transform.SetParent(transform, false);
+                icon.transform.localPosition = new Vector3(-0.85f, -0.85f, 0f);
+                icon.transform.localScale = Vector3.one * 0.4f;
+                shipTypeIcon = icon.AddComponent<SpriteRenderer>();
+                shipTypeIcon.sprite = shipSprite;
+                shipTypeIcon.sortingOrder = 20;
+                if (planetRenderer)
+                    shipTypeIcon.sharedMaterial = planetRenderer.sharedMaterial;
+            }
+
+            shipTypeIcon.color = typeColor;
         }
 
         void Update()
@@ -200,47 +254,125 @@ namespace Warmask.Planet
             }
         }
 
+        public void SetHovered(bool isHovered)
+        {
+            if (_hovered == isHovered)
+                return;
+
+            _hovered = isHovered;
+            if (_baseScale == Vector3.zero)
+                _baseScale = transform.localScale;
+
+            transform.DOKill();
+            transform.DOScale(_baseScale * (isHovered ? HoverScale : 1f), 0.12f)
+                .SetEase(Ease.OutQuad);
+        }
+
         public void SetSelection(bool isSelected)
         {
-            if (selection_highlight)
-                selection_highlight.SetActive(isSelected);
+            if (!selection_highlight)
+                return;
+
+            selection_highlight.SetActive(isSelected);
+            Transform highlight = selection_highlight.transform;
+            highlight.DOKill();
+            highlight.localScale = Vector3.one;
+
+            if (isSelected)
+                highlight.DOScale(1.15f, 0.5f).SetLoops(-1, LoopType.Yoyo).SetEase(Ease.InOutSine);
         }
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            PlanetSelectionManager.Instance?.HandlePlanetClick(this);
+            PlanetSelectionManager manager = PlanetSelectionManager.Instance;
+            if (manager != null && !manager.UsesPointerSource)
+            {
+                bool sendAll = Keyboard.current != null &&
+                    (Keyboard.current.leftCtrlKey.isPressed || Keyboard.current.rightCtrlKey.isPressed);
+                manager.HandlePlanetClick(this, sendAll);
+            }
         }
 
         void OnValidate()
         {
-            // Update color and scale in edit mode when values change
+            // Never run runtime setup on play-mode callbacks or prefab assets.
+            if (Application.isPlaying)
+                return;
+
             InitializePlanet();
         }
 
         public void UpdateDebugLabel(string text = null, Globals.ePlayer textOwner = Globals.ePlayer.None)
         {
-            if (text_label)
-            {
-                if (textOwner != Globals.ePlayer.None)
-                    text_label.color = Globals.Instance.GetPlayerColor(textOwner);
-                else //reset to owner color
-                    text_label.color = Globals.Instance.GetPlayerColor(owner);
+            if (!text_label)
+                return;
 
-                if (!string.IsNullOrEmpty(text))
-                    text_label.text = text;
-                else //by default show unit count
-                    text_label.text = unitCount.ToString();
+            if (Time.time < feedbackUntil)
+            {
+                text_label.text = feedbackText;
+                text_label.color = feedbackColor;
+                return;
             }
+
+            if (textOwner != Globals.ePlayer.None)
+                text_label.color = Globals.Instance.GetPlayerColor(textOwner);
+            else //reset to owner color
+                text_label.color = Globals.Instance.GetPlayerColor(owner);
+
+            if (!string.IsNullOrEmpty(text))
+                text_label.text = text;
+            else //by default show unit count
+                text_label.text = unitCount.ToString();
+        }
+
+        public void ShowNoShipsFeedback()
+        {
+            ShowFeedback("No ships to send", new Color(1f, 0.55f, 0.35f));
+        }
+
+        public void ShowNotYoursFeedback()
+        {
+            ShowFeedback("Not yours", new Color(1f, 0.8f, 0.3f));
+        }
+
+        public void ShowFeedback(string text, Color color, float duration = 0.9f)
+        {
+            feedbackText = text;
+            feedbackColor = color;
+            feedbackUntil = Time.time + duration;
+            UpdateDebugLabel();
+
+            if (feedbackRoutine != null)
+                StopCoroutine(feedbackRoutine);
+            feedbackRoutine = StartCoroutine(ClearFeedbackAfter(duration));
+        }
+
+        private IEnumerator ClearFeedbackAfter(float duration)
+        {
+            yield return new WaitForSeconds(duration);
+            feedbackUntil = 0f;
+            feedbackRoutine = null;
+            UpdateDebugLabel();
+        }
+
+        private void OnDestroy()
+        {
+            if (Globals.Instance != null)
+                Globals.Instance.OnMaskChanged.RemoveListener(OnMaskChanged);
         }
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            PlanetSelectionManager.Instance?.HandlePlanetHoverStart(this);
+            PlanetSelectionManager manager = PlanetSelectionManager.Instance;
+            if (manager != null && !manager.UsesPointerSource)
+                manager.HandlePlanetHoverStart(this);
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            PlanetSelectionManager.Instance?.HandlePlanetHoverEnd(this);
+            PlanetSelectionManager manager = PlanetSelectionManager.Instance;
+            if (manager != null && !manager.UsesPointerSource)
+                manager.HandlePlanetHoverEnd(this);
         }
 
         public void OnShipCountChanged(Dictionary<int, int> shipCountCache)

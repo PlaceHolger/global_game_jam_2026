@@ -14,6 +14,12 @@ public class BackgroundColorChanger : MonoBehaviour
         Globals.Instance.OnMaskChanged.AddListener(OnMaskChanged);
     }
 
+    private void OnDestroy()
+    {
+        if (Globals.Instance != null)
+            Globals.Instance.OnMaskChanged.RemoveListener(OnMaskChanged);
+    }
+
     private void OnMaskChanged(Globals.eType arg0)
     {
         if (imageToChange == null)

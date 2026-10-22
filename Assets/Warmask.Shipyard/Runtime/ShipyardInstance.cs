@@ -1,4 +1,3 @@
-using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -36,10 +35,10 @@ namespace Warmask.Shipyard
         
         private Dictionary<int,int> shipCountCache = new Dictionary<int, int>();
         
-        private int instanceId;
+        private EntityId instanceId;
         private float sqrPlanetShipOwnershipRadius = 1.0f;
 
-        public int OwnerId => instanceId;
+        public EntityId OwnerId => instanceId;
         
         public void UnregisterShip(object ship)
         {
@@ -63,7 +62,7 @@ namespace Warmask.Shipyard
         private float nextSpawnTime;
         private int activeShipCount;
         private Transform cachedTransform;
-        private readonly List<ShipInstance> ownedShips = new();
+        private List<ShipInstance> ownedShips = new();
         
         private PlanetInstance planetInstance = default;
 
@@ -72,34 +71,75 @@ namespace Warmask.Shipyard
 
         private void Awake()
         {
-            instanceId = GetInstanceID();
-            cachedTransform = transform;
-            shipPool = new ObjectPool<GameObject>(
-                createFunc: CreateShip,
-                actionOnGet: OnGetShip,
-                actionOnRelease: OnReleaseShip,
-                actionOnDestroy: OnDestroyShip,
-                collectionCheck: false,
-                defaultCapacity: defaultPoolCapacity,
-                maxSize: maxPoolSize
-            );
-
-            planetInstance = GetComponent<PlanetInstance>();
-            
-            spawnRandomRadius = planetInstance.PlanetSize;
-            planetRadius = planetInstance.PlanetSize;
-            sqrPlanetShipOwnershipRadius = (2 * 1.28f * planetInstance.gameObject.transform.localScale.x) * (2 * 1.528f * planetInstance.gameObject.transform.localScale.x);
-
+            EnsureInitialized();
+            TroopMovementManager.OnTroopMovementStarted.RemoveListener(MoveTroops);
             TroopMovementManager.OnTroopMovementStarted.AddListener(MoveTroops);
+        }
+
+        // Hot reload clears non-serialized fields while the scene keeps running.
+        private void EnsureInitialized()
+        {
+            if (cachedTransform == null)
+                cachedTransform = transform;
+
+            if (shipPool == null)
+            {
+                shipPool = new ObjectPool<GameObject>(
+                    createFunc: CreateShip,
+                    actionOnGet: OnGetShip,
+                    actionOnRelease: OnReleaseShip,
+                    actionOnDestroy: OnDestroyShip,
+                    collectionCheck: false,
+                    defaultCapacity: defaultPoolCapacity,
+                    maxSize: maxPoolSize
+                );
+
+                instanceId = GetEntityId();
+            }
+
+            if (ownedShips == null)
+                ownedShips = new List<ShipInstance>();
+            if (shipCountCache == null)
+                shipCountCache = new Dictionary<int, int>();
+
+            if (planetInstance == null)
+            {
+                planetInstance = GetComponent<PlanetInstance>();
+                if (planetInstance != null)
+                {
+                    planetInstance.OwnerChanged -= OnPlanetOwnerChanged;
+                    planetInstance.OwnerChanged += OnPlanetOwnerChanged;
+
+                    spawnRandomRadius = planetInstance.PlanetSize;
+                    planetRadius = planetInstance.PlanetSize;
+                    sqrPlanetShipOwnershipRadius = (2 * 1.28f * planetInstance.gameObject.transform.localScale.x) * (2 * 1.528f * planetInstance.gameObject.transform.localScale.x);
+                }
+            }
         }
 
         private void OnDestroy()
         {
             TroopMovementManager.OnTroopMovementStarted.RemoveListener(MoveTroops);
+            if (planetInstance)
+                planetInstance.OwnerChanged -= OnPlanetOwnerChanged;
+        }
+
+        // The planet's ships change hands with the planet; otherwise the old fleet
+        // stays in orbit as an enemy and instantly flips the planet back.
+        private void OnPlanetOwnerChanged(Globals.ePlayer oldOwner, Globals.ePlayer newOwner)
+        {
+            if (ownedShips == null) return;
+
+            foreach (ShipInstance ship in ownedShips)
+            {
+                if (ship)
+                    ship.SetPlayerId((int)newOwner);
+            }
         }
 
         private void MoveTroops(PlanetInstance fromPlanet, PlanetInstance toPlanet, int troopCount, Globals.ePlayer movingPlayer)
         {
+            EnsureInitialized();
             if (fromPlanet && fromPlanet.gameObject == this.gameObject)
             {
                 TransferShipsTo(toPlanet.GetComponent<ShipyardInstance>(), troopCount, movingPlayer);
@@ -108,6 +148,10 @@ namespace Warmask.Shipyard
 
         private void Update()
         {
+            EnsureInitialized();
+            if (shipPool == null || planetInstance == null || cachedTransform == null)
+                return;
+
             if (Time.time >= nextSpawnTime && activeShipCount < maxActiveShips && spawnInterval > 0f)
             {
                 SpawnShip();
@@ -121,22 +165,31 @@ namespace Warmask.Shipyard
         private void UpdateProximityShipCache()
         {
             shipCountCache.Clear();
-            
+            int ownerPlayerId = (int)planetInstance.OwnedBy;
+            int transferableShips = 0;
+
             foreach (ShipInstance ship in ownedShips)
             {
                 if (!ship) continue;
-                
+
+                if (CanTransferShip(ship, ownerPlayerId, planetInstance.OwnedBy))
+                    transferableShips++;
+
                 float sqrShipDistance = (ship.transform.position - cachedTransform.position).sqrMagnitude;
                 if (sqrShipDistance > sqrPlanetShipOwnershipRadius ) continue;
 
                 int shipPlayerId = ship.GetPlayerId();
                 shipCountCache[shipPlayerId] = shipCountCache.GetValueOrDefault(shipPlayerId, 0) + 1;
             }
+
+            planetInstance.SetTransferableShipCount(transferableShips);
         }
 
         public void SpawnShip()
         {
-            if (activeShipCount >= maxActiveShips) return;
+            EnsureInitialized();
+            if (shipPool == null || cachedTransform == null || planetInstance == null || activeShipCount >= maxActiveShips)
+                return;
 
             GameObject ship = shipPool.Get();
             Vector2 spawnPos = (Vector2)cachedTransform.position + spawnOffset + 
@@ -166,6 +219,7 @@ namespace Warmask.Shipyard
 
         public void RegisterShip(ShipInstance ship)
         {
+            EnsureInitialized();
             if (!ship || ownedShips.Contains(ship)) return;
 
             int shipPlayerId = ship.GetPlayerId();
@@ -175,6 +229,7 @@ namespace Warmask.Shipyard
 
         public void UnregisterShip(ShipInstance ship)
         {
+            EnsureInitialized();
             if (!ship) return;
 
             int index = ownedShips.IndexOf(ship);
@@ -201,6 +256,9 @@ namespace Warmask.Shipyard
         {
             if (!targetShipyard || targetShipyard == this || count <= 0) return;
 
+            EnsureInitialized();
+            if (planetInstance == null) return;
+
             int transferred = 0;
             int ownerPlayerId = (int)planetInstance.OwnedBy;
 
@@ -208,14 +266,7 @@ namespace Warmask.Shipyard
             {
                 ShipInstance ship = ownedShips[i];
 
-                // Validierung: Schiff existiert, gehört uns, und ist noch am Leben
-                if (ship == null || !ship.IsAlive) continue;
-                if (ship.GetPlayerId() != ownerPlayerId) continue;
-                if (Globals.Instance.IsPlayer(executingPlayer))
-                {
-                    if (ship.ShipType != Globals.Instance.currentMask) continue;    
-                }
-                
+                if (!CanTransferShip(ship, ownerPlayerId, executingPlayer)) continue;
 
                 // Aus alter Liste entfernen
                 UnregisterShip(ship);
@@ -232,6 +283,13 @@ namespace Warmask.Shipyard
             }
         }
 
+        private static bool CanTransferShip(ShipInstance ship, int ownerPlayerId, Globals.ePlayer executingPlayer)
+        {
+            if (ship == null || !ship.IsAlive) return false;
+            if (ship.GetPlayerId() != ownerPlayerId) return false;
+            return !Globals.Instance.IsHuman(executingPlayer) || ship.ShipType == Globals.Instance.currentMask;
+        }
+
         private GameObject CreateShip()
         {
             GameObject ship = Instantiate(shipPrefab);
@@ -242,7 +300,8 @@ namespace Warmask.Shipyard
 
         public void ReturnShipToPool(GameObject ship)
         {
-            if (ship == null || !ship.activeInHierarchy) return;
+            EnsureInitialized();
+            if (ship == null || !ship.activeInHierarchy || shipPool == null) return;
 
             // UnregisterShip wird NICHT hier aufgerufen!
             // Das hat bereits HandleDeath in ShipInstance gemacht

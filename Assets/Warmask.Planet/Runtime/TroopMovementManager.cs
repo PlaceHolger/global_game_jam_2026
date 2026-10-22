@@ -19,7 +19,7 @@ namespace Warmask.Planet
         public static TroopMovementManager GetInstance()
         {
             if (!Instance)
-                Instance = FindFirstObjectByType<TroopMovementManager>();
+                Instance = FindAnyObjectByType<TroopMovementManager>();
             return Instance;
         }
 

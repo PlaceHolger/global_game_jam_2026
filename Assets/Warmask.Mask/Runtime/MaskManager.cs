@@ -21,6 +21,12 @@ namespace Warmask.Mask
         [SerializeField] private InputActionReference mask1Action;
         [SerializeField] private InputActionReference mask2Action;
 
+        private float nextSwitchTime;
+        private int lastToggleFrame = -1;
+
+        public bool CanSwitch => Time.time >= nextSwitchTime;
+        public float CooldownRemaining => Mathf.Max(0f, nextSwitchTime - Time.time);
+
         private IEnumerator Start()
         {
             yield return null; // Wait one frame
@@ -30,7 +36,9 @@ namespace Warmask.Mask
 
         private void Update()
         {
-            if(Keyboard.current.spaceKey.wasPressedThisFrame)
+            Globals.Instance.maskCooldownRemaining = CooldownRemaining;
+
+            if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
                 ToggleMask();
         }
 
@@ -42,8 +50,18 @@ namespace Warmask.Mask
 
         public void ToggleMask(Globals.eType type)
         {
+            // Space and the mask actions can both fire in one frame; only accept one.
+            if (lastToggleFrame == Time.frameCount)
+                return;
+            if (!CanSwitch)
+                return;
+
+            lastToggleFrame = Time.frameCount;
             if (Globals.Instance.currentMask != type)
+            {
                 UpdateMask(type);
+                nextSwitchTime = Time.time + Mathf.Max(0f, Globals.Instance.maskSwitchCooldown);
+            }
         }
 
         public void Mask1Activate(bool value)

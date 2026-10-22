@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -66,12 +67,31 @@ public class Globals : ScriptableObject
     public bool EasyMode = false;
     
     public Sprite GetPlayerSprite(ePlayer player) => playerSprites[(int)player];
-    
-    public bool IsPlayer(ePlayer player) => player == ePlayer.Player1;
+
+    [NonSerialized] public bool localMultiplayer;
+    [NonSerialized] public float maskCooldownRemaining;
+
+    public bool IsHuman(ePlayer player) => player == ePlayer.Player1 || (localMultiplayer && player == ePlayer.Player2);
+
+    public bool IsPlayer(ePlayer player) => IsHuman(player);
 
     public float planetProductionFactor = 1.0f;
 
     public eType currentMask = eType.TypeA;
-    
+
+    [Range(0f, 1f), Tooltip("Alpha of ships that are not on the active mask. 0 = hidden, 0.25 = ghosted.")]
+    public float inactiveShipAlpha = 0f;
+
+    [Min(0f), Tooltip("Shared cooldown after a mask switch. 0 = unlimited (solo). Local MP sets this at match start.")]
+    public float maskSwitchCooldown = 0f;
+
+    [Range(0f, 1f), Tooltip("Local MP default alpha for ships on the inactive mask.")]
+    public float localMultiplayerGhostAlpha = 0.15f;
+
+    [Min(0f), Tooltip("Local MP default shared mask cooldown, in seconds.")]
+    public float localMultiplayerMaskCooldown = 8f;
+
+    public Sprite ShipSprite => playerSprites != null && playerSprites.Length > 0 ? playerSprites[0] : null;
+
     public const bool trailInPlayerColor = false;
 }
