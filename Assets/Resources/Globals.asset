@@ -25,6 +25,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: a0f122d527fea5d4b8acb090321377d0, type: 3}
   - {fileID: 21300000, guid: 6997e9518c05b0f45a0439d29cb54e2d, type: 3}
   - {fileID: 21300000, guid: b6c69a6924e639742a6d5cec20fde5fa, type: 3}
+  shieldIcon: {fileID: 21300000, guid: eee02e8540b4435ab5f4907cc2dd5a2a, type: 3}
   playerColors:
   - {r: 1, g: 1, b: 1, a: 1}
   - {r: 1, g: 0.93732285, b: 0.39999998, a: 1}
@@ -32,6 +33,6 @@ MonoBehaviour:
   planetProductionFactor: 1
   currentMask: 0
   inactiveShipAlpha: 0
-  maskSwitchCooldown: 0
+  maskSwitchCooldown: 2.5
   localMultiplayerGhostAlpha: 0.15
-  localMultiplayerMaskCooldown: 8
+  localMultiplayerMaskCooldown: 5

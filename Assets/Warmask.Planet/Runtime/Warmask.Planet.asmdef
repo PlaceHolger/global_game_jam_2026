@@ -5,7 +5,8 @@
         "Warmask.Globals",
         "Unity.TextMeshPro",
         "Unity.InputSystem",
-        "GUID:35e9521616a7e83438e7f89883d870ed"
+        "GUID:35e9521616a7e83438e7f89883d870ed",
+        "GUID:516a5277b8c3b4f4c8cc86b77b1591ff"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

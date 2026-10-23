@@ -183,7 +183,7 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.052167892
+        value: 0.08
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -195,8 +195,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 1, b: 1, a: 1}
-      key1: {r: 1, g: 1, b: 1, a: 1}
+      key0: {r: 1, g: 1, b: 0.5, a: 1}
+      key1: {r: 1, g: 0.3, b: 0.1, a: 0.6}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -482,11 +482,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Warmask.Ship::Warmask.Ship.ShipInstance
   moveSpeed: 1
   maxTurnAnglePerSecond: 90
+  moveCommandSpeedBoost: 1.8
+  moveCommandBoostDuration: 1.2
   neighborRadius: 1
   separationDistance: 0.5
-  alignmentWeight: 1
-  cohesionWeight: 1
-  separationWeight: 1.5
   targetWeight: 2
   detectionRadius: 3
   weaponRange: 2
@@ -494,7 +493,6 @@ MonoBehaviour:
   weaponDamage: 5
   raycastStartOffset: 0.5
   laserVisual: {fileID: 4063727898533936639}
-  enemyAvoidanceWeight: 1
   enemyAvoidanceRadius: 0.5
   maxDistanceFromTarget: 4
   minDistanceFromTarget: 2

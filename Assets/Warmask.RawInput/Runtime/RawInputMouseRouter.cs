@@ -97,7 +97,7 @@ namespace Warmask.RawInput
             }
 
             RegisterMouse();
-            RefreshDevices("startup");
+            RefreshDevices();
         }
 
         private void Update()
@@ -252,7 +252,6 @@ namespace Warmask.RawInput
             {
                 state = new MouseState();
                 _states.Add(device, state);
-                Debug.Log($"[RawInput] First input from handle={device} name={DeviceName(device)}");
             }
 
             if ((mouse.usFlags & MOUSE_MOVE_ABSOLUTE) == 0)
@@ -263,15 +262,12 @@ namespace Warmask.RawInput
 
             ushort buttons = (ushort)(mouse.ulButtons & 0xFFFF);
             if ((buttons & RI_MOUSE_LEFT_BUTTON_DOWN) != 0)
-            {
                 state.LeftPressed = true;
-                Debug.Log($"[RawInput] left down handle={device}");
-            }
             if ((buttons & RI_MOUSE_RIGHT_BUTTON_DOWN) != 0)
                 state.RightPressed = true;
         }
 
-        private void RefreshDevices(string reason)
+        private void RefreshDevices()
         {
             uint count = 0;
             uint result = GetRawInputDeviceList(null, ref count, (uint)s_DeviceListSize);
@@ -291,9 +287,6 @@ namespace Warmask.RawInput
 
                 _devices.Add(new DeviceInfo(devices[i].hDevice, DeviceName(devices[i].hDevice)));
             }
-
-            string names = string.Join(" | ", _devices.ConvertAll(device => $"handle={device.Handle} name={device.Name}"));
-            Debug.Log($"[RawInput] {_devices.Count} mouse device(s) ({reason}): {names}");
         }
 
         private static string DeviceName(IntPtr device)
@@ -344,7 +337,7 @@ namespace Warmask.RawInput
                 if (message == WM_INPUT)
                     Instance?.ProcessRawInput(lParam);
                 else if (message == WM_INPUT_DEVICE_CHANGE)
-                    Instance?.RefreshDevices("device change");
+                    Instance?.RefreshDevices();
 
                 return DefWindowProcW(window, message, wParam, lParam);
             }

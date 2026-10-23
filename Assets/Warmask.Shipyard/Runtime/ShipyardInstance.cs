@@ -60,7 +60,6 @@ namespace Warmask.Shipyard
 
         private ObjectPool<GameObject> shipPool;
         private float nextSpawnTime;
-        private int activeShipCount;
         private Transform cachedTransform;
         private List<ShipInstance> ownedShips = new();
         
@@ -69,9 +68,62 @@ namespace Warmask.Shipyard
         public IReadOnlyList<ShipInstance> OwnedShips => ownedShips;
         public int OwnedShipCount => ownedShips.Count;
 
+        // Production cap: own ships assigned to this planet, including ones ordered
+        // here. Sending ships away moves them to the destination, so the origin can rebuild.
+        private int OwnShipCount
+        {
+            get
+            {
+                if (ownedShips == null || planetInstance == null) return 0;
+
+                int ownerId = (int)planetInstance.OwnedBy;
+                int count = 0;
+                foreach (ShipInstance ship in ownedShips)
+                {
+                    if (ship && ship.IsAlive && ship.GetPlayerId() == ownerId)
+                        count++;
+                }
+                return count;
+            }
+        }
+
+        // Fleet cap scales with captures so re-funneling production can't grow
+        // the player's total beyond what they actually hold: sum every planet's
+        // own ship cap and add the stacking buffer.
+        public static int GetFleetCap(Globals.ePlayer player, int buffer)
+        {
+            PlanetsManager planets = PlanetsManager.Instance;
+            if (!planets)
+                return int.MaxValue; // scene not ready; don't block early spawns
+
+            int cap = buffer;
+            foreach (PlanetInstance planet in planets.GetAllPlanets())
+            {
+                if (planet.OwnedBy != player) continue;
+                if (planet.TryGetComponent(out ShipyardInstance yard))
+                    cap += yard.maxActiveShips;
+            }
+            return cap;
+        }
+
+        private bool HasProductionCapacity()
+        {
+            if (planetInstance == null) return false;
+            if (OwnShipCount >= maxActiveShips) return false;
+
+            ShipManagerInstance ships = ShipManagerInstance.Instance;
+            if (!ships)
+                return true; // scene not set up yet, don't block early spawns
+
+            int buffer = Globals.Instance ? Globals.Instance.fleetCapBuffer : 0;
+            return ships.GetPlayerShipCount((int)planetInstance.OwnedBy)
+                   < GetFleetCap(planetInstance.OwnedBy, buffer);
+        }
+
         private void Awake()
         {
             EnsureInitialized();
+            FleetStatusHud.EnsureExists();
             TroopMovementManager.OnTroopMovementStarted.RemoveListener(MoveTroops);
             TroopMovementManager.OnTroopMovementStarted.AddListener(MoveTroops);
         }
@@ -124,16 +176,18 @@ namespace Warmask.Shipyard
                 planetInstance.OwnerChanged -= OnPlanetOwnerChanged;
         }
 
-        // The planet's ships change hands with the planet; otherwise the old fleet
-        // stays in orbit as an enemy and instantly flips the planet back.
+        // Defenders die with the planet. Ships still in transit keep their owner,
+        // so they can counter-attack instead of flipping hands mid-flight.
         private void OnPlanetOwnerChanged(Globals.ePlayer oldOwner, Globals.ePlayer newOwner)
         {
             if (ownedShips == null) return;
 
-            foreach (ShipInstance ship in ownedShips)
+            for (int i = ownedShips.Count - 1; i >= 0; i--)
             {
-                if (ship)
-                    ship.SetPlayerId((int)newOwner);
+                ShipInstance ship = ownedShips[i];
+                if (!ship || ship.GetPlayerId() != (int)oldOwner || ship.IsInTransit) continue;
+
+                ship.Die();
             }
         }
 
@@ -152,7 +206,7 @@ namespace Warmask.Shipyard
             if (shipPool == null || planetInstance == null || cachedTransform == null)
                 return;
 
-            if (Time.time >= nextSpawnTime && activeShipCount < maxActiveShips && spawnInterval > 0f)
+            if (Time.time >= nextSpawnTime && HasProductionCapacity() && spawnInterval > 0f)
             {
                 SpawnShip();
                 nextSpawnTime = Time.time + spawnInterval;
@@ -170,7 +224,7 @@ namespace Warmask.Shipyard
 
             foreach (ShipInstance ship in ownedShips)
             {
-                if (!ship) continue;
+                if (!ship || !ship.IsAlive) continue;
 
                 if (CanTransferShip(ship, ownerPlayerId, planetInstance.OwnedBy))
                     transferableShips++;
@@ -188,7 +242,7 @@ namespace Warmask.Shipyard
         public void SpawnShip()
         {
             EnsureInitialized();
-            if (shipPool == null || cachedTransform == null || planetInstance == null || activeShipCount >= maxActiveShips)
+            if (shipPool == null || cachedTransform == null || planetInstance == null || !HasProductionCapacity())
                 return;
 
             GameObject ship = shipPool.Get();
@@ -213,8 +267,6 @@ namespace Warmask.Shipyard
                 PooledShip pooled = ship.AddComponent<PooledShip>();
                 pooled.Initialize(this, transform);
             }
-
-            activeShipCount++;
         }
 
         public void RegisterShip(ShipInstance ship)
@@ -276,8 +328,7 @@ namespace Warmask.Shipyard
 
                 // In neue Liste eintragen
                 targetShipyard.RegisterShip(ship);
-                ship.SetTarget(targetShipyard.cachedTransform);
-                ship.SetMinTargetDistance(targetShipyard.planetRadius);
+                ship.SetMoveCommand(targetShipyard.cachedTransform, targetShipyard.planetRadius);
 
                 transferred++;
             }
@@ -307,7 +358,6 @@ namespace Warmask.Shipyard
             // Das hat bereits HandleDeath in ShipInstance gemacht
 
             shipPool.Release(ship);
-            activeShipCount = Mathf.Max(0, activeShipCount - 1);
         }
 
         private void OnGetShip(GameObject ship)

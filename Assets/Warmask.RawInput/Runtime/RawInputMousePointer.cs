@@ -17,8 +17,6 @@ namespace Warmask.RawInput
         private Vector2 _position;
         private SpriteRenderer _cursorRenderer;
         private Camera _camera;
-        private bool _loggedMovement;
-        private bool _loggedHorizontal;
 
         public Globals.ePlayer Player { get; private set; }
         public Vector2 ScreenPosition => _position;
@@ -49,17 +47,6 @@ namespace Warmask.RawInput
 
             if (_router.ConsumeDelta(_device, out int deltaX, out int deltaY))
             {
-                if (!_loggedMovement)
-                {
-                    _loggedMovement = true;
-                    Debug.Log($"[RawInputPointer] {Player} raw delta {deltaX},{deltaY}");
-                }
-                if (!_loggedHorizontal && deltaX != 0)
-                {
-                    _loggedHorizontal = true;
-                    Debug.Log($"[RawInputPointer] {Player} first horizontal raw delta {deltaX}");
-                }
-
                 // Raw mouse Y is positive downward; Unity screen Y is positive upward.
                 _position += new Vector2(deltaX, -deltaY) * sensitivity;
                 _position.x = Mathf.Clamp(_position.x, 0f, Screen.width);

@@ -7,23 +7,38 @@ namespace Warmask.Ship
         [SerializeField, Min(0f), Tooltip("Seconds for ships to fade between masks.")]
         private float fadeDuration = 1.5f;
 
+        [SerializeField, Range(0f, 1f), Tooltip("Alpha multiplier for idle ships, so moving ships stand out.")]
+        private float idleAlpha = 0.8f;
+
+        [SerializeField, Range(0f, 1f), Tooltip("How far moving ships tint toward white.")]
+        private float moveHighlightStrength = 0.35f;
+
         private Globals.eType type = Globals.eType.Unknown;
         private float currentAlpha = 1f;
         private float targetAlpha = 1f;
         private float fadeStartAlpha = 1f;
         private float fadeElapsed;
         private bool fading;
+        private bool isMoving;
         private SpriteRenderer[] spriteRenderers;
+        private Color[] baseColors;
         private TrailRenderer[] trailRenderers;
 
         private void Awake()
         {
             spriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+            baseColors = new Color[spriteRenderers.Length];
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                if (spriteRenderers[i])
+                    baseColors[i] = spriteRenderers[i].color;
+            }
             trailRenderers = GetComponentsInChildren<TrailRenderer>(true);
         }
 
         private void OnEnable()
         {
+            isMoving = false;
             Globals.Instance.OnMaskChanged.AddListener(OnMaskChanged);
             ApplyMask(Globals.Instance.currentMask, instant: true);
         }
@@ -32,6 +47,32 @@ namespace Warmask.Ship
         {
             type = newtype;
             ApplyMask(Globals.Instance.currentMask, instant: true);
+        }
+
+        public void SetPlayerColor(SpriteRenderer renderer, Color color)
+        {
+            if (!renderer || baseColors == null)
+                return;
+
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                if (spriteRenderers[i] == renderer)
+                {
+                    baseColors[i] = color;
+                    break;
+                }
+            }
+
+            ApplyAlpha(currentAlpha);
+        }
+
+        public void SetMoving(bool moving)
+        {
+            if (isMoving == moving)
+                return;
+
+            isMoving = moving;
+            ApplyAlpha(currentAlpha);
         }
 
         private void OnDisable()
@@ -105,19 +146,31 @@ namespace Warmask.Ship
 
         private void ApplyAlpha(float alpha)
         {
-            foreach (SpriteRenderer sr in spriteRenderers)
+            float visibleAlpha = isMoving ? alpha : alpha * idleAlpha;
+
+            for (int i = 0; i < spriteRenderers.Length; i++)
             {
-                if (sr)
-                    sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, alpha);
+                SpriteRenderer sr = spriteRenderers[i];
+                if (!sr) continue;
+
+                Color baseColor = baseColors != null && i < baseColors.Length ? baseColors[i] : sr.color;
+                Color nextColor = isMoving
+                    ? Color.Lerp(baseColor, Color.white, moveHighlightStrength)
+                    : baseColor;
+                nextColor.a = visibleAlpha;
+                sr.color = nextColor;
             }
 
             Color typeColor = Globals.Instance.GetTypeColor(type);
-            typeColor.a = alpha;
+            if (isMoving)
+                typeColor = Color.Lerp(typeColor, Color.white, moveHighlightStrength);
+            typeColor.a = visibleAlpha;
+
             foreach (TrailRenderer tr in trailRenderers)
             {
                 if (!tr) continue;
                 tr.startColor = Globals.trailInPlayerColor
-                    ? new Color(tr.startColor.r, tr.startColor.g, tr.startColor.b, alpha)
+                    ? new Color(tr.startColor.r, tr.startColor.g, tr.startColor.b, visibleAlpha)
                     : typeColor;
             }
         }

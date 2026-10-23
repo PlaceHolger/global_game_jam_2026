@@ -11,7 +11,7 @@ Rule: nothing is committed until the work runs and you create the branch. Until 
 - Started on Unity 6000.3.6f1; upgraded to **6000.7.0b6** (revision 820f8ee8e58b) in phase 1. URP 17.7.0, Input System 6.7.0, test framework 1.9.0.
 - Two scenes: `Menu.unity`, `SampleScene.unity`. 11 planets.
 - Ships are GameObjects with a `Collider2D`, pooled per shipyard. Boid steering already runs in a Burst job; neighbor lookup still uses `Physics2D.OverlapCircle` per ship.
-- Current caps: 24 ground units per planet, 20 active ships per shipyard, pool 50. Real ceiling today is roughly 220 ships.
+- Current caps: 24 ground units per planet, 20 own ships assigned per shipyard (sending ships moves the slot to the destination, so origins can rebuild; a planet can hold more than 20 by receiving), fleet cap per player = owned planets × per-planet ship cap + 20 buffer (`Globals.fleetCapBuffer`), pool 50.
 - No netcode, no tests, no central config. Tuning values live on prefabs, scene overrides and the `Globals` ScriptableObject.
 - `main` is clean and pushed. Jam-quality code with known bugs (section 5).
 
@@ -192,7 +192,7 @@ Acceptance: two machines on different networks finish a co-op match and a Versus
 
 | # | Bug | Where | Action |
 |---|---|---|---|
-| 1 | Captured planet keeps old owner's ships, which count as attackers and flip it back | `PlanetInstance.cs:166-176`, `ShipyardInstance.cs:121-135` | fix + test |
+| 1 | Captured planet keeps old owner's ships, which count as attackers and flip it back | `PlanetInstance.cs:166-176`, `ShipyardInstance.cs:121-135` | fixed: old owner's in-orbit ships die with the planet; in-transit ships keep their owner |
 | 2 | `Globals.OnMaskChanged` listeners never removed; duplicate callbacks after scene reload | `PlanetInstance.cs:76`, `UpdateUiBasedOnMask.cs:12`, `BackgroundColorChanger.cs:14` | fix + test |
 | 3 | Mask switch scales planets (`planet_size * maskModifier`) | `PlanetInstance.cs:131-133` | fix + test |
 | 4 | Turn rate reset hardcodes 90, ignoring the prefab value; kill bonus never reset | `ShipInstance.cs:158` | fix + test |
@@ -201,6 +201,7 @@ Acceptance: two machines on different networks finish a co-op match and a Versus
 | 7 | `using NUnit.Framework` in runtime asmdef | `ShipyardInstance.cs:1` | remove |
 | 8 | Instant troop transfer starts ground drain before ships arrive | `ShipyardInstance.cs:101-107` | decision |
 | 9 | `Die()` dead code; label string allocated every frame; register double-counts cache | `ShipInstance.cs:357`, `PlanetInstance.cs:191`, `ShipyardInstance.cs:171-173` | cleanup in touched files |
+| 10 | Sent ships kept occupying the origin's production cap; received ships did not count toward the destination's | `ShipyardInstance.cs:155-217` | fixed: cap counts own ships assigned to the planet, plus a fleet cap per player (owned planets × per-planet cap + `fleetCapBuffer`) |
 
 ## 8. Settings values
 
@@ -208,6 +209,7 @@ Acceptance: two machines on different networks finish a co-op match and a Versus
 |---|---|---|
 | Max units per planet | all planets | restart/re-init |
 | Ship cap per shipyard, pool size | shipyards | restart |
+| Fleet cap buffer (owned × per-planet cap + buffer) | ship production | live |
 | Production factor, spawn interval | planets | live |
 | Ground unit drain rate | planets | live |
 | Ship speed, turn rate, damage, fire cooldown, ranges | ships | live (new + existing) |
@@ -274,6 +276,24 @@ Beyond the brief: **fog of war** would do more for Versus than any ship count �
 "..."\Unity.exe -batchmode -quit -projectPath "C:\Unity\global_game_jam_2026" ^
   -executeMethod Warmask.Editor.BuildCi.BuildWindows -logFile -
 ```
+
+## 16. Warmask polish — active
+
+User-visible polish pass. Code is not finished until each item is checked in a Play session.
+
+- [ ] **Planet lighting (reset + planet-spot cursor light):** scene back to pre-session values; cursor light rebuilt from the planet's own light.
+  - **Why lights "did nothing" before:** every light used Renderer2D blend style 0 = "Multiply"; white multiply light is a visual no-op (`white × sprite = sprite`). Also `m_UseNormalMap` is deprecated in URP 17.7 (migrates into `m_NormalMapQuality`) — flags still un-pin quality correctly.
+  - **Reset done (user call: "too bright / bloom"):** the activated 6 "Sprite Light 2D" pool setup was reverted to HEAD values — inactive again, Multiply style, original intensities (10/9/8/6.06/9/6.06), radius 1, `m_UseNormalMap: 0`; Global Light 2D back to white `1.5` intensity. Only `Planet.prefab`'s "Spot Light 2D" keeps `m_UseNormalMap: 1` (used by the cursor light below; inactive on planets).
+  - `Warmask.Planet/CursorLight.cs` now clones the **planet prefab's "Spot Light 2D"** (radius 3, cookie-free, smooth falloff, crater normals) instead of a scene point light: forced **Additive**, no cookie, player color from `Globals.GetPlayerColor`, intensity 0.8, radius 1.8 override, thin core. Same pointer world-point logic as selection. `Warmask.Planet.asmdef` gained `GUID:516a5277b8c3b4f4c8cc86b77b1591ff` (URP 2D runtime).
+  - Knobs: intensity/radius fields on `CursorLight`; if star sparkles still read too bright *after* the reset, that is the pre-session baseline (Randomizer-driven) — separate tweak, ask first.
+  - "Selection highlight" is a canvas UI Image, deliberately unlit — unchanged.
+- [ ] **Planet HUD rework:** shield badge behind the count.
+  - `Shield.png` sliced from the HUD sheet (128×151, luminance-alpha), assigned via `Globals.shieldIcon` in `Resources/Globals.asset`.
+  - `PlanetInstance.EnsureShieldBadge()`: badge now sits **centered behind the count** (translucent white 45%), so the number reads inside the shield; hides whenever the label stops being a plain number (Under Attack / Falling / Victory / feedback). Known oddity to judge in game: the count label still slowly spins over the static shield — one line to drop if disliked.
+- [ ] **Fleet HUD restyle** (was "Player1 ships 180/180" black bar):
+  - `FleetStatusHud` now draws P1 top-left, P2 top-right, fontSize ~38, **only the number** in the player color; at fleet cap it alternates red/player color every 0.4s with a `MAX` suffix.
+- [ ] **Play-test:** cursor glow subtle (no blowout, no flare haze), bump shading visible inside light pools, ambient dim reads okay, shield-number reads well (and spin?), HUD numbers large + correct, `MAX` blink at cap, planet clicks/cooldowns/ship feedback unchanged.
+- [x] Remove temporary raw-input diagnostics. Done: `RawInputMouseRouter` device-list/first-input/left-down logs, `RawInputMousePointer` movement logs, `RawInputSpike` status logs removed; only error/exception logs remain. Final build + commit still pending (needs the user's editor).
 
 ## 15. Later backlog (agreed, not scheduled)
 

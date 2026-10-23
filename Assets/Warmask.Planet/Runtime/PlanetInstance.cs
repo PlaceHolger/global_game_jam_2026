@@ -5,19 +5,26 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace Warmask.Planet
 {
-    public class PlanetInstance : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
+    public class PlanetInstance : MonoBehaviour
     {
         [SerializeField, Tooltip("Event triggered when a new unit is created. Passes the planet type as an integer.")]
         private UnityEvent<int> onUnitCreated;
 
-        [SerializeField, Tooltip("Label which displays debug information on the planet.")]
-        private TMP_Text text_label;
+        [SerializeField, Tooltip("Label for status messages (under attack, falling, etc.)")]
+        private TMP_Text statusText;
+
+        [SerializeField, Tooltip("Defense strength value displayed inside the shield")]
+        private TMP_Text defenseStrength;
+
+        [SerializeField, Tooltip("Image shown when no one owns the planet")]
+        private GameObject noOwner;
+
+        [SerializeField, Tooltip("Shield badge image behind the defense value")]
+        private UnityEngine.UI.Image shieldBadge;
 
         [SerializeField, Tooltip("Label which rotates when the planet is controlled.")]
         private Transform textTransform;
@@ -36,6 +43,9 @@ namespace Warmask.Planet
         private int unitCount = 5;
 
         [SerializeField] private Globals.ePlayer owner = Globals.ePlayer.None;
+
+        [SerializeField, Tooltip("Explosion prefab spawned when planet is captured")]
+        private GameObject explosionPrefab;
 
         [SerializeField, Tooltip("Highlight GameObject for selection indication")]
         private GameObject selection_highlight;
@@ -118,12 +128,12 @@ namespace Warmask.Planet
                 planet_name_label.color = Globals.Instance.GetPlayerColor(owner);
             }
 
-            if (text_label)
+            if (statusText)
             {
-                text_label.color = Globals.Instance.GetPlayerColor(owner);
+                statusText.color = Globals.Instance.GetPlayerColor(owner);
             }
 
-            // Update owner indicators gameobjects (from ownerIndicators)
+            // Update owner indicators
             for (int i = 0; i < ownerIndicators.Length; i++)
             {
                 ownerIndicators[i].SetActive(i == newOwnerIndex);
@@ -132,6 +142,16 @@ namespace Warmask.Planet
                     uiImage.color = Globals.Instance.GetPlayerColor(owner);
                     uiImage.color = new Color(uiImage.color.r, uiImage.color.g, uiImage.color.b, 0.5f);
                 }
+            }
+
+            // Show NoOwner when no one owns the planet
+            if (noOwner)
+                noOwner.SetActive(owner == Globals.ePlayer.None);
+
+            // Spawn explosion on capture
+            if (explosionPrefab && oldOwner != newOwner && newOwner != Globals.ePlayer.None)
+            {
+                Instantiate(explosionPrefab, transform.position, Quaternion.identity);
             }
 
             if (oldOwner != newOwner)
@@ -154,6 +174,8 @@ namespace Warmask.Planet
             }
 
             UpdateShipTypeIcon(planetColor);
+
+            EnsureShieldBadge();
 
             // The mask changes production speed, not the planet's visual size.
             float adjustedSize = planet_size * maskModifier;
@@ -188,12 +210,30 @@ namespace Warmask.Planet
                 icon.transform.localScale = Vector3.one * 0.4f;
                 shipTypeIcon = icon.AddComponent<SpriteRenderer>();
                 shipTypeIcon.sprite = shipSprite;
+                shipTypeIcon.sortingLayerName = "UI";
                 shipTypeIcon.sortingOrder = 20;
                 if (planetRenderer)
                     shipTypeIcon.sharedMaterial = planetRenderer.sharedMaterial;
             }
 
             shipTypeIcon.color = typeColor;
+        }
+
+        private void EnsureShieldBadge()
+        {
+            if (!shieldBadge)
+                return;
+            if (Globals.Instance && Globals.Instance.ShieldSprite)
+                shieldBadge.sprite = Globals.Instance.ShieldSprite;
+            shieldBadge.color = new Color(1f, 1f, 1f, 0.45f);
+        }
+
+        private void SetShieldBadgeVisible(bool visible)
+        {
+            if (!shieldBadge)
+                return;
+
+            shieldBadge.gameObject.SetActive(visible);
         }
 
         void Update()
@@ -214,7 +254,7 @@ namespace Warmask.Planet
                 {
                     timer = 0f;
                     unitCount = Mathf.Max(0, unitCount - 1);
-                    UpdateDebugLabel("Falling: " + unitCount.ToString(), lastAttacker);
+                    UpdateDebugLabel("Falling:", lastAttacker);
                 }
 
                 if (unitCount == 0)
@@ -282,17 +322,6 @@ namespace Warmask.Planet
                 highlight.DOScale(1.15f, 0.5f).SetLoops(-1, LoopType.Yoyo).SetEase(Ease.InOutSine);
         }
 
-        public void OnPointerClick(PointerEventData eventData)
-        {
-            PlanetSelectionManager manager = PlanetSelectionManager.Instance;
-            if (manager != null && !manager.UsesPointerSource)
-            {
-                bool sendAll = Keyboard.current != null &&
-                    (Keyboard.current.leftCtrlKey.isPressed || Keyboard.current.rightCtrlKey.isPressed);
-                manager.HandlePlanetClick(this, sendAll);
-            }
-        }
-
         void OnValidate()
         {
             // Never run runtime setup on play-mode callbacks or prefab assets.
@@ -304,25 +333,49 @@ namespace Warmask.Planet
 
         public void UpdateDebugLabel(string text = null, Globals.ePlayer textOwner = Globals.ePlayer.None)
         {
-            if (!text_label)
+            if (!statusText)
                 return;
 
             if (Time.time < feedbackUntil)
             {
-                text_label.text = feedbackText;
-                text_label.color = feedbackColor;
+                statusText.text = feedbackText;
+                statusText.color = feedbackColor;
+                SetShieldBadgeVisible(false);
                 return;
             }
 
             if (textOwner != Globals.ePlayer.None)
-                text_label.color = Globals.Instance.GetPlayerColor(textOwner);
+                statusText.color = Globals.Instance.GetPlayerColor(textOwner);
             else //reset to owner color
-                text_label.color = Globals.Instance.GetPlayerColor(owner);
+                statusText.color = Globals.Instance.GetPlayerColor(owner);
 
-            if (!string.IsNullOrEmpty(text))
-                text_label.text = text;
-            else //by default show unit count
-                text_label.text = unitCount.ToString();
+            // Under attack detection
+            bool underAttack = numEnemyShipsInOrbit > 0;
+
+            // Always update defense strength with current unit count
+            if (defenseStrength)
+            {
+                defenseStrength.text = unitCount.ToString();
+                defenseStrength.fontSize = 18 + Mathf.Clamp((float)unitCount / Mathf.Max(1, maxUnitCount), 0f, 1f) * 12f;
+                defenseStrength.color = underAttack ? new Color(1f, 0.3f, 0.3f) : Color.white;
+            }
+
+            if (!string.IsNullOrEmpty(text) && !int.TryParse(text, out _))
+            {
+                // Status message (not a number) - show in statusText
+                statusText.text = text;
+                // Keep shield visible when under attack (defense value shown in red)
+                SetShieldBadgeVisible(underAttack);
+            }
+            else
+            {
+                // Number (unit count) - update defense strength in shield only
+                string countText = !string.IsNullOrEmpty(text) ? text : unitCount.ToString();
+
+                statusText.text = "";
+
+                SetShieldBadgeVisible(true);
+            }
         }
 
         public void ShowNoShipsFeedback()
@@ -359,20 +412,6 @@ namespace Warmask.Planet
         {
             if (Globals.Instance != null)
                 Globals.Instance.OnMaskChanged.RemoveListener(OnMaskChanged);
-        }
-
-        public void OnPointerEnter(PointerEventData eventData)
-        {
-            PlanetSelectionManager manager = PlanetSelectionManager.Instance;
-            if (manager != null && !manager.UsesPointerSource)
-                manager.HandlePlanetHoverStart(this);
-        }
-
-        public void OnPointerExit(PointerEventData eventData)
-        {
-            PlanetSelectionManager manager = PlanetSelectionManager.Instance;
-            if (manager != null && !manager.UsesPointerSource)
-                manager.HandlePlanetHoverEnd(this);
         }
 
         public void OnShipCountChanged(Dictionary<int, int> shipCountCache)

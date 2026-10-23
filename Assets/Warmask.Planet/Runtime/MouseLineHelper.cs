@@ -126,8 +126,9 @@ namespace Warmask.Planet
         {
             if (rectTransform)
             {
+                _endPoint = null; // a new selection follows the cursor again
                 lineRenderer.SetPosition(0, rectTransform.position);
-                if (EndPointFollowsMouseWhenNotSet && !_endPoint)
+                if (EndPointFollowsMouseWhenNotSet)
                     lineRenderer.SetPosition(1, rectTransform.position);
             }
             if(EndPointFollowsMouseWhenNotSet || !rectTransform)

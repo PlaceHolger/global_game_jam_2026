@@ -9,7 +9,7 @@ using TMPro;
 /// TonyViT's version has some unnecessary properties and doesn't use the
 /// OnPreRenderText event, which allows for fewer mesh updates.
 /// </summary>
-[ExecuteInEditMode]
+[ExecuteAlways]
 [RequireComponent(typeof(TextMeshProUGUI))]
 public class CircularTextMeshPro : MonoBehaviour {
     private TextMeshProUGUI m_TextComponent;

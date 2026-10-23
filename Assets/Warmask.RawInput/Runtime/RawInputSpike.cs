@@ -25,11 +25,6 @@ namespace Warmask.RawInput
         private string _status = "F9: two-mouse spike (needs 2 mice; 1 mouse runs a P1-only check)";
         private GUIStyle _style;
 
-        private void Awake()
-        {
-            Debug.Log($"[RawInputSpike] Ready. F9 starts the two-mouse spike. Screen={Screen.width}x{Screen.height}");
-        }
-
         private void Update()
         {
             if (Keyboard.current == null)
@@ -93,7 +88,6 @@ namespace Warmask.RawInput
             Cursor.lockState = CursorLockMode.Locked;
             _active = true;
             _status = $"1 mouse: P1 raw-input check ({ShortName(p1Device.Name)}). F10 releases cursor. Plug a second mouse for P2.";
-            Debug.Log($"[RawInputSpike] One mouse only. P1 is using handle={p1Device.Handle} name={p1Device.Name}. Plug in a second mouse and restart play for P2.\n{_status}");
         }
 
         private void StartDualMouse(RawInputMouseRouter.DeviceInfo p1Device, RawInputMouseRouter.DeviceInfo p2Device)
@@ -128,7 +122,6 @@ namespace Warmask.RawInput
             _p2Name = ShortName(p2Device.Name);
             _p2DeviceHandle = p2Device.Handle;
             UpdateDualStatus();
-            Debug.Log($"[RawInputSpike] Two-mouse mode active.\nP1 device: {p1Device.Name}\nP2 device: {p2Device.Name}");
         }
 
         private RawInputMousePointer CreatePointer(string name, RawInputMouseRouter.DeviceInfo device, Globals.ePlayer player)

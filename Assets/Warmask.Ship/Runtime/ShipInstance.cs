@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Warmask.Core;
@@ -9,14 +10,13 @@ namespace Warmask.Ship
     {
         [Header("Movement")] [SerializeField] private float moveSpeed = 5f;
         [SerializeField] private float maxTurnAnglePerSecond = 90f;
+        [SerializeField] private float moveCommandSpeedBoost = 1.8f;
+        [SerializeField] private float moveCommandBoostDuration = 1.2f;
 
         [Header("Boid Behavior")] [SerializeField]
         private float neighborRadius = 5f;
 
         [SerializeField] private float separationDistance = 2f;
-        [SerializeField] private float alignmentWeight = 1f;
-        [SerializeField] private float cohesionWeight = 1f;
-        [SerializeField] private float separationWeight = 1.5f;
         [SerializeField] private float targetWeight = 2f;
 
         [Header("Combat")] [SerializeField] private float detectionRadius = 10f;
@@ -27,9 +27,7 @@ namespace Warmask.Ship
         [SerializeField] private LineRenderer laserVisual;
 
         [Header("Enemy Handling")] [SerializeField]
-        private float enemyAvoidanceWeight = 2f;
-
-        [SerializeField] private float enemyAvoidanceRadius = 3f;
+        private float enemyAvoidanceRadius = 3f;
         [SerializeField] private float maxDistanceFromTarget = 5f;
         [SerializeField] private float minDistanceFromTarget = 2f;
         [SerializeField] private float targetBehindDistance = 3f;
@@ -42,7 +40,6 @@ namespace Warmask.Ship
         private float aiUpdateInterval = 0.1f;
 
         [SerializeField] private int maxColliderBufferSize = 50;
-
         [Header("Orbit Breaking")] [SerializeField]
         private float orbitBreakTime = 3f;
 
@@ -65,7 +62,12 @@ namespace Warmask.Ship
         private bool pendingDeath;
         private int playerId;
         private Globals.eType shipType;
-        
+        private bool hasMoveCommand;
+        private float moveCommandBoostRemaining;
+        private ShipMaskFader maskFader;
+
+        private const float MoveCommandArriveTolerance = 0.75f;
+
         public Globals.eType ShipType => shipType;
 
         // Orbit breaking state
@@ -83,6 +85,7 @@ namespace Warmask.Ship
 
         // Collider caching to reduce allocations
         private Collider2D[] colliderBuffer;
+        private ContactFilter2D colliderFilter;
         private int cachedColliderCount;
         private int frameOfLastCache = -1;
         private float cachedMaxRadius;
@@ -156,6 +159,10 @@ namespace Warmask.Ship
             orbitBreakJitter = Vector2.zero;
             laserEndPosition = Vector3.zero;
             maxTurnAnglePerSecond = 90.0f;
+            hasMoveCommand = false;
+            moveCommandBoostRemaining = 0f;
+            if (maskFader)
+                maskFader.SetMoving(false);
 
             // Shipyard-Referenz wird NICHT hier zurückgesetzt
             // Das macht SpawnShip/RegisterShip
@@ -191,7 +198,11 @@ namespace Warmask.Ship
         {
             cachedTransform = transform;
             ownCollider = GetComponent<Collider2D>();
+            maskFader = GetComponent<ShipMaskFader>();
             colliderBuffer = new Collider2D[maxColliderBufferSize];
+            colliderFilter = new ContactFilter2D();
+            colliderFilter.useTriggers = Physics2D.queriesHitTriggers;
+            colliderFilter.SetLayerMask(shipLayerMask);
 
             sqrDetectionRadius = detectionRadius * detectionRadius;
             sqrNeighborRadius = neighborRadius * neighborRadius;
@@ -278,8 +289,20 @@ namespace Warmask.Ship
                 velocity = rotation * velocity;
             }
 
-            velocity = velocity.normalized * moveSpeed;
+            float speed = moveSpeed;
+            if (hasMoveCommand && moveCommandBoostRemaining > 0f)
+            {
+                moveCommandBoostRemaining = Mathf.Max(0f, moveCommandBoostRemaining - Time.deltaTime);
+                float boostT = moveCommandBoostDuration > 0f
+                    ? moveCommandBoostRemaining / moveCommandBoostDuration
+                    : 0f;
+                speed *= Mathf.Lerp(1f, Mathf.Max(1f, moveCommandSpeedBoost),
+                    Mathf.SmoothStep(0f, 1f, boostT));
+            }
+
+            velocity = velocity.normalized * speed;
             cachedTransform.position += (Vector3)(velocity * Time.deltaTime);
+            UpdateMoveCommandArrival();
 
             if (velocity.sqrMagnitude > 0.001f)
             {
@@ -299,11 +322,11 @@ namespace Warmask.Ship
             if (frameOfLastCache == Time.frameCount) return;
 
             frameOfLastCache = Time.frameCount;
-            cachedColliderCount = Physics2D.OverlapCircleNonAlloc(
+            cachedColliderCount = Physics2D.OverlapCircle(
                 cachedPosition,
                 cachedMaxRadius,
-                colliderBuffer,
-                shipLayerMask
+                colliderFilter,
+                colliderBuffer
             );
         }
 
@@ -322,13 +345,52 @@ namespace Warmask.Ship
             target = newTarget;
         }
 
+        public void SetMoveCommand(Transform newTarget, float targetRadius)
+        {
+            if (!newTarget) return;
+
+            SetTarget(newTarget);
+            SetMinTargetDistance(targetRadius);
+            hasMoveCommand = true;
+            moveCommandBoostRemaining = Mathf.Max(0f, moveCommandBoostDuration);
+
+            Vector2 toTarget = (Vector2)newTarget.position - (Vector2)cachedTransform.position;
+            if (toTarget.sqrMagnitude > 0.0001f)
+                velocity = toTarget.normalized * moveSpeed;
+
+            if (maskFader)
+                maskFader.SetMoving(true);
+        }
+
+        private void UpdateMoveCommandArrival()
+        {
+            if (!hasMoveCommand) return;
+
+            if (!target)
+            {
+                ClearMoveCommand();
+                return;
+            }
+
+            float arriveDistance = minDistanceFromTarget + MoveCommandArriveTolerance;
+            Vector2 toTarget = (Vector2)target.position - (Vector2)cachedTransform.position;
+            if (toTarget.sqrMagnitude <= arriveDistance * arriveDistance)
+                ClearMoveCommand();
+        }
+
+        private void ClearMoveCommand()
+        {
+            hasMoveCommand = false;
+            moveCommandBoostRemaining = 0f;
+            if (maskFader)
+                maskFader.SetMoving(false);
+        }
+
         public void SetType(Globals.eType type)
         {
             shipType = type;
-            if (TryGetComponent(out ShipMaskFader shipMaskFader))
-            {
-                shipMaskFader.SetType(type);
-            }
+            if (maskFader)
+                maskFader.SetType(type);
         }
 
 
@@ -354,11 +416,7 @@ namespace Warmask.Ship
             pendingDeath = true;
         }
 
-        private void Die()
-        {
-            if (pendingDeath) return;
-            pendingDeath = true;
-        }
+        public void Die() => RequestDeath();
 
         private bool IsTooFarFromTarget()
         {
@@ -409,14 +467,42 @@ namespace Warmask.Ship
                     laserVisual.SetPosition(0, transform.position);
                     laserVisual.SetPosition(1, laserEndPosition);
                     laserVisual.gameObject.SetActive(true);
-                    if (laserAudioEffect )
+                    
+                    // Set laser color to player color
+                    if (Globals.Instance)
+                    {
+                        Color playerColor = Globals.Instance.GetPlayerColor((Globals.ePlayer)playerId);
+                        var gradient = new Gradient();
+                        gradient.SetKeys(
+                            new GradientColorKey[] { new GradientColorKey(playerColor * 2f, 0f), new GradientColorKey(playerColor, 1f) },
+                            new GradientAlphaKey[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(0.3f, 1f) }
+                        );
+                        laserVisual.colorGradient = gradient;
+                    }
+                    
+                    if (laserAudioEffect)
                     {
                         laserAudioEffect.PlayOneShot(laserAudioEffect.clip);
                     }
                 }
 
+                // Flash effect
+                if (spriteRenderer)
+                {
+                    StartCoroutine(FlashSprite());
+                }
+
                 showLaserThisFrame = true;
             }
+        }
+
+        private IEnumerator FlashSprite()
+        {
+            if (!spriteRenderer) yield break;
+            Color originalColor = spriteRenderer.color;
+            spriteRenderer.color = Color.white;
+            yield return new WaitForSeconds(0.05f);
+            spriteRenderer.color = originalColor;
         }
 
         private ShipInstance DetectEnemy()
@@ -493,15 +579,22 @@ namespace Warmask.Ship
         public void SetPlayerId(int id)
         {
             playerId = id;
+            Color playerColor = Globals.Instance.GetPlayerColor((Globals.ePlayer)playerId);
             spriteRenderer.sprite = Globals.Instance.GetPlayerSprite((Globals.ePlayer)playerId);
-            spriteRenderer.color = Globals.Instance.GetPlayerColor((Globals.ePlayer)playerId);
-            if (Globals.trailInPlayerColor)
+            spriteRenderer.color = playerColor;
+            if (maskFader)
+                maskFader.SetPlayerColor(spriteRenderer, playerColor);
+            
+            // Color the trail
+            var trails = GetComponentsInChildren<TrailRenderer>();
+            foreach (var trail in trails)
             {
-                var trailCompsInChildren = GetComponentsInChildren<TrailRenderer>();
-                foreach (var trail in trailCompsInChildren)
-                {
-                    trail.startColor = Globals.Instance.GetPlayerColor((Globals.ePlayer)playerId);
-                }
+                var gradient = new Gradient();
+                gradient.SetKeys(
+                    new GradientColorKey[] { new GradientColorKey(playerColor, 0f), new GradientColorKey(playerColor, 1f) },
+                    new GradientAlphaKey[] { new GradientAlphaKey(0.5f, 0f), new GradientAlphaKey(0f, 1f) }
+                );
+                trail.colorGradient = gradient;
             }
         }
         
@@ -509,6 +602,8 @@ namespace Warmask.Ship
         {
             return playerId;
         }
+
+        public bool IsInTransit => hasMoveCommand;
 
         public void FillJobData(out Vector2 position, out Vector2 vel, out int id)
         {

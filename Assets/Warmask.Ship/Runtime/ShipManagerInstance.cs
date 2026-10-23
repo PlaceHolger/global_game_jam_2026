@@ -30,6 +30,7 @@ namespace Warmask.Ship
         private readonly Dictionary<Collider2D, ShipInstance> colliderToShip = new Dictionary<Collider2D, ShipInstance>();
         
         private Collider2D[] overlapBuffer;
+        private ContactFilter2D shipColliderFilter;
 
         // Persistente Arrays
         private NativeArray<float2> positions;
@@ -55,6 +56,9 @@ namespace Warmask.Ship
             }
             Instance = this;
             overlapBuffer = new Collider2D[overlapBufferSize];
+            shipColliderFilter = new ContactFilter2D();
+            shipColliderFilter.useTriggers = Physics2D.queriesHitTriggers;
+            shipColliderFilter.SetLayerMask(shipLayerMask);
             
             CacheSquaredDistances();
         }
@@ -70,6 +74,17 @@ namespace Warmask.Ship
         private void OnDestroy()
         {
             DisposeArrays();
+        }
+
+        public int GetPlayerShipCount(int playerId)
+        {
+            int count = 0;
+            for (int i = 0; i < allShips.Count; i++)
+            {
+                if (allShips[i] && allShips[i].IsAlive && allShips[i].GetPlayerId() == playerId)
+                    count++;
+            }
+            return count;
         }
 
         public void Register(ShipInstance ship)
@@ -155,7 +170,7 @@ namespace Warmask.Ship
             for (int i = 0; i < count; i++)
             {
                 Vector2 pos = new Vector2(positions[i].x, positions[i].y);
-                int hitCount = Physics2D.OverlapCircleNonAlloc(pos, maxRadius, overlapBuffer, shipLayerMask);
+                int hitCount = Physics2D.OverlapCircle(pos, maxRadius, shipColliderFilter, overlapBuffer);
 
                 int startIndex = neighborIndices.Length;
                 int neighborCount = 0;

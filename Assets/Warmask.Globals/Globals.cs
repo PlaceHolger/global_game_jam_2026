@@ -53,6 +53,9 @@ public class Globals : ScriptableObject
 
     [SerializeField] private Sprite[] playerSprites;
 
+    [SerializeField, Tooltip("Plain shield icon for the defense badge shown beside a planet's ground-unit count")]
+    private Sprite shieldIcon;
+
     [SerializeField] private Color[] playerColors = new Color[3]
     {
         Color.white,
@@ -82,16 +85,21 @@ public class Globals : ScriptableObject
     [Range(0f, 1f), Tooltip("Alpha of ships that are not on the active mask. 0 = hidden, 0.25 = ghosted.")]
     public float inactiveShipAlpha = 0f;
 
-    [Min(0f), Tooltip("Shared cooldown after a mask switch. 0 = unlimited (solo). Local MP sets this at match start.")]
-    public float maskSwitchCooldown = 0f;
+    [Min(0f), Tooltip("Shared cooldown after a mask switch, in seconds. Local MP overrides this at match start.")]
+    public float maskSwitchCooldown = 2.5f;
+
+    [Min(1), Tooltip("Extra ships a player may own beyond owned planets * per-planet ship cap, e.g. stacks in transit.")]
+    public int fleetCapBuffer = 20;
 
     [Range(0f, 1f), Tooltip("Local MP default alpha for ships on the inactive mask.")]
     public float localMultiplayerGhostAlpha = 0.15f;
 
     [Min(0f), Tooltip("Local MP default shared mask cooldown, in seconds.")]
-    public float localMultiplayerMaskCooldown = 8f;
+    public float localMultiplayerMaskCooldown = 5f;
 
     public Sprite ShipSprite => playerSprites != null && playerSprites.Length > 0 ? playerSprites[0] : null;
+
+    public Sprite ShieldSprite => shieldIcon;
 
     public const bool trailInPlayerColor = false;
 }

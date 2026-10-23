@@ -10,7 +10,6 @@ namespace Warmask.Planet
         [SerializeField] private Globals.ePlayer player = Globals.ePlayer.Player1;
 
         public Globals.ePlayer Player => player;
-        public bool UsesPointerSource => _pointerSource != null;
 
         private static PlanetSelectionManager _instance;
 
@@ -39,11 +38,19 @@ namespace Warmask.Planet
 
         private PlanetInstance _startPlanet;
         private PlanetInstance _hoverPlanet;
+        private PlanetInstance _flashStart;
+        private PlanetInstance _flashTarget;
         private MouseLineHelper _mouseLineHelper;
         private IPointerSource _pointerSource;
+        private Tween _clearTween;
+        private int _planetLayerMask;
+        private CursorLight _cursorLight;
+        private bool _lightSearchDone;
 
         private void Awake()
         {
+            _planetLayerMask = LayerMask.GetMask("Planets");
+
             if (player == Globals.ePlayer.None)
                 player = Globals.ePlayer.Player1;
 
@@ -69,40 +76,64 @@ namespace Warmask.Planet
 
         private void Update()
         {
-            if (_pointerSource == null)
+            if (!_cursorLight && !_lightSearchDone)
             {
+                _cursorLight = CursorLight.TryGetOrCreate(transform, player, _pointerSource);
+                _lightSearchDone = true;
+            }
+
+            if (_pointerSource != null)
+            {
+                PlanetInstance hoveredPlanet = FindPlanetAt(_pointerSource.ScreenPosition);
+                SetHoveredPlanet(hoveredPlanet);
                 if (_startPlanet)
-                    UpdateOrderPreview(_hoverPlanet);
+                    UpdateOrderPreview(hoveredPlanet);
 
-                if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && _startPlanet)
+                if (_pointerSource.CancelPressed)
                 {
-                    if (!FindPlanetAt(Mouse.current.position.ReadValue()))
-                        ClearSelection();
+                    ClearSelection();
+                    return;
                 }
+
+                if (!_pointerSource.ConfirmPressed)
+                    return;
+
+                if (!hoveredPlanet)
+                {
+                    ClearSelection();
+                    return;
+                }
+
+                HandlePlanetClick(hoveredPlanet, _pointerSource.SendAllHeld);
                 return;
             }
 
-            PlanetInstance hoveredPlanet = FindPlanetAt(_pointerSource.ScreenPosition);
-            SetHoveredPlanet(hoveredPlanet);
+            if (Mouse.current == null)
+                return;
+
+            PlanetInstance mousePlanet = FindPlanetAt(Mouse.current.position.ReadValue());
+            SetHoveredPlanet(mousePlanet);
             if (_startPlanet)
-                UpdateOrderPreview(hoveredPlanet);
+                UpdateOrderPreview(mousePlanet);
 
-            if (_pointerSource.CancelPressed)
+            if (Mouse.current.rightButton.wasPressedThisFrame)
             {
                 ClearSelection();
                 return;
             }
 
-            if (!_pointerSource.ConfirmPressed)
+            if (!Mouse.current.leftButton.wasPressedThisFrame)
                 return;
 
-            if (!hoveredPlanet)
+            if (!mousePlanet)
             {
                 ClearSelection();
                 return;
             }
 
-            HandlePlanetClick(hoveredPlanet, _pointerSource.SendAllHeld);
+            bool sendAll = Keyboard.current != null &&
+                (Keyboard.current.leftCtrlKey.isPressed || Keyboard.current.rightCtrlKey.isPressed);
+            HandlePlanetClick(mousePlanet, sendAll);
         }
 
         private void SetHoveredPlanet(PlanetInstance planet)
@@ -138,19 +169,14 @@ namespace Warmask.Planet
                 worldPoint.z = 0f;
             }
 
-            Collider2D[] hits = Physics2D.OverlapPointAll(worldPoint);
-            foreach (Collider2D hit in hits)
-            {
-                PlanetInstance planet = hit.GetComponentInParent<PlanetInstance>();
-                if (planet)
-                    return planet;
-            }
-
-            return null;
+            Collider2D hit = Physics2D.OverlapPoint(worldPoint, _planetLayerMask);
+            return hit ? hit.GetComponentInParent<PlanetInstance>() : null;
         }
 
         public void ClearSelection()
         {
+            ClearOrderFlash();
+
             if (_startPlanet)
             {
                 _startPlanet.SetSelection(false);
@@ -165,36 +191,35 @@ namespace Warmask.Planet
             }
         }
 
-        public void HandlePlanetHoverStart(PlanetInstance planet)
+        private void ClearOrderFlash()
         {
-            if (!_mouseLineHelper || !planet)
-                return;
-
-            SetHoveredPlanet(planet);
-            if (_startPlanet)
+            if (_clearTween != null)
             {
-                _mouseLineHelper.SetLineType(_startPlanet.PlanetType, planet.PlanetType);
-                UpdateOrderPreview(planet);
+                _clearTween.Kill();
+                _clearTween = null;
             }
-        }
 
-        public void HandlePlanetHoverEnd(PlanetInstance planet)
-        {
-            if (!_mouseLineHelper || !planet)
-                return;
+            if (_flashStart)
+                _flashStart.SetSelection(false);
+            if (_flashTarget)
+                _flashTarget.SetSelection(false);
 
-            if (_hoverPlanet == planet)
-                SetHoveredPlanet(null);
-            if (_startPlanet)
+            _flashStart = null;
+            _flashTarget = null;
+
+            if (_startPlanet == null && _mouseLineHelper)
             {
-                _mouseLineHelper.SetLineType(_startPlanet.PlanetType);
-                UpdateOrderPreview(null);
+                _mouseLineHelper.SetStartPos(null);
+                _mouseLineHelper.SetEndPos(null);
+                _mouseLineHelper.ClearOrderPreview();
             }
         }
 
         public void HandlePlanetClick(PlanetInstance planet, bool sendAll = false)
         {
             if (!_mouseLineHelper || !planet) return;
+
+            ClearOrderFlash();
 
             // No start set -> set start
             if (!_startPlanet)
@@ -240,18 +265,20 @@ namespace Warmask.Planet
             planet.SetSelection(true);
             _startPlanet.SetSelection(false);
 
+            _flashStart = _startPlanet;
+            _flashTarget = planet;
+
             TroopMovementManager.GetInstance().MoveTroops(_startPlanet, planet, numTroopsToSend, _startPlanet.OwnedBy);
 
-            var capturedStart = _startPlanet;
-            DOVirtual.DelayedCall(clearDelay, () =>
+            _clearTween = DOVirtual.DelayedCall(clearDelay, () =>
             {
-                _mouseLineHelper.SetStartPos(null);
-                _mouseLineHelper.SetEndPos(null);
-                _mouseLineHelper.ClearOrderPreview();
-                //planet.UpdateDebugLabel(null);
-                planet.SetSelection(false);
-                capturedStart.SetSelection(false);
-                //capturedStart.UpdateDebugLabel(null);
+                _clearTween = null;
+
+                // A new selection/order owns the line now; its own timer will clean up.
+                if (_startPlanet != null)
+                    return;
+
+                ClearOrderFlash();
             });
 
             _startPlanet = null;
