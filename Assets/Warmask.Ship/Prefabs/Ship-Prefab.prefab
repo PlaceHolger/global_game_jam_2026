@@ -471,7 +471,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Warmask.Ship::ShipMaskFader
   fadeDuration: 1.5
   idleAlpha: 0.8
-  moveHighlightStrength: 0.35
+  idleBrightness: 0.85
+  moveHighlightStrength: 0.25
+  moveBrightness: 1.25
+  idleTrailAlpha: 0.2
+  activeTrailAlpha: 0.75
 --- !u!82 &1655326535953342899
 AudioSource:
   m_ObjectHideFlags: 0

@@ -97,6 +97,25 @@ namespace Warmask.Planet
         private int numOwnShipsInOrbit = 0;
         private Globals.ePlayer lastAttacker = Globals.ePlayer.None;
 
+        private int cachedUnitCount = int.MinValue;
+        private string unitCountText;
+        private string underAttackText;
+        private int underAttackOwnCount;
+        private int underAttackEnemyCount;
+        private Globals.ePlayer underAttackOwner;
+        private Globals.ePlayer underAttackAttacker;
+
+        private string UnitCountText()
+        {
+            if (unitCount != cachedUnitCount)
+            {
+                cachedUnitCount = unitCount;
+                unitCountText = unitCount.ToString();
+            }
+
+            return unitCountText;
+        }
+
         void Start()
         {
             InitializePlanet();
@@ -187,7 +206,7 @@ namespace Warmask.Planet
             _baseScale = new Vector3(visualScale, visualScale, 1f);
             transform.localScale = _hovered ? _baseScale * HoverScale : _baseScale;
 
-            UpdateDebugLabel(unitCount.ToString());
+            UpdateDebugLabel();
 
             SetOwner(owner);
 
@@ -218,10 +237,23 @@ namespace Warmask.Planet
         {
             if (numEnemyShipsInOrbit > 0 && numOwnShipsInOrbit > 0)
             {
-                // Under attack, do not produce units
-                UpdateDebugLabel("Under Attack! (" + ColoredCount(numOwnShipsInOrbit, owner) + " vs " +
-                                 ColoredCount(numEnemyShipsInOrbit, lastAttacker) + ")",
-                    lastAttacker);
+                // Under attack, do not produce units. Rebuild the rich-text label
+                // only when a count or the attacker actually changes.
+                if (underAttackText == null ||
+                    underAttackOwnCount != numOwnShipsInOrbit ||
+                    underAttackEnemyCount != numEnemyShipsInOrbit ||
+                    underAttackOwner != owner ||
+                    underAttackAttacker != lastAttacker)
+                {
+                    underAttackOwnCount = numOwnShipsInOrbit;
+                    underAttackEnemyCount = numEnemyShipsInOrbit;
+                    underAttackOwner = owner;
+                    underAttackAttacker = lastAttacker;
+                    underAttackText = "Under Attack! (" + ColoredCount(numOwnShipsInOrbit, owner) + " vs " +
+                                      ColoredCount(numEnemyShipsInOrbit, lastAttacker) + ")";
+                }
+
+                UpdateDebugLabel(underAttackText, lastAttacker);
                 return;
             }
 
@@ -261,7 +293,7 @@ namespace Warmask.Planet
                 if (unitCount <= maxUnitCount)
                 {
                     unitCount++;
-                    UpdateDebugLabel(unitCount.ToString());
+                    UpdateDebugLabel();
                 }
 
                 onUnitCreated.Invoke((int)planet_type);
@@ -336,7 +368,9 @@ namespace Warmask.Planet
             // Always update defense strength with current unit count
             if (defenseStrength)
             {
-                defenseStrength.text = unitCount.ToString();
+                string countText = UnitCountText();
+                if (defenseStrength.text != countText)
+                    defenseStrength.text = countText;
                 defenseStrength.fontSize = 18 + Mathf.Clamp((float)unitCount / Mathf.Max(1, maxUnitCount), 0f, 1f) * 12f;
                 defenseStrength.color = Globals.Instance.GetPlayerColor(owner);
             }
@@ -351,8 +385,6 @@ namespace Warmask.Planet
             else
             {
                 // Number (unit count) - update defense strength in shield only
-                string countText = !string.IsNullOrEmpty(text) ? text : unitCount.ToString();
-
                 statusText.text = "";
 
                 SetShieldBadgeVisible(true);
@@ -426,7 +458,7 @@ namespace Warmask.Planet
             }
             else
             {
-                UpdateDebugLabel(unitCount.ToString());
+                UpdateDebugLabel();
                 lastAttacker = Globals.ePlayer.None;
             }
         }

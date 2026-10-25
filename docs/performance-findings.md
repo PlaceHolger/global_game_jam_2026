@@ -25,13 +25,15 @@ replaced after the Web target was confirmed).
   material on the ship prefab (a null material renders magenta in URP 2D). It is
   restored; trails now use player colours.
 - **Task feedback (2026-10-25):** ships with a move order or an enemy target get
-  a long, full-width trail and an HDR-bright hull (player colour × 1.5, bloom
-  picks it up). Idle ships keep a visible 1 s trail at half width and 20% alpha,
+  a long, full-width trail and a modest HDR hull (idle RGB ×0.85; tasked hull lerp
+  0.25 toward white, then ×1.25, so bloom catches it without washing out the
+  fight). Idle ships keep a visible 1 s trail at half width and 20% alpha,
   so they still read as moving but do not compete with the action. Trail state,
-  width and HDR brightness are covered by
+  width and idle/tasked hull brightness are covered by
   `IdleShip_UsesShortTrail_AssignedShip_UsesLongTrail`.
-- **Tests:** 22/22 PlayMode tests pass, including mask-aware firing,
-  full-speed coarse ticking, the trail/HDR state test and the dev-overlay smoke test.
+- **Tests:** 23/23 PlayMode tests pass, including mask-aware firing,
+  full-speed coarse ticking, the trail/HDR state test, the background
+  cover-fit test and the dev-overlay smoke test.
 - **Browser numbers need a Development Build.** A dev-only overlay
   (`FrameStatsOverlay`) reports FPS, CPU/GPU frame time and GC allocations
   in the player; it is compiled out of release builds.
@@ -112,7 +114,8 @@ replaced after the Web target was confirmed).
 | `maxDistanceFromTarget` | 3 (was 4; live battle measured max 3.27 units from the nearest planet) |
 | Idle trail | 1 s, width ×0.5, start alpha 0.2 |
 | Assigned trail | 5 s, width ×1, start alpha 0.75 |
-| Assigned hull | lerp 0.35 toward white, then ×1.5 HDR for bloom |
+| Idle hull | RGB ×0.85 (below bloom threshold) |
+| Assigned hull | lerp 0.25 toward white, then ×1.25 HDR for bloom |
 
 ---
 
@@ -239,8 +242,9 @@ overlay by design.
   makes the app significantly slower; the manual recommends it only for small
   games. It is the right tool for "which method inside `Ship.Tick`", not for
   frame numbers. Leave it off unless a gap in the markers needs explaining.
-- The overlay is created automatically and shows FPS, CPU/GPU frame ms,
-  main/render thread ms, GC KB/frame and managed MB, refreshed every 0.5 s.
+- The overlay is created automatically and starts hidden. Press **F2** to show or
+  hide it. It reports FPS, CPU/GPU frame ms, main/render thread ms, GC KB/frame
+  and managed MB, refreshed every 0.5 s.
 - **WebGL2 cannot report GPU time** (`FrameTimingManager` is "partial: GPU Frame
   Time measurement is unsupported"), so `GPU` reads `n/a` on the fallback path.
   `Frame Timing Stats` is enabled in Player Settings for player builds.
@@ -402,9 +406,10 @@ trails, firing effects, audio) are more useful.
 
 ### Status
 
-- **22/22 PlayMode tests passed** on 2026-10-25 after the task-glow, coloured
-  planet numbers and leash-3 changes. `Measure500Ships` still passes its FPS
-  gate; the full suite takes ~98 s.
+- **23/23 PlayMode tests passed** on 2026-10-25 after the task-glow, coloured
+  planet numbers, leash-3, background cover-fit, cursor-light light-layer and
+  allocation work. `Measure500Ships` still passes its FPS gate; the full suite
+  takes ~98 s.
 - **If every C# phase suddenly costs 5–20× more, check
   `ProfilerDriver.deepProfiling`.** It persists across domain reloads and made
   the 500-ship suite measure 27 FPS with 4–9 ms neighbour lists. Turning it off
@@ -464,9 +469,9 @@ profile first. None of them touch ship simulation behaviour.
 
 | # | Where | What it does today | Cheap fix | Why it matters |
 |---|---|---|---|---|
-| 1 | `FleetStatusHud.OnGUI` (`Assets/Warmask.Shipyard/Runtime/FleetStatusHud.cs:46-50`) | Calls `GetPlayerShipCount` twice per GUI pass. Unity runs OnGUI at least twice per frame (Layout + Repaint), so 4 full ship scans/frame. | Cache both counts and refresh at 4 Hz (`Time.unscaledTime`), independent of GUI passes. | At 500 ships this is ~1,000–2,000 ship checks per frame for two text labels. |
-| 2 | `ShipyardInstance.UpdateProximityShipCache` (`ShipyardInstance.cs:221`) | Runs every frame for every shipyard and walks its `ownedShips` to rebuild `shipCountCache`. | Throttle to 0.1–0.2 s, or mark dirty when a ship spawns/dies/enters/leaves. | Nine shipyards walk overlapping ship lists every frame just to feed labels. |
-| 3 | `PlanetInstance.Update` under-attack branch (`PlanetInstance.cs:219-224`) | Rebuilds the `"Under Attack! (X vs Y)"` rich-text string every frame. | Cache the last under-attack text/target; rebuild only when owner, attacker or counts change. | Removes per-frame string/GC churn on every contested planet during battles. |
+| 1 | `FleetStatusHud.OnGUI` | Calls `GetPlayerShipCount` twice per GUI pass. Unity runs OnGUI at least twice per frame (Layout + Repaint), so 4 full ship scans/frame. | **Done 2026-10-25:** counts refresh at 4 Hz and the `GUIContent`/labels are cached. | At 500 ships this was ~1,000–2,000 ship checks per frame for two text labels. |
+| 2 | `ShipyardInstance.UpdateProximityShipCache` (`ShipyardInstance.cs:221`) | Ran every frame for every shipyard, walking its `ownedShips` to rebuild `shipCountCache`. | **Done 2026-10-25:** throttled to 10 Hz; the `ToString()` allocation is gone. | Nine shipyards no longer walk overlapping ship lists every frame just to feed labels. |
+| 3 | `PlanetInstance.Update` under-attack branch (`PlanetInstance.cs:219-224`) | Rebuilt the `"Under Attack! (X vs Y)"` rich-text string every frame. | **Done 2026-10-25:** cached text/target, rebuilt only when owner, attacker or counts change. | Removes per-frame string/GC churn on every contested planet during battles. |
 | 4 | `Globals.Instance` accesses | Unity null check on each property read; ~2,600 reads in one deep-profiled frame. | Cache the instance in the few hot loops (`ShipInstance`, `ShipyardInstance`). | Micro unless a profile shows it; the counts are real, the deep timings are inflated. |
 
 **Are trails the cost?** Not known to be. The editor trail ablation was ~4 FPS,
@@ -492,8 +497,8 @@ and the scene systems above — not the trails.
 - [ ] Investigate the remaining min-FPS spikes.
 - [x] Cache-free cleanup: remove the unused `Ship-Instanced.mat` and the dead
       per-ship boid fields (`neighborRadius`, `separationDistance`,
-      `enemyAvoidanceRadius`). Done 2026-10-25; suite 22/22.
+      `enemyAvoidanceRadius`). Done 2026-10-25; suite 23/23.
 - [ ] Optional: decide whether a planet ship-type badge is wanted; the old
       `ShipTypeIcon` was removed because it rendered black and was redundant.
-- [ ] Optional: throttle `FleetStatusHud` / shipyard ship-count scans and cache
-      the under-attack label string (see low-hanging table).
+- [x] Throttle `FleetStatusHud` / shipyard ship-count scans and cache the
+      under-attack label string. Done 2026-10-25; suite 23/23.

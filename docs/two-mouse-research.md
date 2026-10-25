@@ -67,6 +67,7 @@ Unity 6 ships `UnityEngine.Windows.Input.ForwardRawInput` and a complete C# exam
 ### Platform and build concerns
 
 - Windows standalone and Windows editor only. No WebGL/macOS/Linux promise.
+- **Web build:** browsers merge every mouse into a single pointer, so two physical mice cannot be separated there even with Pointer Lock. Local multiplayer in the browser uses **P1 mouse + P2 gamepad** (Start to join), or P2 keyboard (J, then WASD/arrows + Enter). Two-mouse mode remains a Windows standalone/editor feature.
 - IL2CPP: `[MonoPInvokeCallback]`, delegate lifetime, and marshalling need a build test.
 - The raw-input window must be created on the main thread; the Unity example does it in `Awake`.
 - `Windows.Input.ForwardRawInput` requires Unity 6; the project is on 6000.7, so it is available. Keep a version guard if the project ever goes back to 6000.3.

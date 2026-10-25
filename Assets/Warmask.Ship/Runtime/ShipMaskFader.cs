@@ -10,11 +10,14 @@ namespace Warmask.Ship
         [SerializeField, Range(0f, 1f), Tooltip("Alpha multiplier for idle ships, so moving ships stand out.")]
         private float idleAlpha = 0.8f;
 
+        [SerializeField, Range(0f, 1f), Tooltip("RGB multiplier for idle ships, so busy ships stand out without blowing out.")]
+        private float idleBrightness = 0.85f;
+
         [SerializeField, Range(0f, 1f), Tooltip("How far moving ships tint toward white.")]
-        private float moveHighlightStrength = 0.35f;
+        private float moveHighlightStrength = 0.25f;
 
         [SerializeField, Range(1f, 3f), Tooltip("HDR multiplier for ships with a task, so bloom picks them up.")]
-        private float moveBrightness = 1.5f;
+        private float moveBrightness = 1.25f;
 
         [SerializeField, Range(0f, 1f), Tooltip("Trail start alpha while the ship has no task.")]
         private float idleTrailAlpha = 0.2f;
@@ -226,7 +229,7 @@ namespace Warmask.Ship
                 Color baseColor = baseColors != null && i < baseColors.Length ? baseColors[i] : sr.color;
                 Color nextColor = isMoving
                     ? Color.Lerp(baseColor, Color.white, moveHighlightStrength) * moveBrightness
-                    : baseColor;
+                    : new Color(baseColor.r * idleBrightness, baseColor.g * idleBrightness, baseColor.b * idleBrightness, baseColor.a);
                 nextColor.a = visibleAlpha;
                 sr.color = nextColor;
             }

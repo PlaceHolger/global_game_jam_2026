@@ -5,21 +5,19 @@ using UnityEngine.Rendering.Universal;
 namespace Warmask.Planet
 {
     /// <summary>
-    /// Player-colored point light riding along with that player's cursor.
-    /// Clones a disabled scene point light (config: blend style, sorting layers, cookie)
-    /// and moves it to the cursor so the planet normal maps read as lit spheres.
-    /// Shortcut: bump shading only shows while a cursor light is near; upgrade when
-    /// dedicated per-planet lights become a thing.
+    /// Player-coloured light riding along with that player's cursor. It is restricted
+    /// to the Background rendering layer and adds a soft, low-intensity pool, so it
+    /// lifts the dark nebula without adding a white flare over ships.
     /// </summary>
     public class CursorLight : MonoBehaviour
     {
         private static Light2D _template;
 
-        [SerializeField, Tooltip("Brightness of the cursor light (subtle pointer glow)")]
-        private float intensity = 12f;
+        [SerializeField, Tooltip("Brightness of the cursor light on the background")]
+        private float intensity = 0.15f;
 
         [SerializeField, Tooltip("Outer radius of the cursor light in world units")]
-        private float radius = 3f;
+        private float radius = 4f;
 
         private Light2D _light2d;
         private IPointerSource _pointerSource;
@@ -89,15 +87,19 @@ namespace Warmask.Planet
             if (!_light2d)
                 return;
 
-            // Renderer2D blend style 0 is "Multiply": tints/darkens toward the light color,
-            // which reads as real illumination. Style 1 is "Additive" (glow/flare).
-            _light2d.blendStyleIndex = 0;
+            // Additive at a low intensity lifts a near-black background more than the
+            // already bright ships; light layers keep it off ships/planets entirely.
+            // High additive intensities were the white-flare bug, not additive itself.
+            _light2d.blendStyleIndex = 1;
             // no cookie: the soft-gradient cookie reads as a flat flare sprite,
             // while cookie-less falloff reads as real radial lighting
             _light2d.lightCookieSprite = null;
             _light2d.intensity = intensity;
             _light2d.pointLightOuterRadius = radius;
-            _light2d.pointLightInnerRadius = radius * 0.25f;
+            _light2d.pointLightInnerRadius = 0f;
+            // Rendering layer 2 is "Background"; the background renderer opts in with
+            // mask 3, while ships/planets stay on Default (1) and ignore this light.
+            _light2d.renderingLayerMask = 2;
             // Only affect the Default sorting layer; UI sprites (on the "UI" layer)
             // are excluded so the cursor light never tints/brightens UI.
             _light2d.targetSortingLayers = new int[] { 0 };
@@ -110,7 +112,7 @@ namespace Warmask.Planet
 
             // Planets ship with an inactive "Spot Light 2D" child (radius 3, no cookie,
             // smooth falloff). That is the look we want at the cursor position.
-            PlanetInstance planet = FindFirstObjectByType<PlanetInstance>(FindObjectsInactive.Exclude);
+            PlanetInstance planet = FindAnyObjectByType<PlanetInstance>(FindObjectsInactive.Exclude);
             if (planet)
             {
                 Light2D planetLight = planet.GetComponentInChildren<Light2D>(true);
@@ -121,7 +123,7 @@ namespace Warmask.Planet
                 }
             }
 
-            Light2D[] lights = FindObjectsByType<Light2D>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            Light2D[] lights = FindObjectsByType<Light2D>(FindObjectsInactive.Include);
             foreach (Light2D light in lights)
             {
                 if (!light || light.lightType != Light2D.LightType.Point)

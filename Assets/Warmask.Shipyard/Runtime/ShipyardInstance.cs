@@ -62,6 +62,8 @@ namespace Warmask.Shipyard
 
         private ObjectPool<GameObject> shipPool;
         private float nextSpawnTime;
+        private const float ProximityCacheInterval = 0.1f;
+        private float nextProximityCacheTime;
         private Transform cachedTransform;
         private List<ShipInstance> ownedShips = new();
         
@@ -214,8 +216,14 @@ namespace Warmask.Shipyard
                 nextSpawnTime = Time.time + spawnInterval;
             }
 
-            UpdateProximityShipCache();
-            planetInstance.OnShipCountChanged(shipCountCache);
+            // Ship scans feed only labels and transfer counts; 10 Hz is plenty and
+            // cuts the every-frame walk over every shipyard's ship list.
+            if (Time.time >= nextProximityCacheTime)
+            {
+                nextProximityCacheTime = Time.time + ProximityCacheInterval;
+                UpdateProximityShipCache();
+                planetInstance.OnShipCountChanged(shipCountCache);
+            }
         }
 
         private void UpdateProximityShipCache()

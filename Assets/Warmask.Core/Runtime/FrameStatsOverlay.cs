@@ -34,6 +34,7 @@ namespace Warmask.Core
         private int frames;
         private float elapsed;
         private float nextRefresh;
+        private bool visible;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Create()
@@ -50,6 +51,7 @@ namespace Warmask.Core
         {
             Instance = this;
             gcAlloc = ProfilerRecorder.StartNew(ProfilerCategory.Memory, "GC.Alloc");
+            Debug.Log("[FrameStats] F2 toggles the frame stats overlay.");
         }
 
         private void OnDestroy()
@@ -100,6 +102,15 @@ namespace Warmask.Core
 
         private void OnGUI()
         {
+            if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.F2)
+            {
+                visible = !visible;
+                Event.current.Use();
+            }
+
+            if (!visible)
+                return;
+
             if (style == null)
             {
                 style = new GUIStyle(GUI.skin.label)

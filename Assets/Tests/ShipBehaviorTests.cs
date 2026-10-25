@@ -139,9 +139,13 @@ namespace Warmask.Tests
                 "Ship sprite has no material; URP 2D renders a null sprite material as magenta.");
             Assert.IsFalse(sprite.sharedMaterial.shader.name.Contains("Error"),
                 "Ship sprite uses an error shader.");
-            Assert.AreEqual(expected.r, sprite.color.r, 0.01f, "Sprite tint is not the player colour.");
-            Assert.AreEqual(expected.g, sprite.color.g, 0.01f, "Sprite tint is not the player colour.");
-            Assert.AreEqual(expected.b, sprite.color.b, 0.01f, "Sprite tint is not the player colour.");
+            // Idle ships are dimmed uniformly, so compare hue rather than raw brightness.
+            Color spriteColor = sprite.color;
+            float peak = Mathf.Max(spriteColor.r, spriteColor.g, spriteColor.b, 0.0001f);
+            spriteColor /= peak;
+            Assert.AreEqual(expected.r, spriteColor.r, 0.01f, "Sprite tint is not the player colour.");
+            Assert.AreEqual(expected.g, spriteColor.g, 0.01f, "Sprite tint is not the player colour.");
+            Assert.AreEqual(expected.b, spriteColor.b, 0.01f, "Sprite tint is not the player colour.");
 
             Color start = trail.startColor;
             Assert.AreEqual(expected.r, start.r, 0.01f, "Trail startColor is not the player colour.");
@@ -270,6 +274,11 @@ namespace Warmask.Tests
             Assert.Less(trail.widthMultiplier, 1f, "Idle ship should use the thin trail.");
             Assert.Less(trail.startColor.a, 0.5f, "Idle ship trail should be more transparent.");
 
+            SpriteRenderer sprite = ship.GetComponentInChildren<SpriteRenderer>(true);
+            Assert.IsNotNull(sprite, "Ship has no SpriteRenderer.");
+            float idleRed = sprite.color.r;
+            Assert.Less(idleRed, 1f, "Idle hull should stay below HDR bloom.");
+
             GameObject moveTarget = new GameObject("TrailMoveTarget");
             moveTarget.transform.position = TestOrigin + Vector2.up * 300f;
             ship.SetMoveCommand(moveTarget.transform, 0f);
@@ -279,8 +288,8 @@ namespace Warmask.Tests
             Assert.AreEqual(1f, trail.widthMultiplier, 0.001f, "Assigned ship should use the full-width trail.");
             Assert.Greater(trail.startColor.a, 0.5f, "Assigned ship trail should be more intense.");
 
-            SpriteRenderer sprite = ship.GetComponentInChildren<SpriteRenderer>(true);
             Assert.Greater(sprite.color.r, 1f, "Assigned ship hull should be HDR-bright.");
+            Assert.Greater(sprite.color.r, idleRed, "Assigned ship should be brighter than an idle ship.");
             Object.Destroy(moveTarget);
         }
 
