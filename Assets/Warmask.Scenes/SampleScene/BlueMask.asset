@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66f335fb1ffd8684294ad653bf1c7564, type: 3}
   m_Name: ColorAdjustments
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.ColorAdjustments
-  active: 0
+  active: 1
   postExposure:
     m_OverrideState: 0
     m_Value: 0
@@ -53,7 +53,7 @@ MonoBehaviour:
     m_Value: 0
   colorFilter:
     m_OverrideState: 1
-    m_Value: {r: 0.8066038, g: 0.8273991, b: 1, a: 1}
+    m_Value: {r: 1, g: 0.7028302, b: 0.7199746, a: 1}
   hueShift:
     m_OverrideState: 0
     m_Value: 0
@@ -75,7 +75,7 @@ MonoBehaviour:
   active: 1
   intensity:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 3
   tintColor:
     m_OverrideState: 1
     m_Value: {r: 0.8254717, g: 0.17911176, b: 0.17911176, a: 1}
@@ -83,11 +83,11 @@ MonoBehaviour:
     m_OverrideState: 0
     m_Value: 1
   firstFlareIntensity:
-    m_OverrideState: 0
-    m_Value: 1
+    m_OverrideState: 1
+    m_Value: 3
   secondaryFlareIntensity:
-    m_OverrideState: 0
-    m_Value: 1
+    m_OverrideState: 1
+    m_Value: 0
   warpedFlareIntensity:
     m_OverrideState: 0
     m_Value: 1
@@ -110,20 +110,20 @@ MonoBehaviour:
     m_OverrideState: 0
     m_Value: 1.5
   streaksIntensity:
-    m_OverrideState: 0
-    m_Value: 0
-  streaksLength:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: 0.5
+  streaksLength:
+    m_OverrideState: 1
+    m_Value: 0.2
   streaksOrientation:
     m_OverrideState: 0
     m_Value: 0
   streaksThreshold:
-    m_OverrideState: 0
-    m_Value: 0.25
+    m_OverrideState: 1
+    m_Value: 1
   resolution:
     m_OverrideState: 0
     m_Value: 4
-  chromaticAbberationIntensity:
-    m_OverrideState: 0
-    m_Value: 0.5
+  chromaticAberrationIntensity:
+    m_OverrideState: 1
+    m_Value: 1

@@ -39,6 +39,8 @@ namespace Warmask.Shipyard
         private float sqrPlanetShipOwnershipRadius = 1.0f;
 
         public EntityId OwnerId => instanceId;
+        public GameObject ShipPrefab => shipPrefab;
+        public ShipInstance LastSpawnedShip { get; private set; }
         
         public void UnregisterShip(object ship)
         {
@@ -241,8 +243,24 @@ namespace Warmask.Shipyard
 
         public void SpawnShip()
         {
+            SpawnShipInternal(ignoreCapacity: false);
+        }
+
+        /// <summary>
+        /// Spawns a ship without checking production or fleet caps. Used by stress
+        /// tests and benchmarks that need a deterministic ship count.
+        /// </summary>
+        public void SpawnShipUnchecked()
+        {
+            SpawnShipInternal(ignoreCapacity: true);
+        }
+
+        private void SpawnShipInternal(bool ignoreCapacity)
+        {
             EnsureInitialized();
-            if (shipPool == null || cachedTransform == null || planetInstance == null || !HasProductionCapacity())
+            if (shipPool == null || cachedTransform == null || planetInstance == null)
+                return;
+            if (!ignoreCapacity && !HasProductionCapacity())
                 return;
 
             GameObject ship = shipPool.Get();
@@ -260,6 +278,7 @@ namespace Warmask.Shipyard
                 shipInstance.SetTarget(cachedTransform);
                 shipInstance.SetMinTargetDistance(planetRadius);
                 RegisterShip(shipInstance);
+                LastSpawnedShip = shipInstance;
             }
 
             if (!ship.TryGetComponent(out PooledShip _))

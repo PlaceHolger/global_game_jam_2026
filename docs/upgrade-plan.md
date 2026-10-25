@@ -241,7 +241,7 @@ Acceptance: two machines on different networks finish a co-op match and a Versus
 
 ## 11. My additional ideas
 
-Beyond the brief: **fog of war** would do more for Versus than any ship count — it makes co-op communication and scouting meaningful, and it is cheap compared with netcode. **Commander abilities** (orbital strike, temporary shield, rally) add tactical depth without new units or art. **Ship veterancy** is already hinted at by the kill-based turn bonus; formalize it with ranks and chevrons and reset it on death. **Co-op differentiation**: share one faction but let each player own the planets they capture, with a ping system and a shared "high command" pool for abilities — this creates cooperation without splitting the map. **Pirate/neutral raids** make the existing neutral planets an active third party and give co-op a common enemy. **Mask-switch shockwave** and a short slow-motion on a planet capture sell the moment. **Save the command log** (orders only, tiny) and you get replays and a netcode debugging tool for free. **Colorblind-safe team identity** matters here because team colors and planet types already overlap in red/blue; add icons or patterns. **A sandbox toggle** (spawn 500 ships, disable AI) pays for itself in every tuning session. **Audio**: layered laser/hit/explosion pools with pitch variation and ducking would add more perceived quality than another particle system.
+Beyond the brief: **fog of war** would do more for Versus than any ship count — it makes co-op communication and scouting meaningful, and it is cheap compared with netcode. **Commander abilities** (orbital strike, temporary shield, rally) add tactical depth without new units or art. **Ship veterancy** is already hinted at by the kill-based turn bonus; formalize it with ranks and chevrons and reset it on death. **Co-op differentiation**: share one faction but let each player own the planets they capture, with a ping system and a shared "high command" pool for abilities — this creates cooperation without splitting the map. **Pirate/neutral raids** make the existing neutral planets an active third party and give co-op a common enemy. **Mask-switch shockwave** and a short slow-motion on a planet capture sell the moment. **Save the command log** (orders only, tiny) and you get replays and a netcode debugging tool for free. **Colorblind-safe team identity** matters here because team colors and planet types already overlap in red/blue; add icons or patterns. **Mask identity through motion, not silhouettes**: keep one hull shape per player colour, but give each mask its own engine signature (TypeA a thin continuous ion trail, TypeB a chunky dotted wake) and a per-mask hull brightness (TypeA cooler and brighter, TypeB darker and charged). At RTS zoom the trail plus glow tells you which mask is active without a second sprite set, and players never have to relearn a unit's outline — silhouette swaps cost art and read as a different unit. **A sandbox toggle** (spawn 500 ships, disable AI) pays for itself in every tuning session. **Audio**: layered laser/hit/explosion pools with pitch variation and ducking would add more perceived quality than another particle system.
 
 ## 12. Open decisions
 
@@ -281,6 +281,10 @@ Beyond the brief: **fog of war** would do more for Versus than any ship count �
 
 User-visible polish pass. Code is not finished until each item is checked in a Play session.
 
+- [x] **UI labels clear of post-processing (2026-10-25):** `Planet.prefab` canvas root and `PlanetName` moved to layer 5; Main Camera culling mask excludes layer 5; UI Camera is an Overlay in Main's stack with post-processing off, orthographic size 8 at z = -10. Verified in Play and in the WebGPU development build.
+- [x] **Player-coloured planet numbers (2026-10-25):** `defenseStrength` uses the owner colour; `Under Attack! (own vs enemy)` renders each count in its player colour through TMP rich text. `statusText.richText` is forced on, and the shield count no longer turns flat red/white.
+- [x] **Idle vs assigned ship feedback (2026-10-25):** one `assigned` state (`hasMoveCommand || (IsAlive && Engage)`) drives idle/active trails (1 s, width ×0.5, alpha 0.2 vs 5 s, width ×1, alpha 0.75) and the hull highlight (lerp 0.35 toward white, then ×1.5 HDR so bloom catches it). Move orders and combat both trigger it; `ShipMaskFader` owns trail alpha so mask fades and task state cannot fight.
+- [x] **Ships stay closer to planets (2026-10-25):** `maxDistanceFromTarget` lowered 4 → 3. Live battle check measured 0 ships beyond 3.27 units from the nearest planet.
 - [ ] **Planet lighting (reset + planet-spot cursor light):** scene back to pre-session values; cursor light rebuilt from the planet's own light.
   - **Why lights "did nothing" before:** every light used Renderer2D blend style 0 = "Multiply"; white multiply light is a visual no-op (`white × sprite = sprite`). Also `m_UseNormalMap` is deprecated in URP 17.7 (migrates into `m_NormalMapQuality`) — flags still un-pin quality correctly.
   - **Reset done (user call: "too bright / bloom"):** the activated 6 "Sprite Light 2D" pool setup was reverted to HEAD values — inactive again, Multiply style, original intensities (10/9/8/6.06/9/6.06), radius 1, `m_UseNormalMap: 0`; Global Light 2D back to white `1.5` intensity. Only `Planet.prefab`'s "Spot Light 2D" keeps `m_UseNormalMap: 1` (used by the cursor light below; inactive on planets).
@@ -314,3 +318,55 @@ User-visible polish pass. Code is not finished until each item is checked in a P
 - For nanobanana output: PNG with alpha, one sprite per file (or a sheet with a documented grid), consistent pixels-per-unit (e.g. 100 px = 1 world unit), centered pivot, no baked shadows where 2D lights should apply, and 2x resolution for zoom. Team-colored parts should be neutral/white so tinting works.
 - Easy wins for effects: soft circles, streaks, rings, sparks and smoke puffs as textures; sprite sheets for explosions and impacts.
 - Delivery: drop into `Assets/Warmask.Content-Assets/`; I write the import presets (sprite mode, PPU, compression, mipmaps) so every asset lands consistently.
+
+## 17. Combat feel / cinematic pass (ideas, not scheduled)
+
+Goal: a battle should read as an event, not just dots swapping colour. Every effect
+must be **pooled, capped and allocation-free**, and get a `ShipProfiling`-style
+toggle so it can be ablated when it costs frames. No per-ship `ParticleSystem`s.
+
+### First wave (cheap, high impact)
+
+- **Muzzle flash** — 1–2 frame additive sprite at the laser origin, player-tinted, one
+  shared material, no light. Pool ~32. Gives every shot a source.
+- **Impact sparks** — 3–5 pooled sprites at the hit point, 0.1–0.2 s, random angle,
+  velocity and fade. Cap ~64 live sparks; skip them when off-mask.
+- **Laser punch** — widen the first 0.05 s of the beam by ~1.3×, add a tiny random
+  length/width jitter per shot, and a 1–2 px recoil offset on the firing ship. Almost
+  free; breaks the "laser is a static line" look.
+- **Explosion layers** — keep the existing explosion, add (a) a white 0.1 s flash,
+  (b) one expanding additive ring, (c) 4–8 debris sprites with spin and drag, scaled
+  by ship type / remaining health. Pool each layer separately and cap rings at ~8.
+- **Hit feedback on the hull** — reuse the hit-flash timer, but add a short scale punch
+  (0.95 → 1.0 over 0.08 s) so hits read at RTS zoom without more particles.
+- **Planet capture moment** — expanding ring in the capturing player's colour, a brief
+  label pop (TMP scale 1.15 → 1.0), and a one-shot flash on the owner indicator.
+  No gameplay slow-motion in local MP.
+
+### Second wave (nice, still bounded)
+
+- **Damage smoke** only on ships below ~35% health: one pooled puff every 0.3 s, not
+  an emitter per ship. Ships die fast, so this is mostly a boss/planet-guard flavour.
+- **Shockwave on mask switch** — expanding thin ring from the cursor, player-coloured;
+  the mask change is already a global moment and currently has no punch.
+- **Battle audio layering** — raise a percussion/engine layer with the number of
+  nearby engaged ships, duck music on explosions, pitch-vary impact sounds. No draw
+  calls; more perceived quality than another particle system.
+- **Camera shake** — tiny (0.05–0.1 world units, 0.1 s) on explosions and captures only.
+  Constraint: the UI camera is a separate overlay in Main's stack, so shake **Main and
+  the UI camera together** (or shake a shared parent) or the labels desync. Add a
+  settings toggle; never shake on ordinary laser hits.
+- **Screen-space accents** — the bloom threshold is already 0.9 and the HDR pipeline is
+  on, so prefer HDR-coloured sprites over new full-screen post effects. WebGL2 pays
+  for every extra pass; do not add chromatic aberration/vignette per hit.
+
+### Guardrails
+
+- One `CombatFx` manager with fixed-size pools and a hard live cap; no `Instantiate`
+  during a battle.
+- Effect sprites stay on the same layer/camera as ships so the UI camera split does
+  not need a third stack.
+- Every effect group behind a feature gate (`CombatFx.EnableSparks`, `...ExplosionLayers`)
+  and a `Diagnose500`-style ablation, so "cooler" never silently costs the 60 FPS gate.
+- Measure in the browser, not only the editor. The ship tick is ~2 ms at 500 ships;
+  a few thousand extra transparent sprites will show up in the browser first.

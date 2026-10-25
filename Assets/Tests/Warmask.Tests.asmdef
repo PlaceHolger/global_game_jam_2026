@@ -1,0 +1,26 @@
+{
+    "name": "Warmask.Tests",
+    "rootNamespace": "Warmask.Tests",
+    "references": [
+        "Warmask.Core",
+        "Warmask.Ship",
+        "Warmask.Shipyard",
+        "Warmask.Planet",
+        "Warmask.Globals",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

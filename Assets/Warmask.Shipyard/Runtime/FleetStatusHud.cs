@@ -33,8 +33,10 @@ namespace Warmask.Shipyard
 
             if (_leftStyle == null)
             {
-                _leftStyle = new GUIStyle(GUI.skin.label) { fontSize = 38, alignment = TextAnchor.MiddleLeft };
-                _rightStyle = new GUIStyle(GUI.skin.label) { fontSize = 38, alignment = TextAnchor.MiddleRight };
+                // Match the planet labels, which use spaceranger SDF (same source TTF).
+                Font font = Resources.Load<Font>("spaceranger");
+                _leftStyle = new GUIStyle(GUI.skin.label) { fontSize = 38, alignment = TextAnchor.MiddleLeft, font = font };
+                _rightStyle = new GUIStyle(GUI.skin.label) { fontSize = 38, alignment = TextAnchor.MiddleRight, font = font };
             }
 
             DrawPlayerLabel(Globals.ePlayer.Player1, 20f, _leftStyle);
@@ -55,8 +57,10 @@ namespace Warmask.Shipyard
             style.normal.textColor = alarm ? new Color(1f, 0.25f, 0.2f) : Globals.Instance.GetPlayerColor(player);
 
             Vector2 size = style.CalcSize(new GUIContent(text));
-            float left = style.alignment == TextAnchor.MiddleRight ? x - size.x : x;
-            GUI.Label(new Rect(left, 8f, size.x, size.y), text, style);
+            // WebGL can under-report CalcSize; the slack keeps the last glyph from clipping.
+            float width = size.x + 96f;
+            float left = style.alignment == TextAnchor.MiddleRight ? x - width : x;
+            GUI.Label(new Rect(left, 8f, width, size.y), text, style);
         }
     }
 }

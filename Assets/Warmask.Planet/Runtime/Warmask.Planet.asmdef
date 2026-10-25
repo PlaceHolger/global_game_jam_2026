@@ -3,6 +3,7 @@
     "rootNamespace": "",
     "references": [
         "Warmask.Globals",
+        "Warmask.Ship",
         "Unity.TextMeshPro",
         "Unity.InputSystem",
         "GUID:35e9521616a7e83438e7f89883d870ed",

@@ -84,7 +84,6 @@ namespace Warmask.Planet
         private float maskModifier = 1f;
 
         private SpriteRenderer planetRenderer;
-        private SpriteRenderer shipTypeIcon;
         private Coroutine feedbackRoutine;
         private float feedbackUntil;
         private string feedbackText;
@@ -151,7 +150,14 @@ namespace Warmask.Planet
             // Spawn explosion on capture
             if (explosionPrefab && oldOwner != newOwner && newOwner != Globals.ePlayer.None)
             {
-                Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+                if (Warmask.Ship.ExplosionPool.Instance != null)
+                {
+                    Warmask.Ship.ExplosionPool.Instance.Get(transform.position);
+                }
+                else
+                {
+                    Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+                }
             }
 
             if (oldOwner != newOwner)
@@ -173,8 +179,6 @@ namespace Warmask.Planet
                     planetRenderer.color = Color.Lerp(planetColor, Color.gray, 0.825f);
             }
 
-            UpdateShipTypeIcon(planetColor);
-
             EnsureShieldBadge();
 
             // The mask changes production speed, not the planet's visual size.
@@ -191,32 +195,6 @@ namespace Warmask.Planet
             unitSpawnInterval = Mathf.Max(0.1f, Globals.Instance.planetProductionFactor / adjustedSize);
 
             planet_name_label.text = gameObject.name;
-        }
-
-        private void UpdateShipTypeIcon(Color typeColor)
-        {
-            if (!Application.isPlaying)
-                return;
-
-            if (!shipTypeIcon)
-            {
-                Sprite shipSprite = Globals.Instance.ShipSprite;
-                if (!shipSprite)
-                    return;
-
-                var icon = new GameObject("ShipTypeIcon");
-                icon.transform.SetParent(transform, false);
-                icon.transform.localPosition = new Vector3(-0.85f, -0.85f, 0f);
-                icon.transform.localScale = Vector3.one * 0.4f;
-                shipTypeIcon = icon.AddComponent<SpriteRenderer>();
-                shipTypeIcon.sprite = shipSprite;
-                shipTypeIcon.sortingLayerName = "UI";
-                shipTypeIcon.sortingOrder = 20;
-                if (planetRenderer)
-                    shipTypeIcon.sharedMaterial = planetRenderer.sharedMaterial;
-            }
-
-            shipTypeIcon.color = typeColor;
         }
 
         private void EnsureShieldBadge()
@@ -241,7 +219,8 @@ namespace Warmask.Planet
             if (numEnemyShipsInOrbit > 0 && numOwnShipsInOrbit > 0)
             {
                 // Under attack, do not produce units
-                UpdateDebugLabel("Under Attack! (" + numOwnShipsInOrbit + " vs " + numEnemyShipsInOrbit + ")",
+                UpdateDebugLabel("Under Attack! (" + ColoredCount(numOwnShipsInOrbit, owner) + " vs " +
+                                 ColoredCount(numEnemyShipsInOrbit, lastAttacker) + ")",
                     lastAttacker);
                 return;
             }
@@ -254,7 +233,7 @@ namespace Warmask.Planet
                 {
                     timer = 0f;
                     unitCount = Mathf.Max(0, unitCount - 1);
-                    UpdateDebugLabel("Falling:", lastAttacker);
+                    UpdateDebugLabel("FALLING!", lastAttacker);
                 }
 
                 if (unitCount == 0)
@@ -336,6 +315,8 @@ namespace Warmask.Planet
             if (!statusText)
                 return;
 
+            statusText.richText = true;
+
             if (Time.time < feedbackUntil)
             {
                 statusText.text = feedbackText;
@@ -357,7 +338,7 @@ namespace Warmask.Planet
             {
                 defenseStrength.text = unitCount.ToString();
                 defenseStrength.fontSize = 18 + Mathf.Clamp((float)unitCount / Mathf.Max(1, maxUnitCount), 0f, 1f) * 12f;
-                defenseStrength.color = underAttack ? new Color(1f, 0.3f, 0.3f) : Color.white;
+                defenseStrength.color = Globals.Instance.GetPlayerColor(owner);
             }
 
             if (!string.IsNullOrEmpty(text) && !int.TryParse(text, out _))
@@ -376,6 +357,15 @@ namespace Warmask.Planet
 
                 SetShieldBadgeVisible(true);
             }
+        }
+
+        private string ColoredCount(int count, Globals.ePlayer player)
+        {
+            if (!Globals.Instance)
+                return count.ToString();
+
+            return "<color=#" + ColorUtility.ToHtmlStringRGB(Globals.Instance.GetPlayerColor(player)) + ">" +
+                   count + "</color>";
         }
 
         public void ShowNoShipsFeedback()

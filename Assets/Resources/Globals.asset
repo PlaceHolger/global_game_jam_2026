@@ -34,5 +34,4 @@ MonoBehaviour:
   currentMask: 0
   inactiveShipAlpha: 0
   maskSwitchCooldown: 2.5
-  localMultiplayerGhostAlpha: 0.15
   localMultiplayerMaskCooldown: 5

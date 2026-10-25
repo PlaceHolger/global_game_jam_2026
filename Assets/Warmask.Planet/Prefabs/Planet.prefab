@@ -164,7 +164,7 @@ GameObject:
   - component: {fileID: 5972569384657017509}
   - component: {fileID: 2150335481915148461}
   - component: {fileID: 1693254026461600296}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -475,7 +475,7 @@ GameObject:
   - component: {fileID: 1412091600869015903}
   - component: {fileID: 2172167282214809785}
   - component: {fileID: 2657204218749837906}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: StatusText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -614,7 +614,7 @@ GameObject:
   - component: {fileID: 8553940336008235566}
   - component: {fileID: 2451862002825406121}
   - component: {fileID: 2259227796059910922}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: ShieldBadge
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -890,7 +890,7 @@ GameObject:
   - component: {fileID: 427363669235087729}
   - component: {fileID: 4138530134234976665}
   - component: {fileID: 1778210683128888036}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: DefenseStrength
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1030,7 +1030,7 @@ GameObject:
   - component: {fileID: 8664103901679039515}
   - component: {fileID: 1701935146280941312}
   - component: {fileID: 2096742243799424598}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: PlanetName
   m_TagString: Untagged
   m_Icon: {fileID: 0}

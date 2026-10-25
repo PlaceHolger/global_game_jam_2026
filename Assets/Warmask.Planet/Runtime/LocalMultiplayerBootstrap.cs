@@ -8,7 +8,6 @@ namespace Warmask.Planet
         private PlanetSelectionManager _p1;
         private MouseLineHelper _p1Line;
         private bool _joined;
-        private float _previousAlpha;
         private float _previousCooldown;
         private float _joinedAt;
         private string _controlHint;
@@ -58,11 +57,9 @@ namespace Warmask.Planet
 
             _joined = true;
             _joinedAt = Time.unscaledTime;
-            _previousAlpha = Globals.Instance.inactiveShipAlpha;
             _previousCooldown = Globals.Instance.maskSwitchCooldown;
 
             Globals.Instance.localMultiplayer = true;
-            Globals.Instance.inactiveShipAlpha = Globals.Instance.localMultiplayerGhostAlpha;
             Globals.Instance.maskSwitchCooldown = Globals.Instance.localMultiplayerMaskCooldown;
 
             var p2Root = new GameObject("P2 Selection");
@@ -143,7 +140,6 @@ namespace Warmask.Planet
                 return;
 
             Globals.Instance.localMultiplayer = false;
-            Globals.Instance.inactiveShipAlpha = _previousAlpha;
             Globals.Instance.maskSwitchCooldown = _previousCooldown;
             Globals.Instance.maskCooldownRemaining = 0f;
         }

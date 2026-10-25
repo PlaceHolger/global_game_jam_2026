@@ -445,6 +445,6 @@ namespace Warmask.RawInput
         [DllImport("user32.dll", SetLastError = true)]
         private static extern int GetRawInputData(
             IntPtr rawInput, uint command, IntPtr data, ref int size, int headerSize);
-#endif
     }
+#endif
 }

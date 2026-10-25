@@ -17,19 +17,6 @@
       },
       "hash": "81542a7e86292b5c4c21b1782c5af23b567f45ce"
     },
-    "com.unity.2d.animation": {
-      "version": "17.0.2",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {
-        "com.unity.2d.common": "16.0.0",
-        "com.unity.2d.sprite": "1.0.0",
-        "com.unity.collections": "2.4.3",
-        "com.unity.modules.animation": "1.0.0",
-        "com.unity.modules.uielements": "1.0.0"
-      },
-      "url": "https://packages.unity.com"
-    },
     "com.unity.2d.aseprite": {
       "version": "7.0.1",
       "depth": 0,

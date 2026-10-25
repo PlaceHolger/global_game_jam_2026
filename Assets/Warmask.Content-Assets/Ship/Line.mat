@@ -84,6 +84,7 @@ Material:
     - _LightingEnabled: 0
     - _Mode: 0
     - _QueueOffset: 0
+    - _ReceiveFog: 0
     - _SampleGI: 0
     - _SoftParticlesEnabled: 0
     - _SoftParticlesFarFadeDistance: 1

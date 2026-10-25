@@ -91,9 +91,6 @@ public class Globals : ScriptableObject
     [Min(1), Tooltip("Extra ships a player may own beyond owned planets * per-planet ship cap, e.g. stacks in transit.")]
     public int fleetCapBuffer = 20;
 
-    [Range(0f, 1f), Tooltip("Local MP default alpha for ships on the inactive mask.")]
-    public float localMultiplayerGhostAlpha = 0.15f;
-
     [Min(0f), Tooltip("Local MP default shared mask cooldown, in seconds.")]
     public float localMultiplayerMaskCooldown = 5f;
 
