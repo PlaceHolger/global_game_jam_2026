@@ -39,9 +39,11 @@
 - Create: `Assets/Warmask.Scenes/GameCore.unity`
 - Create: `Assets/Warmask.Scenes/Runtime/EndScreenController.cs`
 - Create: `Assets/Warmask.Core/Runtime/MapBounds.cs`
+- Create: `Assets/Warmask.Scenes/Runtime/GameSession.cs`
 - Create: `Assets/Tests/GameplaySceneLoader.cs`
+- Rename: `Assets/Warmask.Scenes/Runtime/SceneManager.cs` → `SceneLoader.cs`
 - Modify: `Assets/Warmask.Scenes/SampleScene.unity`
-- Modify: `Assets/Warmask.Scenes/Runtime/SceneManager.cs`
+- Modify: `Assets/Warmask.Scenes/Runtime/SceneLoader.cs`
 - Modify: `Assets/Warmask.Scenes/Runtime/Warmask.Scenes.asmdef`
 - Modify: `Assets/Tests/ShipBehaviorTests.cs`
 - Modify: `Assets/Tests/ShipPerformanceTests.cs`
@@ -217,10 +219,10 @@ namespace Warmask.Core
 
 - [ ] **Step 6: Update SceneManager to load core then map**
 
-Modify `Assets/Warmask.Scenes/Runtime/SceneManager.cs`:
+Modify `Assets/Warmask.Scenes/Runtime/SceneLoader.cs` (renamed from `SceneManager.cs` to avoid the Unity type collision):
 
 - Add `[SerializeField] private string coreSceneName = "GameCore";`.
-- Change `LoadGameSceneAsync()` to load `coreSceneName` in single mode, then `gameSceneName` in additive mode, then set the map scene active.
+- Change `LoadGameSceneAsync()` to load `coreSceneName` in single mode, then `GameSession.MapScene` in additive mode, then set the map scene active.
 - Keep `LoadMenuSceneAsync()` loading `Menu` in single mode.
 - Add a private `LoadSceneAsync(string sceneName, LoadSceneMode mode)` overload; keep the existing single-mode method for compatibility.
 
@@ -624,7 +626,7 @@ git commit -m "added: orthographic zoom and pan camera - aspect-aware whole-map 
 
 **Files:**
 - Modify: `Assets/Warmask.Scenes/Menu.unity`
-- Modify: `Assets/Warmask.Scenes/Runtime/SceneManager.cs`
+- Modify: `Assets/Warmask.Scenes/Runtime/GameSession.cs`
 - Modify: `docs/upgrade-plan.md`
 - Modify: `docs/performance-findings.md`
 - Modify: `Assets/Editor/UpgradeSmoke.cs`
@@ -636,7 +638,8 @@ git commit -m "added: orthographic zoom and pan camera - aspect-aware whole-map 
 
 - [ ] **Step 1: Point the menu at LargeMap**
 
-Set the serialized `gameSceneName` on `Menu`'s `SceneManager` to `LargeMap`. Keep `menuSceneName = Menu`. Confirm `coreSceneName = GameCore`.
+Set `GameSession.MapScene = "LargeMap"` in code. Keep `menuSceneName = Menu`.
+Confirm `coreSceneName = GameCore`. The menu scene needs no map field.
 
 - [ ] **Step 2: Update editor docs**
 
@@ -682,7 +685,7 @@ Build the WebGPU development profile to `Builds/WebGPU`. Then manually check:
 - [ ] **Step 6: Commit**
 
 ```bash
-git add Assets/Warmask.Scenes/Menu.unity Assets/Warmask.Scenes/Runtime/SceneManager.cs Assets/Editor/UpgradeSmoke.cs docs
+git add Assets/Warmask.Scenes/Menu.unity Assets/Warmask.Scenes/Runtime/SceneLoader.cs Assets/Warmask.Scenes/Runtime/GameSession.cs Assets/Editor/UpgradeSmoke.cs docs
 git commit -m "added: large map as default game scene and verification notes - menu loads LargeMap through GameCore - docs cover shared-scene editor workflow and camera controls - smoke checks core plus map"
 ```
 

@@ -4,15 +4,14 @@ using UnityEngine.SceneManagement;
 
 namespace Warmask.Scenes
 {
-
-    public class SceneManager : MonoBehaviour
+    public class SceneLoader : MonoBehaviour
     {
-        [SerializeField] private string menuSceneName = "MenuScene";
-        [SerializeField] private string gameSceneName = "GameScene";
+        [SerializeField] private string menuSceneName = "Menu";
+        [SerializeField] private string coreSceneName = "GameCore";
 
         private AsyncOperation _currentLoadOperation;
 
-        public static SceneManager Instance { get; private set; }
+        public static SceneLoader Instance { get; private set; }
 
         public bool IsLoading => _currentLoadOperation != null && !_currentLoadOperation.isDone;
 
@@ -35,10 +34,17 @@ namespace Warmask.Scenes
 
         public async Task LoadGameSceneAsync()
         {
-            await LoadSceneAsync(gameSceneName);
+            await LoadSceneAsync(coreSceneName);
+            await LoadSceneAsync(GameSession.MapScene, LoadSceneMode.Additive);
+            SceneManager.SetActiveScene(SceneManager.GetSceneByName(GameSession.MapScene));
         }
 
         public async Task LoadSceneAsync(string sceneName)
+        {
+            await LoadSceneAsync(sceneName, LoadSceneMode.Single);
+        }
+
+        private async Task LoadSceneAsync(string sceneName, LoadSceneMode mode)
         {
             if (IsLoading)
             {
@@ -46,7 +52,7 @@ namespace Warmask.Scenes
                 return;
             }
 
-            _currentLoadOperation = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName);
+            _currentLoadOperation = SceneManager.LoadSceneAsync(sceneName, mode);
             _currentLoadOperation.allowSceneActivation = false;
 
             while (_currentLoadOperation.progress < 0.9f)
@@ -72,7 +78,7 @@ namespace Warmask.Scenes
                 return;
             }
 
-            _currentLoadOperation = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName);
+            _currentLoadOperation = SceneManager.LoadSceneAsync(sceneName);
             _currentLoadOperation.allowSceneActivation = false;
 
             while (_currentLoadOperation.progress < 0.9f)

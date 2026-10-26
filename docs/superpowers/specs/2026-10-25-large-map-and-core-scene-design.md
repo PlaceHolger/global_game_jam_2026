@@ -44,7 +44,7 @@ smaller, not pretend to finish it.
 
 - The project uses additive scenes only if all additive scenes are in Build
   Settings. `GameCore` must be listed there.
-- `SceneManager` is a persistent menu object that already survives scene loads.
+- `SceneLoader` is a persistent menu object that already survives scene loads.
   It currently loads one gameplay scene by name.
 - PlayMode tests load `SampleScene` directly. After the split they must load
   `GameCore` first, then the map.
@@ -121,19 +121,16 @@ Contains only:
 
 ### Loading
 
-`SceneManager` gets a `coreSceneName = "GameCore"` and keeps the selected map
-name. `LoadGameSceneAsync()`:
-
-1. Loads `GameCore` in single mode.
-2. Loads the selected map additively.
-3. Sets the map as the active scene.
-
-The menu button still calls `LoadGameSceneAsync()`. The default map becomes
-`LargeMap`; `SampleScene` stays in Build Settings and is still usable for tests
-and editor comparison. No map-selection UI is added in this phase.
+`SceneLoader` (renamed from `SceneManager` to stop colliding with Unity's
+`SceneManager`) loads `GameCore` in single mode, then `GameSession.MapScene`
+additively, then sets the map as the active scene. `GameSession` is a small
+static holder for the next match (map scene, player count). The menu button
+still calls `LoadGameSceneAsync()`. The default map becomes `LargeMap`;
+`SampleScene` stays in Build Settings and is still usable for tests and editor
+comparison. No map-selection UI is added in this phase.
 
 `LoadMenuSceneAsync()` continues to load `Menu` in single mode, which unloads
-the core and map. `SceneManager` itself remains `DontDestroyOnLoad`.
+the core and map. `SceneLoader` itself remains `DontDestroyOnLoad`.
 
 ### Cross-scene event boundary
 

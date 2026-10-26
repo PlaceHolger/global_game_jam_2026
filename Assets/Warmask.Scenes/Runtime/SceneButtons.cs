@@ -7,12 +7,12 @@ namespace Warmask.Scenes
     {
         public void LoadMenuScene()
         {
-            _ = SceneManager.Instance.LoadMenuSceneAsync();
+            _ = SceneLoader.Instance.LoadMenuSceneAsync();
         }
 
         public void LoadGameScene()
         {
-            _ = SceneManager.Instance.LoadGameSceneAsync();
+            _ = SceneLoader.Instance.LoadGameSceneAsync();
         }
     }
 }

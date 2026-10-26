@@ -24,9 +24,7 @@ namespace Warmask.Tests
             ResetProfiling();
             ShipProfiling.EnableDamage = true;
 
-            SceneManager.LoadScene("SampleScene");
-            yield return null;
-            yield return null;
+            yield return GameplaySceneLoader.Load("SampleScene");
 
             ShipyardInstance[] yards = Object.FindObjectsByType<ShipyardInstance>();
             Assert.IsNotEmpty(yards, "SampleScene has no ShipyardInstance.");

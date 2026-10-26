@@ -13,6 +13,7 @@ namespace Warmask.Editor
         private static readonly string[] Scenes =
         {
             "Assets/Warmask.Scenes/Menu.unity",
+            "Assets/Warmask.Scenes/GameCore.unity",
             "Assets/Warmask.Scenes/SampleScene.unity"
         };
 
@@ -38,9 +39,12 @@ namespace Warmask.Editor
                 if (missing > 0) failures++;
             }
 
+            EditorSceneManager.OpenScene("Assets/Warmask.Scenes/GameCore.unity", OpenSceneMode.Single);
+            EditorSceneManager.OpenScene("Assets/Warmask.Scenes/SampleScene.unity", OpenSceneMode.Additive);
+
             if (Camera.main == null)
             {
-                Debug.LogError("[Smoke] No main camera after loading scenes.");
+                Debug.LogError("[Smoke] No main camera after loading core plus map.");
                 failures++;
             }
 

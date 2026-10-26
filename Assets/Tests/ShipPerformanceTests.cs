@@ -122,9 +122,7 @@ namespace Warmask.Tests
         {
             ShipProfiling.EnableOffMaskCoarseTick = offMaskCoarseTick;
 
-            SceneManager.LoadScene(StressScene);
-            yield return null;
-            yield return null;
+            yield return GameplaySceneLoader.Load(StressScene);
 
             GameObject host = new GameObject("ShipStressSpawner");
             host.SetActive(false);
