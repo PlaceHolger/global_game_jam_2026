@@ -75,14 +75,38 @@ namespace Warmask.Planet
             }
 
             //if we reach here, player has no planets left
-            if(!Globals.Instance.IsPlayer(playerThatLostPlanet))
-            {
-                OnPlayerWin.Invoke();
-            }
-            else
+            if(Globals.Instance.IsPlayer(playerThatLostPlanet))
             {
                 OnPlayerLost.Invoke();
+                return;
             }
+
+            // An AI is out. In a four-player match the others are still fighting.
+            if (!IsOnlyHumanLeft(OwnedByPlayers()))
+                return;
+
+            OnPlayerWin.Invoke();
+        }
+
+        /// <summary>True when at least one player owns a planet and every owner is human.</summary>
+        public static bool IsOnlyHumanLeft(IEnumerable<Globals.ePlayer> owners)
+        {
+            bool anyPlayer = false;
+            foreach (var owner in owners)
+            {
+                if (owner == Globals.ePlayer.None)
+                    continue;
+                if (!Globals.Instance.IsPlayer(owner))
+                    return false;
+                anyPlayer = true;
+            }
+            return anyPlayer;
+        }
+
+        private IEnumerable<Globals.ePlayer> OwnedByPlayers()
+        {
+            foreach (var planet in _allPlanets)
+                yield return planet.OwnedBy;
         }
     }
 }

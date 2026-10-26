@@ -7,6 +7,7 @@
         "Warmask.Shipyard",
         "Warmask.Planet",
         "Warmask.Globals",
+        "Warmask.Scenes",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

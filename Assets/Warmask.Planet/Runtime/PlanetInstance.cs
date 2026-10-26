@@ -167,9 +167,11 @@ namespace Warmask.Planet
             }
 
             // Update owner indicators
+            // Only two badges exist on the prefab; P3/P4 reuse the last one in their own colour.
+            int shownIndicator = Mathf.Clamp(newOwnerIndex, 0, ownerIndicators.Length - 1);
             for (int i = 0; i < ownerIndicators.Length; i++)
             {
-                ownerIndicators[i].SetActive(i == newOwnerIndex);
+                ownerIndicators[i].SetActive(owner != Globals.ePlayer.None && i == shownIndicator);
                 if (ownerIndicators[i].TryGetComponent<Image>(out var uiImage))
                 {
                     uiImage.color = Globals.Instance.GetPlayerColor(owner);

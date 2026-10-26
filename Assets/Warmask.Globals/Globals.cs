@@ -38,6 +38,8 @@ public class Globals : ScriptableObject
         None,
         Player1,
         Player2,
+        Player3,
+        Player4,
     }
     
     // Configurable colors for each eType
@@ -56,11 +58,13 @@ public class Globals : ScriptableObject
     [SerializeField, Tooltip("Plain shield icon for the defense badge shown beside a planet's ground-unit count")]
     private Sprite shieldIcon;
 
-    [SerializeField] private Color[] playerColors = new Color[3]
+    [SerializeField] private Color[] playerColors = new Color[5]
     {
         Color.white,
         Color.paleGreen,
-        Color.paleVioletRed
+        Color.paleVioletRed,
+        new Color(1f, 0.52f, 0.12f),   // Player3: orange
+        new Color(1f, 0.45f, 0.72f)    // Player4: pink
     };
 
     public Color GetPlayerColor(ePlayer player) => playerColors[(int)player];
@@ -73,6 +77,8 @@ public class Globals : ScriptableObject
 
     [NonSerialized] public bool localMultiplayer;
     [NonSerialized] public float maskCooldownRemaining;
+    [NonSerialized, Tooltip("Slots in the current match, 2 or 4. Set by the menu before the map loads.")]
+    public int playerCount = 2;
 
     public bool IsHuman(ePlayer player) => player == ePlayer.Player1 || (localMultiplayer && player == ePlayer.Player2);
 

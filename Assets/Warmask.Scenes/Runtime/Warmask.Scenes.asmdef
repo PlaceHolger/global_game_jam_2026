@@ -1,6 +1,7 @@
 {
 	"name": "Warmask.Scenes",
 	"references": [
-		"Warmask.Planet"
+		"Warmask.Planet",
+		"Warmask.Globals"
 	]
 }

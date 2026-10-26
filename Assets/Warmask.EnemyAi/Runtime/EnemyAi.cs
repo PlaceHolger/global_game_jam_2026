@@ -16,8 +16,10 @@ using Warmask.Planet;
 
 public class EnemyAi : MonoBehaviour
 {
-    [SerializeField] private Globals.ePlayer enemyPlayer = Globals.ePlayer.Player1;
     [SerializeField] private Globals.ePlayer ownPlayer = Globals.ePlayer.Player2;
+
+    /// <summary>Extra AIs are clones of the scene's AI; each gets its own slot.</summary>
+    public void ConfigurePlayer(Globals.ePlayer own) => ownPlayer = own;
     
     [SerializeField] float decisionInterval = 1f;
     [SerializeField] float IntervalAfterAttack = 4f;
@@ -131,7 +133,8 @@ public class EnemyAi : MonoBehaviour
             if (defendingTroops >= availableTroops)
                 continue; // Can't attack this planet
             // Simple heuristic: prefer planets with fewer troops and closer distance
-            int ownedByEnemyBonus = (planet.OwnedBy == enemyPlayer) ? (int)PreferEnemyPlanets : 0;
+            // Any owner that is not us is fair game; a bonus for taking it from a player rather than neutral.
+            int ownedByEnemyBonus = (planet.OwnedBy != Globals.ePlayer.None && planet.OwnedBy != ownPlayer) ? PreferEnemyPlanets : 0;
             float distance = (troopPlanet) ? Vector3.Distance(planet.transform.position, troopPlanet.transform.position) : 0;
             float score = (availableTroops - defendingTroops) * PreferPlanetsWithLessTroops +
                           planet.PlanetSize * PreferBiggerPlanets -

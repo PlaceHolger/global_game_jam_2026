@@ -23,6 +23,11 @@ namespace Warmask.Planet
 
         private void Update()
         {
+            // shortcut: four-player matches are 1 human + 3 AI until the join loop lands (M2).
+            // Joining P2 today would flip localMultiplayer and stop every AI.
+            if (Globals.Instance.playerCount >= 4)
+                return;
+
             if (_joined || Globals.Instance.localMultiplayer)
                 return;
 
@@ -46,7 +51,7 @@ namespace Warmask.Planet
             if (_p1Line)
                 _p1Line.SetPointer(p1Pointer);
 
-            Join(null, p2Pointer, "left mouse select, hold Ctrl for all, right mouse cancel");
+            Join(null, p2Pointer, "left mouse select, right mouse all, empty space cancel");
             return _joined;
         }
 
@@ -102,6 +107,9 @@ namespace Warmask.Planet
 
         private void OnGUI()
         {
+            if (Globals.Instance.playerCount >= 4)
+                return;
+
             if (!_joined)
             {
                 if (GUI.Button(new Rect(Screen.width * 0.5f - 180f, 10f, 360f, 32f),

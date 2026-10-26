@@ -5,7 +5,7 @@ using Warmask.Ship;
 namespace Warmask.Shipyard
 {
     // Temporary OnGUI overlay until phase 3 builds the real HUD.
-    // P1 top-left, P2 top-right; only the owned ship count, colored per player.
+    // One label per player slot: odd slots down the left edge, even slots down the right.
     // At the fleet cap the number blinks red with a "MAX" marker.
     public class FleetStatusHud : MonoBehaviour
     {
@@ -14,12 +14,9 @@ namespace Warmask.Shipyard
 
         private GUIStyle _leftStyle;
         private GUIStyle _rightStyle;
-        private readonly GUIContent _leftContent = new GUIContent();
-        private readonly GUIContent _rightContent = new GUIContent();
-        private string _leftText = "0";
-        private string _rightText = "0";
-        private bool _leftMaxed;
-        private bool _rightMaxed;
+        private readonly GUIContent[] _contents = new GUIContent[5];
+        private readonly string[] _texts = new string[5];
+        private readonly bool[] _maxed = new bool[5];
         private float _nextRefresh;
 
         public static void EnsureExists()
@@ -43,9 +40,12 @@ namespace Warmask.Shipyard
             if (!Globals.Instance || !PlanetsManager.Instance || !ShipManagerInstance.Instance)
                 return;
 
-            RefreshLabel(Globals.ePlayer.Player1, ref _leftText, ref _leftMaxed, _leftContent);
-            RefreshLabel(Globals.ePlayer.Player2, ref _rightText, ref _rightMaxed, _rightContent);
+            int count = Globals.Instance.playerCount;
+            for (int i = 1; i <= count && i < _texts.Length; i++)
+                RefreshLabel((Globals.ePlayer)i, ref _texts[i], ref _maxed[i], Content(i));
         }
+
+        private GUIContent Content(int player) => _contents[player] ??= new GUIContent();
 
         private static void RefreshLabel(Globals.ePlayer player, ref string text, ref bool maxed, GUIContent content)
         {
@@ -72,21 +72,26 @@ namespace Warmask.Shipyard
                 _rightStyle = new GUIStyle(GUI.skin.label) { fontSize = 38, alignment = TextAnchor.MiddleRight, font = font };
             }
 
-            DrawPlayerLabel(Globals.ePlayer.Player1, 20f, _leftStyle, _leftMaxed, _leftText, _leftContent);
-            DrawPlayerLabel(Globals.ePlayer.Player2, Screen.width - 20f, _rightStyle, _rightMaxed, _rightText, _rightContent);
+            int count = Globals.Instance.playerCount;
+            for (int i = 1; i <= count && i < _texts.Length; i++)
+                DrawPlayerLabel((Globals.ePlayer)i, i, _maxed[i], _texts[i], Content(i));
         }
 
-        private void DrawPlayerLabel(Globals.ePlayer player, float x, GUIStyle style, bool maxed, string text, GUIContent content)
+        private void DrawPlayerLabel(Globals.ePlayer player, int slot, bool maxed, string text, GUIContent content)
         {
             // blink between the alarm color and the player color so the number stays identifiable
             bool alarm = maxed && Mathf.Repeat((float)Time.time, 0.8f) < 0.4f;
+            bool right = slot % 2 == 0;
+            GUIStyle style = right ? _rightStyle : _leftStyle;
             style.normal.textColor = alarm ? new Color(1f, 0.25f, 0.2f) : Globals.Instance.GetPlayerColor(player);
 
             Vector2 size = style.CalcSize(content);
             // WebGL can under-report CalcSize; the slack keeps the last glyph from clipping.
             float width = size.x + 96f;
-            float left = style.alignment == TextAnchor.MiddleRight ? x - width : x;
-            GUI.Label(new Rect(left, 8f, width, size.y), text, style);
+            float x = right ? Screen.width - 20f : 20f;
+            float y = slot > 2 ? Screen.height - size.y - 12f : 8f;
+            float left = right ? x - width : x;
+            GUI.Label(new Rect(left, y, width, size.y), text, style);
         }
     }
 }

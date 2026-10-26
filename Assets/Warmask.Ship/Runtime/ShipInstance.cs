@@ -127,7 +127,7 @@ namespace Warmask.Ship
         private Color flashOriginalColor;
 
         // Shared per-player gradient keeps laser colouring allocation-free.
-        private static readonly Gradient[] PlayerLaserGradients = new Gradient[3];
+        private static readonly Gradient[] PlayerLaserGradients = new Gradient[5];
 
         // One shared throttle stops hundreds of ships from stacking one-shots in a frame.
         private static float nextLaserAudioTime;

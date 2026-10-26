@@ -616,6 +616,53 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4909586255671823781, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
   m_PrefabInstance: {fileID: 365606131}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &485241247
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 485241249}
+  - component: {fileID: 485241248}
+  m_Layer: 0
+  m_Name: Four Player Setup
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &485241248
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 485241247}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f00b0733f0e64345a95351ce38be9e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FourPlayerSetup
+  p3Home: {fileID: 1378063464}
+  p4Home: {fileID: 1406632136}
+  prototype: {fileID: 1905601654}
+--- !u!4 &485241249
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 485241247}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &504741145
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1300,6 +1347,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4909586255671823781, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
   m_PrefabInstance: {fileID: 1378063462}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1378063464 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+  m_PrefabInstance: {fileID: 1378063462}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6882826f1b16bd4483fe390371e6f9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Planet
 --- !u!1001 &1390708424
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1468,6 +1526,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4909586255671823781, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
   m_PrefabInstance: {fileID: 1406632134}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1406632136 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+  m_PrefabInstance: {fileID: 1406632134}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6882826f1b16bd4483fe390371e6f9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Planet
 --- !u!1001 &1569162485
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1902,10 +1971,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8329c61f4d0b759418234cacba3cb7b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAi
-  enemyPlayer: 1
   ownPlayer: 2
   decisionInterval: 2
   IntervalAfterAttack: 4
+  openingBoostDuration: 5
+  openingDecisionInterval: 0.35
+  openingPostAttackDelay: 1
   DistanceFactor: 11
   PreferEnemyPlanets: 3
   PreferPlanetsWithLessTroops: 2
@@ -2034,3 +2105,4 @@ SceneRoots:
   m_Roots:
   - {fileID: 1863545545}
   - {fileID: 1905601655}
+  - {fileID: 485241249}
