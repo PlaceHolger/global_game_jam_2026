@@ -141,7 +141,7 @@ namespace Warmask.Core
                 Zoom(scroll.y, mouse.position.ReadValue());
 
             Vector2 screen = mouse.position.ReadValue();
-            if (mouse.middleButton.isPressed)
+            if (mouse.middleButton.isPressed || mouse.rightButton.isPressed)
             {
                 Vector2 previousWorld = ScreenToWorld(_lastMouseScreen);
                 Vector2 currentWorld = ScreenToWorld(screen);

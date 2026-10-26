@@ -43,6 +43,10 @@ namespace Warmask.Planet
         private MouseLineHelper _mouseLineHelper;
         private IPointerSource _pointerSource;
         private Tween _clearTween;
+
+        private const float RightClickDragThreshold = 6f;
+        private Vector2 _rightPressScreen;
+        private bool _rightDragged;
         private int _planetLayerMask;
         private CursorLight _cursorLight;
 
@@ -115,7 +119,19 @@ namespace Warmask.Planet
 
             if (Mouse.current.rightButton.wasPressedThisFrame)
             {
-                ClearSelection();
+                _rightPressScreen = Mouse.current.position.ReadValue();
+                _rightDragged = false;
+            }
+
+            if (Mouse.current.rightButton.isPressed &&
+                Vector2.Distance(Mouse.current.position.ReadValue(), _rightPressScreen) > RightClickDragThreshold)
+                _rightDragged = true;
+
+            if (Mouse.current.rightButton.wasReleasedThisFrame)
+            {
+                // Right-click sends everything to the hovered planet; a right-drag pans instead.
+                if (!_rightDragged && mousePlanet && _startPlanet)
+                    HandlePlanetClick(mousePlanet, sendAll: true);
                 return;
             }
 
