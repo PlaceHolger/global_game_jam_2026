@@ -202,7 +202,10 @@ Add one `OrthographicCameraController` to `Main Camera` in `GameCore`.
   can verify clamping without synthesising device input.
 
 The controller does not change `Camera.main`, UI camera stacking, background
-behaviour, cursor lights, or pointer conversion.
+behaviour, cursor lights, or pointer conversion. The label camera (`UI Camera`,
+layer UI, post-processing off) must mirror the main camera's position and
+orthographic size, otherwise world-space planet HUD stays behind while the map
+zooms and pans. `UiCameraFollower` does that in `LateUpdate`.
 
 ## Player compatibility
 

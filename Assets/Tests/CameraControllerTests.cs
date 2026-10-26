@@ -67,6 +67,28 @@ namespace Warmask.Tests
         }
 
         [UnityTest]
+        public IEnumerator UiCameraFollower_TracksGameplayCamera()
+        {
+            var mainObject = new GameObject("Main");
+            var main = mainObject.AddComponent<Camera>();
+            main.orthographic = true;
+            main.orthographicSize = 12.875f;
+            mainObject.transform.position = new Vector3(3f, -4f, -10f);
+
+            var uiObject = new GameObject("Ui");
+            var ui = uiObject.AddComponent<Camera>();
+            var follower = uiObject.AddComponent<UiCameraFollower>();
+            follower.SetSource(main);
+            yield return null;
+
+            Assert.AreEqual(main.transform.position, ui.transform.position);
+            Assert.AreEqual(main.orthographicSize, ui.orthographicSize, 0.001f);
+
+            Object.Destroy(mainObject);
+            Object.Destroy(uiObject);
+        }
+
+        [UnityTest]
         public IEnumerator AspectChange_RefitsWhenAtWholeMap_ButKeepsDeliberateZoom()
         {
             var cameraObject = new GameObject("Camera");

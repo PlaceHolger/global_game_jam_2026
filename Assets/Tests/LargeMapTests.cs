@@ -61,5 +61,40 @@ namespace Warmask.Tests
             Assert.AreEqual(new Vector2(44f, 22f), bounds.Size);
             Assert.AreEqual(4.5f, bounds.MinOrthoSize, 0.001f);
         }
+
+        [UnityTest]
+        public IEnumerator LargeMap_PlanetsAreSelectableAndDoNotOverlap()
+        {
+            yield return GameplaySceneLoader.Load("LargeMap");
+
+            var planets = Object.FindObjectsByType<PlanetInstance>();
+            int planetsLayer = LayerMask.NameToLayer("Planets");
+            Assert.AreNotEqual(-1, planetsLayer, "TagManager has no Planets layer.");
+
+            foreach (var planet in planets)
+            {
+                Assert.AreEqual(planetsLayer, planet.GetComponent<Collider2D>().gameObject.layer,
+                    planet.name + " is not on the Planets layer, so clicks would miss it.");
+            }
+
+            for (int i = 0; i < planets.Length; i++)
+            {
+                for (int j = i + 1; j < planets.Length; j++)
+                {
+                    Vector2 a = planets[i].transform.position;
+                    Vector2 b = planets[j].transform.position;
+                    float needed = PlanetRadius(planets[i]) + PlanetRadius(planets[j]);
+                    Assert.GreaterOrEqual(Vector2.Distance(a, b), needed,
+                        planets[i].name + " and " + planets[j].name + " overlap.");
+                }
+            }
+        }
+
+        private static float PlanetRadius(PlanetInstance planet)
+        {
+            var sprite = planet.GetComponent<SpriteRenderer>().sprite;
+            float visualScale = 0.6f + 0.4f * planet.PlanetSize;
+            return sprite.bounds.extents.x * visualScale;
+        }
     }
 }
