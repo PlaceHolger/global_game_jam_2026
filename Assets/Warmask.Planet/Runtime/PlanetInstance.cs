@@ -149,7 +149,7 @@ namespace Warmask.Planet
             InitializePlanet(); //reinitialize to apply new spawn interval
         }
 
-        public void SetOwner(Globals.ePlayer newOwner)
+        public void SetOwner(Globals.ePlayer newOwner, bool spawnCaptureEffect = true)
         {
             Globals.ePlayer oldOwner = owner;
             owner = newOwner;
@@ -184,7 +184,7 @@ namespace Warmask.Planet
                 noOwner.SetActive(owner == Globals.ePlayer.None);
 
             // Spawn explosion on capture
-            if (explosionPrefab && oldOwner != newOwner && newOwner != Globals.ePlayer.None)
+            if (spawnCaptureEffect && explosionPrefab && oldOwner != newOwner && newOwner != Globals.ePlayer.None)
             {
                 if (Warmask.Ship.ExplosionPool.Instance != null)
                 {
@@ -192,7 +192,7 @@ namespace Warmask.Planet
                 }
                 else
                 {
-                    Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+                    Destroy(Instantiate(explosionPrefab, transform.position, Quaternion.identity), 2f);
                 }
             }
 
@@ -465,11 +465,11 @@ namespace Warmask.Planet
                 if ((Globals.ePlayer)kvp.Key == owner)
                     numOwnShipsInOrbit += kvp.Value;
                 else
-                {
-                    lastAttacker = (Globals.ePlayer)kvp.Key;
                     numEnemyShipsInOrbit += kvp.Value;
-                }
             }
+
+            // Four players can fight over one planet: the biggest fleet takes it, not the last one listed.
+            lastAttacker = StrongestAttacker(shipCountCache, owner);
 
             if (numEnemyShipsInOrbit > 0)
             {
@@ -480,6 +480,22 @@ namespace Warmask.Planet
                 UpdateDebugLabel();
                 lastAttacker = Globals.ePlayer.None;
             }
+        }
+
+        /// <summary>Player with the most ships in orbit, ignoring the owner. None when nobody attacks.</summary>
+        public static Globals.ePlayer StrongestAttacker(Dictionary<int, int> shipsInOrbit, Globals.ePlayer owner)
+        {
+            Globals.ePlayer strongest = Globals.ePlayer.None;
+            int most = 0;
+            foreach (var kvp in shipsInOrbit)
+            {
+                if (kvp.Value <= most || (Globals.ePlayer)kvp.Key == owner)
+                    continue;
+
+                most = kvp.Value;
+                strongest = (Globals.ePlayer)kvp.Key;
+            }
+            return strongest;
         }
     }
 }

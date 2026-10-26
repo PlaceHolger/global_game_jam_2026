@@ -1433,7 +1433,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8329c61f4d0b759418234cacba3cb7b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAi
-  enemyPlayer: 1
   ownPlayer: 2
   decisionInterval: 2
   IntervalAfterAttack: 4

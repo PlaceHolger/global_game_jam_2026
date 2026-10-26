@@ -41,6 +41,7 @@ public class EnemyAi : MonoBehaviour
     float PreferBiggerPlanets = 10f; //weight for planet size in target evaluation
 
     float nextDecisionTime;
+    float effectiveDecisionInterval;
     
     MouseLineHelper _mouseLineHelper;
 
@@ -50,15 +51,17 @@ public class EnemyAi : MonoBehaviour
     private void Awake()
     {
         _mouseLineHelper = GetComponentInChildren<MouseLineHelper>();
-        if(Globals.Instance.EasyMode)
-            decisionInterval *= 2.666f; //easier mode for player, enemy thinks slower
+        // Kept out of decisionInterval so a clone of this AI does not apply Easy Mode twice.
+        effectiveDecisionInterval = Globals.Instance.EasyMode
+            ? decisionInterval * 2.666f //easier mode for player, enemy thinks slower
+            : decisionInterval;
     }
 
     void Update()
     {
         if (Globals.Instance.localMultiplayer) return;
         if (Time.time < nextDecisionTime) return;
-        nextDecisionTime = Time.time + (InOpeningBoost ? openingDecisionInterval : decisionInterval);
+        nextDecisionTime = Time.time + (InOpeningBoost ? openingDecisionInterval : effectiveDecisionInterval);
 
         MakeDecision();
     }
@@ -69,6 +72,13 @@ public class EnemyAi : MonoBehaviour
         
         // 1. Get our planets with available troops
         var ourPlanets = planetsManager.GetAllPlanetsForPlayer(ownPlayer);
+        if (ourPlanets.Count == 0)
+        {
+            // Wiped out in a four-player match; keep the log quiet for the rest of the game.
+            enabled = false;
+            return;
+        }
+
         int totalAvailableTroops = 0;
         PlanetInstance mostAvailableTroopsOnOnePlanetPlanet = null;
         int mostAvailableTroopsOnOnePlanet = 0;
@@ -106,7 +116,7 @@ public class EnemyAi : MonoBehaviour
                     _mouseLineHelper.SetStartPos(mostAvailableTroopsOnOnePlanetPlanet.transform);
                     _mouseLineHelper.SetEndPos(targetPlanet.transform);
                     Debug.Log($"Enemy AI: Sent {sendTroops} troops from {mostAvailableTroopsOnOnePlanetPlanet.name} to {targetPlanet.name}");
-                    DOVirtual.DelayedCall(decisionInterval * 0.66f, () =>
+                    DOVirtual.DelayedCall(effectiveDecisionInterval * 0.66f, () =>
                     {
                         _mouseLineHelper.SetStartPos(null);
                         _mouseLineHelper.SetEndPos(null);
