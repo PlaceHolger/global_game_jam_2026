@@ -12,6 +12,9 @@ EditorBuildSettings:
     path: Assets/Warmask.Scenes/GameCore.unity
     guid: 7d068ee3f2ba2f84ab9e15356b09fb80
   - enabled: 1
+    path: Assets/Warmask.Scenes/LargeMap.unity
+    guid: baa2f09755ff23a41b98d3d9c40e8e68
+  - enabled: 1
     path: Assets/Warmask.Scenes/SampleScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
   m_configObjects:
