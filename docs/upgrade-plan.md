@@ -9,7 +9,7 @@ Rule: nothing is committed until the work runs and you create the branch. Until 
 ## 1. Where the project is
 
 - Started on Unity 6000.3.6f1; upgraded to **6000.7.0b6** (revision 820f8ee8e58b) in phase 1. URP 17.7.0, Input System 6.7.0, test framework 1.9.0.
-- Two scenes: `Menu.unity`, `SampleScene.unity`. 11 planets.
+- Four scenes: `Menu.unity`, `GameCore.unity` (shared gameplay objects), `LargeMap.unity` (the default map) and `SampleScene.unity` (kept for comparison and tests). `LargeMap` has 17 planets on 44×22; `SampleScene` keeps its original 11 planets.
 - Ships are GameObjects with a `Collider2D`, pooled per shipyard. Boid steering already runs in a Burst job; neighbor lookup still uses `Physics2D.OverlapCircle` per ship.
 - Current caps: 24 ground units per planet, 20 own ships assigned per shipyard (sending ships moves the slot to the destination, so origins can rebuild; a planet can hold more than 20 by receiving), fleet cap per player = owned planets × per-planet ship cap + 20 buffer (`Globals.fleetCapBuffer`), pool 50.
 - No netcode, no tests, no central config. Tuning values live on prefabs, scene overrides and the `Globals` ScriptableObject.
@@ -298,13 +298,24 @@ User-visible polish pass. Code is not finished until each item is checked in a P
 - [ ] **Play-test:** cursor glow brightens the backdrop only (no white flare, no ship/planet tint), background fills the current aspect with the mask tint, F2 shows/hides the stats overlay, shield-number reads well (and spin?), HUD numbers large + correct, `MAX` blink at cap, planet clicks/cooldowns/ship feedback unchanged.
 - [x] Remove temporary raw-input diagnostics. Done: `RawInputMouseRouter` device-list/first-input/left-down logs, `RawInputMousePointer` movement logs, `RawInputSpike` status logs removed; only error/exception logs remain. Final build + commit still pending (needs the user's editor).
 
+### Shared core scene and LargeMap (2026-10-26)
+
+- `GameCore.unity` holds the camera, UI camera, lights, background, mask, ship manager, selection manager and end screen. A map holds only its `Planets`, `EnemyAI` and `MapBounds`.
+- Editor workflow: open `GameCore`, then open `LargeMap` additively (drag it onto the Hierarchy, or right-click → Open Scene Additive). The menu does the same at runtime through `SceneLoader` + `GameSession`.
+- `LargeMap` is 44×22 with four equal corner homes, mirrored neutrals and a neutral centre. P1 starts top-left, P2 bottom-right; the other two homes stay neutral until 4-player mode.
+- Camera: wheel zoom at the cursor, middle-drag pan, gamepad right stick pan and D-pad zoom. It fits the whole map to the current aspect and clamps to `MapBounds`; each map owns its `minOrthoSize`.
+- `SampleScene` is kept for comparison and tests and is still in Build Settings. `GameSession.MapScene` is the only switch for the default map.
+- Known limit: one shared camera for all local players.
+- Verification: full PlayMode suite 32/32 passed (2026-10-26); WebGPU development build succeeded. Manual camera/map checklist still open (see `performance-findings.md`).
+
 ## 15. Later backlog (agreed, not scheduled)
 
 ### More and larger maps, camera zoom
+- Landed 2026-10-26: hand-made `LargeMap` (44×22, four corner homes), shared `GameCore` scene, aspect-aware whole-map fit, cursor-anchored zoom and clamped pan. Deferred: data-driven `MapDefinition`, minimap, procedural layouts, 3-8 players.
 - Map layouts become data: a `MapDefinition` (planet positions, types, owners, sizes) or map prefabs, so adding a map is content, not code. First two or three hand-made layouts, procedural later.
 - Larger maps need camera zoom and pan (mouse wheel plus gamepad stick/triggers), a fit-to-screen default, and a minimap. Zoom must be a camera concern only: all pointer code already converts screen→world through the camera, so `IPointerSource` keeps working unchanged.
 - A minimap doubles as the co-op ping surface.
-- Do this after ship scaling (phase 7): more planets means more ships, and online bandwidth scales with both.
+- The first slice landed before ship scaling on purpose (map + camera, no new gameplay rules). More planets still means more ships, so measure before adding many more layouts or going online.
 
 ### 3–8 players
 - This is a data-model change, not a lobby setting. Today's model is hardcoded to two: `Globals.ePlayer` enum (None/Player1/Player2), a 3-entry color array, 2 owner indicators per planet, `EnemyAi` bound to P1/P2, and `IsPlayer` returning true only for P1.

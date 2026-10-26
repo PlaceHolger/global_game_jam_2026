@@ -502,3 +502,18 @@ and the scene systems above — not the trails.
       `ShipTypeIcon` was removed because it rendered black and was redundant.
 - [x] Throttle `FleetStatusHud` / shipyard ship-count scans and cache the
       under-attack label string. Done 2026-10-25; suite 23/23.
+
+### Large map and camera checklist (manual, WebGPU build)
+
+Automated coverage: full PlayMode suite 32/32 (2026-10-26), including map
+symmetry, core/map split and camera fit/clamp math. WebGPU development build
+succeeded 2026-10-26. Still check by eye:
+
+- [ ] Whole map visible on first frame at 16:9 and 4:3.
+- [ ] Zoom keeps the planet under the pointer in place.
+- [ ] Pan clamps: no background edge appears at max zoom-out.
+- [ ] Mask tint and rotation survive zoom/pan.
+- [ ] Cursor lights follow the pointer while zoomed.
+- [ ] Planet labels and HUD stay crisp (UI camera unaffected).
+- [ ] Two-player local join still works on `LargeMap`.
+- [x] `SampleScene` still loads with the core scene (covered by tests).

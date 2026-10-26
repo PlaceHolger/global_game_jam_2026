@@ -14,6 +14,7 @@ namespace Warmask.Editor
         {
             "Assets/Warmask.Scenes/Menu.unity",
             "Assets/Warmask.Scenes/GameCore.unity",
+            "Assets/Warmask.Scenes/LargeMap.unity",
             "Assets/Warmask.Scenes/SampleScene.unity"
         };
 
@@ -40,7 +41,7 @@ namespace Warmask.Editor
             }
 
             EditorSceneManager.OpenScene("Assets/Warmask.Scenes/GameCore.unity", OpenSceneMode.Single);
-            EditorSceneManager.OpenScene("Assets/Warmask.Scenes/SampleScene.unity", OpenSceneMode.Additive);
+            EditorSceneManager.OpenScene("Assets/Warmask.Scenes/LargeMap.unity", OpenSceneMode.Additive);
 
             if (Camera.main == null)
             {

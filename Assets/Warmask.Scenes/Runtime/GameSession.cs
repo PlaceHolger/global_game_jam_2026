@@ -6,7 +6,7 @@ namespace Warmask.Scenes
     /// </summary>
     public static class GameSession
     {
-        public static string MapScene = "SampleScene";
+        public static string MapScene = "LargeMap";
         public static int PlayerCount = 2;
     }
 }
