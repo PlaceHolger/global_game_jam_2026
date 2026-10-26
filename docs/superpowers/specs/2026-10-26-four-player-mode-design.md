@@ -29,18 +29,21 @@ humans and AIs, and all-human.
 
 ## Milestones
 
-### M1 — 1 human vs 3 AIs (first working four-player match)
+### M1 — 1 human vs 3 AIs (built, commits `e51cee4` + `5129fb5`)
 
 - `ePlayer` gains `Player3`, `Player4`; colours and sprites get four entries.
-- `GameSession` gains a slot plan: `Players = 4`, and `IsHumanSlot[1..4]` with a
-  default of `{true, false, false, false}`. `Globals.IsHuman` reads it.
-- `LargeMap` gives the fourth-corner homes to P3/P4 at match start (the two neutral
-  corners), only when the session has four players; two-player matches stay exactly
-  as they are today.
-- Two extra `EnemyAi` instances, one per AI slot, each targeting every other player.
-- `FleetStatusHud` shows four sides (top-left/bottom-left, top-right/bottom-right).
-- End screen: "last player standing" instead of win/lost buttons; the existing
-  two-player path is kept for two-player matches.
+- The match size lives in `Globals.playerCount` (2 or 4), set by a menu toggle; a
+  four-player session always loads `LargeMap`, the only map with four homes.
+  The slot plan (`IsHumanSlot`) was deferred to M2 — in M1 P2–P4 are AI by construction.
+- `FourPlayerSetup` (Assembly-CSharp, on the `LargeMap` scene) gives the two neutral
+  corners to P3/P4 at match start and clones the scene's `EnemyAi` once per extra
+  slot, so it inherits the scene-tuned intervals. Two-player matches are untouched.
+- Each AI treats every owner that is not itself as an enemy.
+- `FleetStatusHud` shows one label per slot: odd slots on the left edge, even on the
+  right, second row at the bottom.
+- End screen: existing win/lost screen kept; win now means "no AI is left" instead of
+  "one AI died". A dead AI disables itself.
+- A planet contested by several fleets goes to the biggest orbiting fleet.
 
 ### M2 — Humans in slots 2–4
 
