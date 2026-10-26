@@ -23,6 +23,20 @@ namespace Warmask.Tests
             Assert.AreEqual(6.5f, center.y, 0.001f);
         }
 
+        [Test]
+        public void SetZoom_WorksBeforeBoundsExist()
+        {
+            var cameraObject = new GameObject("Camera");
+            var camera = cameraObject.AddComponent<Camera>();
+            camera.orthographic = true;
+
+            var controller = cameraObject.AddComponent<OrthographicCameraController>();
+            controller.SetZoom(6f);
+            Assert.AreEqual(6f, camera.orthographicSize, 0.001f);
+
+            Object.Destroy(cameraObject);
+        }
+
         [UnityTest]
         public IEnumerator FitAndZoom_ClampToBounds()
         {
@@ -42,9 +56,40 @@ namespace Warmask.Tests
 
             controller.SetZoom(4.5f);
             controller.Pan(new Vector2(100f, 100f));
+            // Keep ambient gamepads from moving the camera during the frame.
+            controller.enabled = false;
             yield return null;
             Assert.AreEqual(14f, controller.ViewCenter.x, 0.001f);
             Assert.AreEqual(6.5f, controller.ViewCenter.y, 0.001f);
+
+            Object.Destroy(cameraObject);
+            Object.Destroy(boundsObject);
+        }
+
+        [UnityTest]
+        public IEnumerator AspectChange_RefitsWhenAtWholeMap_ButKeepsDeliberateZoom()
+        {
+            var cameraObject = new GameObject("Camera");
+            var camera = cameraObject.AddComponent<Camera>();
+            camera.orthographic = true;
+            camera.aspect = 16f / 9f;
+
+            var boundsObject = new GameObject("Bounds");
+            var bounds = boundsObject.AddComponent<MapBounds>();
+            bounds.Configure(Vector2.zero, new Vector2(44f, 22f), 4.5f, 0.5f);
+
+            var controller = cameraObject.AddComponent<OrthographicCameraController>();
+            controller.SetBounds(bounds);
+            controller.FitToBounds();
+
+            camera.aspect = 4f / 3f;
+            yield return null;
+            Assert.AreEqual(17f, controller.CurrentOrthoSize, 0.001f, "narrower aspect must re-fit the whole map");
+
+            controller.SetZoom(6f);
+            camera.aspect = 16f / 9f;
+            yield return null;
+            Assert.AreEqual(6f, controller.CurrentOrthoSize, 0.001f, "a deliberate zoom must survive a resize");
 
             Object.Destroy(cameraObject);
             Object.Destroy(boundsObject);

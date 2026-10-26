@@ -17,6 +17,7 @@ namespace Warmask.Core
         private Camera _camera;
         private MapBounds _bounds;
         private float _lastAspect;
+        private float _lastFitSize;
         private Vector2 _lastMouseScreen;
 
         public Vector2 ViewCenter => transform.position;
@@ -42,7 +43,9 @@ namespace Warmask.Core
             if (!_bounds || !_camera)
                 return;
 
-            _camera.orthographicSize = CalculateFitOrthoSize(_bounds.Size, _camera.aspect, _bounds.Padding);
+            _lastAspect = _camera.aspect;
+            _lastFitSize = CalculateFitOrthoSize(_bounds.Size, _lastAspect, _bounds.Padding);
+            _camera.orthographicSize = _lastFitSize;
             ApplyCenter(_bounds.Center);
         }
 
@@ -51,7 +54,7 @@ namespace Warmask.Core
             if (!_camera)
                 return;
 
-            _camera.orthographicSize = ClampSize(orthographicSize);
+            _camera.orthographicSize = _bounds ? ClampSize(orthographicSize) : orthographicSize;
             if (_bounds)
                 ApplyCenter(ViewCenter);
         }
@@ -111,9 +114,15 @@ namespace Warmask.Core
 
             if (!Mathf.Approximately(_camera.aspect, _lastAspect))
             {
+                // A resize must not cut off map corners. If the player had zoomed in,
+                // keep that zoom (re-clamped); if they were at the whole-map fit, re-fit.
+                bool wasFitted = Mathf.Approximately(CurrentOrthoSize, _lastFitSize);
                 _lastAspect = _camera.aspect;
-                // Re-clamp the current zoom to the new aspect; don't jump back to the whole map.
-                SetZoom(CurrentOrthoSize);
+                _lastFitSize = CalculateFitOrthoSize(_bounds.Size, _lastAspect, _bounds.Padding);
+                if (wasFitted)
+                    FitToBounds();
+                else
+                    SetZoom(CurrentOrthoSize);
             }
 
             ReadMouse();
@@ -128,7 +137,8 @@ namespace Warmask.Core
 
             Vector2 scroll = mouse.scroll.ReadValue();
             if (!Mathf.Approximately(scroll.y, 0f))
-                Zoom(scroll.y / 120f, mouse.position.ReadValue());
+                // Input System already normalizes one wheel notch to 1.
+                Zoom(scroll.y, mouse.position.ReadValue());
 
             Vector2 screen = mouse.position.ReadValue();
             if (mouse.middleButton.isPressed)
@@ -147,9 +157,9 @@ namespace Warmask.Core
             if (gamepad == null)
                 return;
 
-            Pan(gamepad.rightStick.ReadValue() * (gamepadPanSpeed * Time.unscaledDeltaTime));
+            Pan(gamepad.rightStick.ReadValue() * (gamepadPanSpeed * Time.deltaTime));
 
-            float zoom = gamepad.dpad.ReadValue().y * gamepadZoomSpeed * Time.unscaledDeltaTime;
+            float zoom = gamepad.dpad.ReadValue().y * gamepadZoomSpeed * Time.deltaTime;
             if (!Mathf.Approximately(zoom, 0f))
                 Zoom(zoom, new Vector2(Screen.width * 0.5f, Screen.height * 0.5f));
         }

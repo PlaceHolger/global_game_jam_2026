@@ -505,9 +505,9 @@ and the scene systems above — not the trails.
 
 ### Large map and camera checklist (manual, WebGPU build)
 
-Automated coverage: full PlayMode suite 32/32 (2026-10-26), including map
-symmetry, core/map split and camera fit/clamp math. WebGPU development build
-succeeded 2026-10-26. Still check by eye:
+Automated coverage: full PlayMode suite 34/34 (2026-10-26), including map
+symmetry, core/map split and camera fit/clamp/aspect-change maths. WebGPU
+development build succeeded 2026-10-26. Still check by eye:
 
 - [ ] Whole map visible on first frame at 16:9 and 4:3.
 - [ ] Zoom keeps the planet under the pointer in place.

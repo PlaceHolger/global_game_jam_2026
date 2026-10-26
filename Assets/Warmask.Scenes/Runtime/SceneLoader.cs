@@ -53,6 +53,12 @@ namespace Warmask.Scenes
             }
 
             _currentLoadOperation = SceneManager.LoadSceneAsync(sceneName, mode);
+            if (_currentLoadOperation == null)
+            {
+                Debug.LogError($"Scene '{sceneName}' could not be loaded. Check Build Settings and GameSession.MapScene.");
+                return;
+            }
+
             _currentLoadOperation.allowSceneActivation = false;
 
             while (_currentLoadOperation.progress < 0.9f)
@@ -79,6 +85,12 @@ namespace Warmask.Scenes
             }
 
             _currentLoadOperation = SceneManager.LoadSceneAsync(sceneName);
+            if (_currentLoadOperation == null)
+            {
+                Debug.LogError($"Scene '{sceneName}' could not be preloaded. Check Build Settings.");
+                return;
+            }
+
             _currentLoadOperation.allowSceneActivation = false;
 
             while (_currentLoadOperation.progress < 0.9f)

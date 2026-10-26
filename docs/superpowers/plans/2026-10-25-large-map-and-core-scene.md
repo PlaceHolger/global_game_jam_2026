@@ -538,8 +538,8 @@ Implementation rules:
 - `SetZoom`: clamp to `[bounds.MinOrthoSize, CalculateFitOrthoSize(bounds.Size, camera.aspect, bounds.Padding)]`, then clamp the centre. Recompute the fit; never cache it.
 - `Zoom`: remember the world point under `screenAnchor`, apply the new zoom, then move the centre so that world point stays under the anchor; finally clamp.
 - `Pan`: add world delta, then clamp.
-- `Update`: find a `MapBounds` with `FindAnyObjectByType` if none is assigned, call `FitToBounds` when one first appears, then read input. When `camera.aspect` changes, call `SetZoom(CurrentOrthoSize)` to re-clamp to the new aspect-aware range; do not jump back to the whole-map view.
-- Mouse input: wheel zooms with `Zoom(scroll.y / 120f, Mouse.current.position.ReadValue())`. Middle-button drag pans by the world delta of the screen movement.
+- `Update`: find a `MapBounds` with `FindAnyObjectByType` if none is assigned, call `FitToBounds` when one first appears, then read input. When `camera.aspect` changes: if the camera was at the whole-map fit, call `FitToBounds()` (a resize must never crop the map); if it was deliberately zoomed in, call `SetZoom(CurrentOrthoSize)` to re-clamp. Never jump a deliberate zoom back to whole-map.
+- Mouse input: wheel zooms with `Zoom(scroll.y, Mouse.current.position.ReadValue())`. Input System 6.7 normalizes one wheel notch to 1, so do not divide by 120. Middle-button drag pans by the world delta of the screen movement.
 - Gamepad input: `Gamepad.current` right stick pans at `gamepadPanSpeed` world units/second; D-pad up/down zooms at `gamepadZoomSpeed` units/second. Any connected gamepad may drive the shared camera.
 - Keep `Camera.main` tag and z position unchanged.
 - Add `"Unity.InputSystem"` to `Warmask.Core.asmdef` references.

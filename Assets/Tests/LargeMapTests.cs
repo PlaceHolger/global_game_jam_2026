@@ -4,6 +4,7 @@ using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using Warmask.Core;
 using Warmask.Planet;
 
 namespace Warmask.Tests
@@ -51,7 +52,14 @@ namespace Warmask.Tests
             Assert.AreEqual(4, homes.Length);
             Assert.AreEqual(Globals.ePlayer.Player1, homes.Single(p => p.transform.position.x < 0 && p.transform.position.y > 0).OwnedBy);
             Assert.AreEqual(Globals.ePlayer.Player2, homes.Single(p => p.transform.position.x > 0 && p.transform.position.y < 0).OwnedBy);
+            Assert.AreEqual(Globals.ePlayer.None, homes.Single(p => p.transform.position.x > 0 && p.transform.position.y > 0).OwnedBy);
+            Assert.AreEqual(Globals.ePlayer.None, homes.Single(p => p.transform.position.x < 0 && p.transform.position.y < 0).OwnedBy);
             Assert.AreEqual(Globals.ePlayer.None, planets.Single(p => p.transform.position == Vector3.zero).OwnedBy);
+
+            var bounds = Object.FindAnyObjectByType<MapBounds>();
+            Assert.IsNotNull(bounds, "LargeMap has no MapBounds.");
+            Assert.AreEqual(new Vector2(44f, 22f), bounds.Size);
+            Assert.AreEqual(4.5f, bounds.MinOrthoSize, 0.001f);
         }
     }
 }

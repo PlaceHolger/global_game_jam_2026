@@ -306,7 +306,7 @@ User-visible polish pass. Code is not finished until each item is checked in a P
 - Camera: wheel zoom at the cursor, middle-drag pan, gamepad right stick pan and D-pad zoom. It fits the whole map to the current aspect and clamps to `MapBounds`; each map owns its `minOrthoSize`.
 - `SampleScene` is kept for comparison and tests and is still in Build Settings. `GameSession.MapScene` is the only switch for the default map.
 - Known limit: one shared camera for all local players.
-- Verification: full PlayMode suite 32/32 passed (2026-10-26); WebGPU development build succeeded. Manual camera/map checklist still open (see `performance-findings.md`).
+- Verification: full PlayMode suite 34/34 passed (2026-10-26); WebGPU development build succeeded. Manual camera/map checklist still open (see `performance-findings.md`).
 
 ## 15. Later backlog (agreed, not scheduled)
 
