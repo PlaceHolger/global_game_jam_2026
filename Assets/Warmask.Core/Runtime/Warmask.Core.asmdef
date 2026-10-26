@@ -1,3 +1,6 @@
 {
-	"name": "Warmask.Core"
+	"name": "Warmask.Core",
+	"references": [
+		"Unity.InputSystem"
+	]
 }

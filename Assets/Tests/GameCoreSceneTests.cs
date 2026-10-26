@@ -15,8 +15,8 @@ namespace Warmask.Tests
         public IEnumerator GameCore_HasCameraAndManagers_AndNoPlanets()
         {
             SceneManager.LoadScene("GameCore");
-            yield return null;
-            yield return null;
+            for (int i = 0; i < 5; i++)
+                yield return null;
 
             Assert.IsNotNull(Camera.main);
             // Main camera plus the overlay UI camera.
@@ -24,6 +24,7 @@ namespace Warmask.Tests
             Assert.AreEqual(1, Object.FindObjectsByType<ShipManagerInstance>().Length);
             Assert.AreEqual(1, Object.FindObjectsByType<PlanetSelectionManager>().Length);
             Assert.AreEqual(0, Object.FindObjectsByType<PlanetInstance>().Length);
+            Assert.AreEqual(0, Object.FindObjectsByType<CursorLight>().Length);
             Assert.IsNull(PlanetsManager.Instance);
         }
 

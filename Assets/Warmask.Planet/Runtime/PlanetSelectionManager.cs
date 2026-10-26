@@ -45,7 +45,6 @@ namespace Warmask.Planet
         private Tween _clearTween;
         private int _planetLayerMask;
         private CursorLight _cursorLight;
-        private bool _lightSearchDone;
 
         private void Awake()
         {
@@ -76,11 +75,9 @@ namespace Warmask.Planet
 
         private void Update()
         {
-            if (!_cursorLight && !_lightSearchDone)
-            {
+            // The map loads after the core scene, so keep retrying until a planet exists.
+            if (!_cursorLight)
                 _cursorLight = CursorLight.TryGetOrCreate(transform, player, _pointerSource);
-                _lightSearchDone = true;
-            }
 
             if (_pointerSource != null)
             {

@@ -112,6 +112,8 @@ namespace Warmask.Planet
 
             // Planets ship with an inactive "Spot Light 2D" child (radius 3, no cookie,
             // smooth falloff). That is the look we want at the cursor position.
+            // Only planets are a valid source. Falling back to any point light would clone
+            // the background's Randomizer lights before a map has loaded.
             PlanetInstance planet = FindAnyObjectByType<PlanetInstance>(FindObjectsInactive.Exclude);
             if (planet)
             {
@@ -121,19 +123,6 @@ namespace Warmask.Planet
                     _template = planetLight;
                     return _template;
                 }
-            }
-
-            Light2D[] lights = FindObjectsByType<Light2D>(FindObjectsInactive.Include);
-            foreach (Light2D light in lights)
-            {
-                if (!light || light.lightType != Light2D.LightType.Point)
-                    continue;
-                // never clone one of our own cursor lights
-                if (light.GetComponent<CursorLight>())
-                    continue;
-
-                _template = light;
-                return _template;
             }
 
             return null;
