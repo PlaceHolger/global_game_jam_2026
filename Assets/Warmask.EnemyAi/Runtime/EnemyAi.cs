@@ -21,6 +21,13 @@ public class EnemyAi : MonoBehaviour
     
     [SerializeField] float decisionInterval = 1f;
     [SerializeField] float IntervalAfterAttack = 4f;
+
+    [SerializeField, Tooltip("Seconds at match start where the AI races for neutral planets")]
+    float openingBoostDuration = 5f;
+    [SerializeField, Tooltip("Decision interval during the opening race")]
+    float openingDecisionInterval = 0.35f;
+    [SerializeField, Tooltip("Wait after an attack during the opening race")]
+    float openingPostAttackDelay = 1f;
     
     [SerializeField, Tooltip("How much weight has a smaller distance in target evaluation")]
     float DistanceFactor = 2f; //weight for distance in target evaluation
@@ -35,6 +42,9 @@ public class EnemyAi : MonoBehaviour
     
     MouseLineHelper _mouseLineHelper;
 
+    // The opening is a land grab: decide fast, and don't sit out the long post-attack wait.
+    bool InOpeningBoost => Time.time < openingBoostDuration;
+
     private void Awake()
     {
         _mouseLineHelper = GetComponentInChildren<MouseLineHelper>();
@@ -46,7 +56,7 @@ public class EnemyAi : MonoBehaviour
     {
         if (Globals.Instance.localMultiplayer) return;
         if (Time.time < nextDecisionTime) return;
-        nextDecisionTime = Time.time + decisionInterval;
+        nextDecisionTime = Time.time + (InOpeningBoost ? openingDecisionInterval : decisionInterval);
 
         MakeDecision();
     }
@@ -100,7 +110,7 @@ public class EnemyAi : MonoBehaviour
                         _mouseLineHelper.SetEndPos(null);
                     });
                 }
-                nextDecisionTime += IntervalAfterAttack; //wait a bit longer before next decision
+                nextDecisionTime += InOpeningBoost ? openingPostAttackDelay : IntervalAfterAttack; //wait a bit longer before next decision
                 return;
             }
         }

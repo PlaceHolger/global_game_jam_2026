@@ -77,6 +77,21 @@ namespace Warmask.Planet
 
         public Globals.ePlayer OwnedBy => owner;
         public float PlanetSize => planet_size;
+
+        /// <summary>
+        /// Capture speed multiplier from the number of enemy ships in orbit.
+        /// 1 attacker = 0.5x, 5 = 1x, 10 = 1.5x, 40 or more = 2x, linear between.
+        /// </summary>
+        public static float AttackerSpeedMultiplier(int attackers)
+        {
+            if (attackers <= 5)
+                return Mathf.Lerp(0.5f, 1f, Mathf.Clamp01((attackers - 1) / 4f));
+            if (attackers <= 10)
+                return Mathf.Lerp(1f, 1.5f, (attackers - 5) / 5f);
+            if (attackers <= 40)
+                return Mathf.Lerp(1.5f, 2f, (attackers - 10) / 30f);
+            return 2f;
+        }
         public event Action<Globals.ePlayer, Globals.ePlayer> OwnerChanged;
 
         private float unitSpawnInterval;
@@ -259,9 +274,11 @@ namespace Warmask.Planet
 
             if (numEnemyShipsInOrbit > 0 && numOwnShipsInOrbit <= 0)
             {
-                // Under attack, reduce unit count over time
+                // Under attack, reduce unit count over time. More orbiting ships drain faster.
                 timer += Time.deltaTime;
-                if (timer >= unitReductionIntervalWhenAttacked)
+                float reductionInterval = unitReductionIntervalWhenAttacked /
+                    AttackerSpeedMultiplier(numEnemyShipsInOrbit);
+                if (timer >= reductionInterval)
                 {
                     timer = 0f;
                     unitCount = Mathf.Max(0, unitCount - 1);
