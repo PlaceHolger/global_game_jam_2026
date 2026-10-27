@@ -39,5 +39,25 @@ namespace Warmask.Tests
             CollectionAssert.Contains(manager.Selected.ToArray(), p1Home);
             CollectionAssert.DoesNotContain(manager.Selected.ToArray(), p2Home);
         }
+
+        [UnityTest]
+        public IEnumerator ClickingAnotherOwnPlanet_IsAnOrderNotASelection()
+        {
+            Globals.Instance.playerCount = 2;
+            yield return GameplaySceneLoader.Load("LargeMap");
+
+            PlanetSelectionManager manager = PlanetSelectionManager.Instance;
+            PlanetInstance[] planets = Object.FindObjectsByType<PlanetInstance>();
+            PlanetInstance home = planets.First(p => p.OwnedBy == Globals.ePlayer.Player1);
+            PlanetInstance spare = planets.First(p => p.OwnedBy == Globals.ePlayer.None);
+            spare.SetOwner(Globals.ePlayer.Player1, spawnCaptureEffect: false);
+
+            manager.HandlePlanetClick(home);
+            Assert.AreEqual(1, manager.SelectedCount, "the home is selected first");
+
+            manager.HandlePlanetClick(spare);
+            CollectionAssert.DoesNotContain(manager.Selected.ToArray(), spare);
+            Assert.Less(manager.SelectedCount, 2, "clicking a second own planet sends instead of adding it");
+        }
     }
 }

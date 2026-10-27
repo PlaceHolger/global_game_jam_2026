@@ -294,7 +294,12 @@ namespace Warmask.Planet
 
             if (planet.OwnedBy == player)
             {
-                ToggleSelected(planet);
+                // A plain click on an unselected own planet is an order (reinforce it).
+                // Shift-click, or a click on an already selected planet, edits the selection instead.
+                if (ShiftHeld || _selected.Count == 0 || _selected.Contains(planet))
+                    ToggleSelected(planet);
+                else
+                    SendTo(planet, sendAll);
                 return;
             }
 

@@ -25,6 +25,16 @@ namespace Warmask.Tests
         }
 
         [Test]
+        public void YellowAndOrange_HaveDifferentShipForms()
+        {
+            Globals globals = Globals.Instance;
+            Assert.AreNotEqual(
+                globals.GetPlayerSprite(Globals.ePlayer.Player1),
+                globals.GetPlayerSprite(Globals.ePlayer.Player3),
+                "P1 yellow and P3 orange are too close in colour to share a silhouette");
+        }
+
+        [Test]
         public void PlayerColours_AreAllDifferent()
         {
             Globals globals = Globals.Instance;

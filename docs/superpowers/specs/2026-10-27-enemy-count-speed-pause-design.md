@@ -38,10 +38,12 @@ quad rendered as a dark square around the triangle. No code, no new texture.
 
 **Input fixes (same batch).** Right-click sampled the planet only on release, so a
 small drift or a late frame lost it; now it records the planet and screen position on
-press, accepts release within 0.5 s and 12 px, and still lets a right-drag pan. A left
-press on a second owned planet used to send from the first; now it toggles that planet
-into a multi-selection (box drag on empty space, Shift-click to add/remove), and
-sending iterates every selected source.
+press, accepts release within 0.5 s and 12 px, and still lets a right-drag pan. A plain
+left click on an unselected owned planet while a selection exists sends an order there,
+so reinforcing your own planet keeps working; Shift-click adds or removes a planet, a
+click on an already selected planet deselects it, and a box drag on empty space selects
+several. Sending iterates every selected source. Right-click still sends to any planet,
+including your own.
 
 ## How it works
 
