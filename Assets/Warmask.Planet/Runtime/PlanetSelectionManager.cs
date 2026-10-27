@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,6 +11,9 @@ namespace Warmask.Planet
         [SerializeField] private Globals.ePlayer player = Globals.ePlayer.Player1;
 
         public Globals.ePlayer Player => player;
+
+        public int SelectedCount => _selected.Count;
+        public IReadOnlyList<PlanetInstance> Selected => _selected;
 
         private static PlanetSelectionManager _instance;
 
@@ -36,7 +40,8 @@ namespace Warmask.Planet
             }
         }
 
-        private PlanetInstance _startPlanet;
+        private readonly List<PlanetInstance> _selected = new List<PlanetInstance>();
+        private PlanetInstance _primary;
         private PlanetInstance _hoverPlanet;
         private PlanetInstance _flashStart;
         private PlanetInstance _flashTarget;
@@ -44,11 +49,29 @@ namespace Warmask.Planet
         private IPointerSource _pointerSource;
         private Tween _clearTween;
 
-        private const float RightClickDragThreshold = 6f;
+        private const float RightClickDragThreshold = 12f;
+        private const float RightClickMaxSeconds = 0.5f;
+        private const float BoxDragThreshold = 8f;
+
         private Vector2 _rightPressScreen;
+        private PlanetInstance _rightPressPlanet;
+        private float _rightPressTime;
         private bool _rightDragged;
+
+        private Vector2 _leftPressScreen;
+        private PlanetInstance _leftPressPlanet;
+        private bool _leftBoxing;
+        private bool _boxVisible;
+        private Rect _boxRect;
+
         private int _planetLayerMask;
         private CursorLight _cursorLight;
+
+        private static bool ShiftHeld => Keyboard.current != null &&
+            (Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed);
+
+        private static bool CtrlHeld => Keyboard.current != null &&
+            (Keyboard.current.leftCtrlKey.isPressed || Keyboard.current.rightCtrlKey.isPressed);
 
         private void Awake()
         {
@@ -87,7 +110,7 @@ namespace Warmask.Planet
             {
                 PlanetInstance hoveredPlanet = FindPlanetAt(_pointerSource.ScreenPosition);
                 SetHoveredPlanet(hoveredPlanet);
-                if (_startPlanet)
+                if (_primary)
                     UpdateOrderPreview(hoveredPlanet);
 
                 if (_pointerSource.CancelPressed)
@@ -112,41 +135,70 @@ namespace Warmask.Planet
             if (Mouse.current == null)
                 return;
 
-            PlanetInstance mousePlanet = FindPlanetAt(Mouse.current.position.ReadValue());
+            Vector2 screenPosition = Mouse.current.position.ReadValue();
+            PlanetInstance mousePlanet = FindPlanetAt(screenPosition);
             SetHoveredPlanet(mousePlanet);
-            if (_startPlanet)
+            if (_primary)
                 UpdateOrderPreview(mousePlanet);
 
             if (Mouse.current.rightButton.wasPressedThisFrame)
             {
-                _rightPressScreen = Mouse.current.position.ReadValue();
+                _rightPressScreen = screenPosition;
+                _rightPressPlanet = mousePlanet;
+                _rightPressTime = Time.unscaledTime;
                 _rightDragged = false;
             }
 
-            if (Mouse.current.rightButton.isPressed &&
-                Vector2.Distance(Mouse.current.position.ReadValue(), _rightPressScreen) > RightClickDragThreshold)
+            if (Mouse.current.rightButton.isPressed && !_rightDragged &&
+                Vector2.Distance(screenPosition, _rightPressScreen) > RightClickDragThreshold)
                 _rightDragged = true;
 
             if (Mouse.current.rightButton.wasReleasedThisFrame)
             {
-                // Right-click sends everything to the hovered planet; a right-drag pans instead.
-                if (!_rightDragged && mousePlanet && _startPlanet)
-                    HandlePlanetClick(mousePlanet, sendAll: true);
+                // Right-click is a command on the selection, or a select when nothing is selected.
+                // The planet from press time is used so a tiny cursor drift cannot lose the target.
+                bool quick = !_rightDragged &&
+                             Time.unscaledTime - _rightPressTime <= RightClickMaxSeconds;
+                if (quick && _rightPressPlanet)
+                {
+                    if (_selected.Count > 0)
+                        SendTo(_rightPressPlanet, sendAll: true);
+                    else
+                        HandlePlanetClick(_rightPressPlanet, sendAll: true);
+                }
+
+                _rightPressPlanet = null;
                 return;
             }
 
-            if (!Mouse.current.leftButton.wasPressedThisFrame)
-                return;
-
-            if (!mousePlanet)
+            if (Mouse.current.leftButton.wasPressedThisFrame)
             {
-                ClearSelection();
-                return;
+                _leftPressScreen = screenPosition;
+                _leftPressPlanet = mousePlanet;
+                _leftBoxing = !_leftPressPlanet;
+                _boxVisible = false;
+
+                if (_leftPressPlanet)
+                    HandlePlanetClick(_leftPressPlanet, CtrlHeld);
             }
 
-            bool sendAll = Keyboard.current != null &&
-                (Keyboard.current.leftCtrlKey.isPressed || Keyboard.current.rightCtrlKey.isPressed);
-            HandlePlanetClick(mousePlanet, sendAll);
+            if (_leftBoxing && Mouse.current.leftButton.isPressed &&
+                Vector2.Distance(screenPosition, _leftPressScreen) > BoxDragThreshold)
+            {
+                _boxVisible = true;
+                _boxRect = ScreenBox(screenPosition);
+            }
+
+            if (Mouse.current.leftButton.wasReleasedThisFrame && _leftBoxing)
+            {
+                if (_boxVisible)
+                    SelectInBox(_boxRect, ShiftHeld);
+                else
+                    ClearSelection();
+
+                _leftBoxing = false;
+                _boxVisible = false;
+            }
         }
 
         private void SetHoveredPlanet(PlanetInstance planet)
@@ -190,11 +242,16 @@ namespace Warmask.Planet
         {
             ClearOrderFlash();
 
-            if (_startPlanet)
+            foreach (PlanetInstance planet in _selected)
             {
-                _startPlanet.SetSelection(false);
-                _startPlanet = null;
+                if (planet)
+                    planet.SetSelection(false);
             }
+
+            _selected.Clear();
+            _primary = null;
+            _leftBoxing = false;
+            _boxVisible = false;
 
             if (_mouseLineHelper)
             {
@@ -220,7 +277,7 @@ namespace Warmask.Planet
             _flashStart = null;
             _flashTarget = null;
 
-            if (_startPlanet == null && _mouseLineHelper)
+            if (_primary == null && !_leftBoxing && _mouseLineHelper)
             {
                 _mouseLineHelper.SetStartPos(null);
                 _mouseLineHelper.SetEndPos(null);
@@ -234,80 +291,221 @@ namespace Warmask.Planet
 
             ClearOrderFlash();
 
-            // No start set -> set start
-            if (!_startPlanet)
+            if (planet.OwnedBy == player)
             {
-                if (planet.OwnedBy != player)
-                {
-                    planet.ShowNotYoursFeedback();
-                    return;
-                }
+                ToggleSelected(planet);
+                return;
+            }
 
-                _startPlanet = planet;
-                SetHoveredPlanet(planet);
+            if (_selected.Count == 0)
+            {
+                planet.ShowNotYoursFeedback();
+                return;
+            }
+
+            SendTo(planet, sendAll);
+        }
+
+        private void ToggleSelected(PlanetInstance planet)
+        {
+            if (_selected.Contains(planet))
+            {
+                RemoveSelected(planet);
+                return;
+            }
+
+            AddSelected(planet);
+            if (GetAvailableShips(planet) <= 0)
+                planet.ShowNoShipsFeedback();
+            UpdateOrderPreview(_hoverPlanet);
+        }
+
+        private void AddSelected(PlanetInstance planet)
+        {
+            if (!planet || _selected.Contains(planet))
+                return;
+
+            _selected.Add(planet);
+            planet.SetSelection(true);
+            _primary = planet;
+
+            if (_mouseLineHelper)
+            {
                 _mouseLineHelper.SetLineType(planet.PlanetType);
                 _mouseLineHelper.SetStartPos(planet.transform);
-                planet.SetSelection(true);
-                UpdateOrderPreview(null);
-
-                if (GetAvailableShips(planet) <= 0)
-                    planet.ShowNoShipsFeedback();
-                return;
             }
+        }
 
-            // Clicked same planet -> clear
-            if (_startPlanet == planet)
+        private void RemoveSelected(PlanetInstance planet)
+        {
+            if (!_selected.Remove(planet))
+                return;
+
+            planet.SetSelection(false);
+
+            if (_primary != planet)
+                return;
+
+            _primary = _selected.Count > 0 ? _selected[_selected.Count - 1] : null;
+            if (_primary && _mouseLineHelper)
+            {
+                _mouseLineHelper.SetLineType(_primary.PlanetType);
+                _mouseLineHelper.SetStartPos(_primary.transform);
+            }
+            else if (!_primary)
             {
                 ClearSelection();
-                return;
             }
+        }
 
-            int availableShips = GetAvailableShips(_startPlanet);
-            if (availableShips <= 0)
+        private Rect ScreenBox(Vector2 currentScreenPosition)
+        {
+            return Rect.MinMaxRect(
+                Mathf.Min(_leftPressScreen.x, currentScreenPosition.x),
+                Mathf.Min(_leftPressScreen.y, currentScreenPosition.y),
+                Mathf.Max(_leftPressScreen.x, currentScreenPosition.x),
+                Mathf.Max(_leftPressScreen.y, currentScreenPosition.y));
+        }
+
+        private void SelectInBox(Rect screenRect, bool additive)
+        {
+            Camera camera = Camera.main;
+            if (!camera)
+                return;
+
+            if (!additive)
+                ClearSelection();
+
+            foreach (PlanetInstance planet in FindObjectsByType<PlanetInstance>(FindObjectsInactive.Exclude))
             {
-                _startPlanet.ShowNoShipsFeedback();
+                if (planet.OwnedBy != player)
+                    continue;
+
+                Vector3 screenPoint = camera.WorldToScreenPoint(planet.transform.position);
+                if (screenPoint.z < 0f || !screenRect.Contains(screenPoint))
+                    continue;
+
+                AddSelected(planet);
+            }
+        }
+
+        private void SendTo(PlanetInstance target, bool sendAll)
+        {
+            if (!target || _selected.Count == 0)
+                return;
+
+            ClearOrderFlash();
+
+            PlanetInstance source = _primary ? _primary : _selected[0];
+            var counts = new int[_selected.Count];
+            bool anySource = false;
+
+            for (int i = 0; i < _selected.Count; i++)
+            {
+                PlanetInstance from = _selected[i];
+                if (!from)
+                    continue;
+
+                if (GetAvailableShips(from) <= 0)
+                {
+                    from.ShowNoShipsFeedback();
+                    continue;
+                }
+
+                counts[i] = GetShipsToSend(from, target, sendAll);
+                if (counts[i] > 0)
+                    anySource = true;
+            }
+
+            if (!anySource)
+                return;
+
+            int total = 0;
+            for (int i = 0; i < _selected.Count; i++)
+            {
+                if (counts[i] <= 0)
+                    continue;
+
+                PlanetInstance from = _selected[i];
+                if (!from)
+                    continue;
+
+                if (TroopMovementManager.GetInstance().MoveTroops(from, target, counts[i], from.OwnedBy) > 0)
+                    total += counts[i];
+            }
+
+            if (total <= 0)
+            {
+                source.ShowNoShipsFeedback();
                 return;
             }
 
-            int numTroopsToSend = GetShipsToSend(_startPlanet, planet, sendAll);
+            if (_mouseLineHelper)
+            {
+                _mouseLineHelper.SetLineType(Globals.eType.TypeD, Globals.eType.TypeD); // player-colored send flash
+                _mouseLineHelper.SetEndPos(target.transform);
+                _mouseLineHelper.SetOrderCount(total);
+            }
 
-            // Start set, end empty -> set end and clear after delay
-            _mouseLineHelper.SetLineType(Globals.eType.TypeD, Globals.eType.TypeD); // player-colored send flash
-            _mouseLineHelper.SetEndPos(planet.transform);
-            _mouseLineHelper.SetOrderCount(numTroopsToSend);
-            planet.SetSelection(true);
-            _startPlanet.SetSelection(false);
+            target.SetSelection(true);
+            foreach (PlanetInstance planet in _selected)
+            {
+                if (planet)
+                    planet.SetSelection(false);
+            }
 
-            _flashStart = _startPlanet;
-            _flashTarget = planet;
-
-            TroopMovementManager.GetInstance().MoveTroops(_startPlanet, planet, numTroopsToSend, _startPlanet.OwnedBy);
+            _selected.Clear();
+            _primary = null;
+            _flashStart = source;
+            _flashTarget = target;
 
             _clearTween = DOVirtual.DelayedCall(clearDelay, () =>
             {
                 _clearTween = null;
 
                 // A new selection/order owns the line now; its own timer will clean up.
-                if (_startPlanet != null)
+                if (_primary != null)
                     return;
 
                 ClearOrderFlash();
             });
-
-            _startPlanet = null;
         }
 
         private void UpdateOrderPreview(PlanetInstance target)
         {
-            if (!_startPlanet || !_mouseLineHelper)
+            if (!_primary || !_mouseLineHelper)
                 return;
 
-            bool sendAll = _pointerSource != null
-                ? _pointerSource.SendAllHeld
-                : Keyboard.current != null &&
-                  (Keyboard.current.leftCtrlKey.isPressed || Keyboard.current.rightCtrlKey.isPressed);
+            bool sendAll = _pointerSource != null ? _pointerSource.SendAllHeld : CtrlHeld;
 
-            _mouseLineHelper.SetOrderCount(GetShipsToSend(_startPlanet, target, sendAll));
+            int total = 0;
+            foreach (PlanetInstance from in _selected)
+                total += GetShipsToSend(from, target, sendAll);
+
+            _mouseLineHelper.SetOrderCount(total);
+        }
+
+        private void OnGUI()
+        {
+            if (!_boxVisible || Event.current.type != EventType.Repaint)
+                return;
+
+            Rect rect = new Rect(
+                _boxRect.xMin,
+                Screen.height - _boxRect.yMax,
+                _boxRect.width,
+                _boxRect.height);
+
+            Color previousColor = GUI.color;
+            GUI.color = new Color(1f, 1f, 1f, 0.12f);
+            GUI.DrawTexture(rect, Texture2D.whiteTexture);
+
+            GUI.color = Globals.Instance ? Globals.Instance.GetPlayerColor(player) : Color.white;
+            GUI.DrawTexture(new Rect(rect.xMin, rect.yMin, rect.width, 1f), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(rect.xMin, rect.yMax - 1f, rect.width, 1f), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(rect.xMin, rect.yMin, 1f, rect.height), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(rect.xMax - 1f, rect.yMin, 1f, rect.height), Texture2D.whiteTexture);
+            GUI.color = previousColor;
         }
 
         private static int GetAvailableShips(PlanetInstance planet)
