@@ -6,13 +6,12 @@ namespace Warmask.Planet
     public class KeyboardCursorPointer : MonoBehaviour, IPointerSource
     {
         private Vector2 _position;
-        private SpriteRenderer _cursorRenderer;
         private Camera _camera;
 
         public Globals.ePlayer Player => Globals.ePlayer.Player2;
         public Vector2 ScreenPosition => _position;
         public bool ConfirmPressed => Keyboard.current != null &&
-            (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.leftShiftKey.wasPressedThisFrame);
+            Keyboard.current.enterKey.wasPressedThisFrame;
         public bool CancelPressed => Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
         public bool SendAllHeld => Keyboard.current != null &&
             (Keyboard.current.leftCtrlKey.isPressed || Keyboard.current.rightCtrlKey.isPressed);
@@ -23,7 +22,6 @@ namespace Warmask.Planet
         {
             _camera = Camera.main;
             _position = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
-            CreateCursor();
         }
 
         private void Update()
@@ -44,9 +42,6 @@ namespace Warmask.Planet
             if (direction.sqrMagnitude > 0f &&
                 CursorSnapping.TrySnap(_camera, _position, direction, out Vector2 target))
                 _position = target;
-
-            if (_cursorRenderer && TryGetWorldPoint(_camera, out Vector3 worldPoint))
-                _cursorRenderer.transform.position = worldPoint;
         }
 
         public bool TryGetWorldPoint(Camera camera, out Vector3 worldPoint)
@@ -60,24 +55,6 @@ namespace Warmask.Planet
             worldPoint = camera.ScreenToWorldPoint(new Vector3(_position.x, _position.y, camera.nearClipPlane));
             worldPoint.z = 0f;
             return true;
-        }
-
-        private void CreateCursor()
-        {
-            if (_cursorRenderer)
-                return;
-
-            Sprite sprite = Globals.Instance.ShipSprite;
-            if (!sprite)
-                return;
-
-            var cursor = new GameObject("P2 Cursor");
-            cursor.transform.SetParent(transform, false);
-            cursor.transform.localScale = Vector3.one * 0.6f;
-            _cursorRenderer = cursor.AddComponent<SpriteRenderer>();
-            _cursorRenderer.sprite = sprite;
-            _cursorRenderer.color = Globals.Instance.GetPlayerColor(Globals.ePlayer.Player2);
-            _cursorRenderer.sortingOrder = 100;
         }
     }
 }

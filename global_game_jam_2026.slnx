@@ -2,11 +2,11 @@
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Warmask.Tests.csproj" />
   <Project Path="Warmask.Shipyard.csproj" />
+  <Project Path="Warmask.Core.csproj" />
   <Project Path="Warmask.RawInput.csproj" />
   <Project Path="Warmask.Planet.csproj" />
   <Project Path="Warmask.Ship.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
-  <Project Path="Warmask.Globals.csproj" />
-  <Project Path="Warmask.Core.csproj" />
   <Project Path="Warmask.Scenes.csproj" />
+  <Project Path="Warmask.Globals.csproj" />
 </Solution>

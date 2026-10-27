@@ -16,8 +16,8 @@ namespace Warmask.Planet
         [Tooltip("How far the light colour is mixed toward white. 0 = pure player colour.")]
         private float whiten = 0.5f;
 
-        [SerializeField, Tooltip("Diameter of the player-coloured cursor ring in world units. 0 hides it.")]
-        private float ringDiameter = 0.8f;
+        [SerializeField, Tooltip("Cursor ring diameter in screen pixels. 0 hides it.")]
+        private float ringPixels = 30f;
 
         private Light2D _light2d;
         private SpriteRenderer _ring;
@@ -55,7 +55,7 @@ namespace Warmask.Planet
 
         private void CreateRing(Color playerColor)
         {
-            if (ringDiameter <= 0f)
+            if (ringPixels <= 0f)
                 return;
 
             Sprite ringSprite = Resources.Load<Sprite>("Selection Ring");
@@ -64,7 +64,6 @@ namespace Warmask.Planet
 
             var ringObject = new GameObject("Cursor Ring");
             ringObject.transform.SetParent(transform, false);
-            ringObject.transform.localScale = Vector3.one * ringDiameter;
 
             _ring = ringObject.AddComponent<SpriteRenderer>();
             _ring.sprite = ringSprite;
@@ -97,7 +96,12 @@ namespace Warmask.Planet
             transform.position = world;
 
             if (_ring)
-                _ring.transform.localScale = Vector3.one * (ringDiameter * (1f + 0.08f * Mathf.Sin(Time.time * 3f)));
+            {
+                // Keep the marker the same size on screen at every zoom level.
+                float worldPerPixel = 2f * _camera.orthographicSize / Mathf.Max(1, _camera.pixelHeight);
+                float diameter = ringPixels * worldPerPixel * (1f + 0.08f * Mathf.Sin(Time.time * 3f));
+                _ring.transform.localScale = Vector3.one * diameter;
+            }
         }
     }
 }

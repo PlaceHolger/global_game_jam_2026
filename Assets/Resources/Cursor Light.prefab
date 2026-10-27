@@ -118,4 +118,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Warmask.Planet::Warmask.Planet.CursorLight
   whiten: 0.5
-  ringDiameter: 0.8
+  ringPixels: 30
