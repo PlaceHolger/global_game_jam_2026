@@ -105,8 +105,8 @@ namespace Warmask.Planet
 
         private void Update()
         {
-            // The map loads after the core scene, so keep retrying until a planet exists.
-            if (!_cursorLight)
+            // The prefab lives in Resources, so wait for the map scene before spawning the light.
+            if (!_cursorLight && PlanetsManager.Instance)
                 _cursorLight = CursorLight.TryGetOrCreate(transform, player, _pointerSource);
 
             if (_pointerSource != null)
@@ -335,7 +335,7 @@ namespace Warmask.Planet
                 return;
 
             _selected.Add(planet);
-            planet.SetSelection(true);
+            planet.SetSelection(true, player);
             _primary = planet;
 
             if (_mouseLineHelper)
@@ -427,7 +427,11 @@ namespace Warmask.Planet
             }
 
             if (!anySource)
+            {
+                source.ShowNoShipsFeedback();
+                ClearSelection();
                 return;
+            }
 
             int total = 0;
             for (int i = 0; i < _selected.Count; i++)
@@ -446,6 +450,7 @@ namespace Warmask.Planet
             if (total <= 0)
             {
                 source.ShowNoShipsFeedback();
+                ClearSelection();
                 return;
             }
 
@@ -456,7 +461,7 @@ namespace Warmask.Planet
                 _mouseLineHelper.SetOrderCount(total);
             }
 
-            target.SetSelection(true);
+            target.SetSelection(true, player);
             foreach (PlanetInstance planet in _selected)
             {
                 if (planet)

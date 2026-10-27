@@ -5,6 +5,7 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 namespace Warmask.Planet
@@ -105,6 +106,7 @@ namespace Warmask.Planet
         private Color feedbackColor;
         private bool _hovered;
         private Vector3 _baseScale;
+        private Light2D _selectionLight;
 
         private const float HoverScale = 1.1f;
 
@@ -338,12 +340,22 @@ namespace Warmask.Planet
                 .SetEase(Ease.OutQuad);
         }
 
-        public void SetSelection(bool isSelected)
+        public void SetSelection(bool isSelected, Globals.ePlayer selectingPlayer = Globals.ePlayer.None)
         {
             if (!selection_highlight)
                 return;
 
             selection_highlight.SetActive(isSelected);
+
+            if (isSelected && selectingPlayer != Globals.ePlayer.None && Globals.Instance)
+            {
+                if (!_selectionLight)
+                    _selectionLight = selection_highlight.GetComponent<Light2D>();
+
+                if (_selectionLight)
+                    _selectionLight.color = Globals.Instance.GetPlayerColor(selectingPlayer);
+            }
+
             Transform highlight = selection_highlight.transform;
             highlight.DOKill();
             highlight.localScale = Vector3.one;

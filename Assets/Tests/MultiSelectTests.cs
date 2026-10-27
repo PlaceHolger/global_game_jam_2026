@@ -2,6 +2,7 @@ using System.Collections;
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.TestTools;
 using Warmask.Planet;
 
@@ -35,8 +36,8 @@ namespace Warmask.Tests
 
             manager.HandlePlanetClick(p1Home);
             manager.HandlePlanetClick(p2Home);
-            Assert.AreEqual(1, manager.SelectedCount, "an enemy planet is never selected");
-            CollectionAssert.Contains(manager.Selected.ToArray(), p1Home);
+            Assert.AreEqual(0, manager.SelectedCount,
+                "the failed send to an enemy ends the order and never selects the enemy");
             CollectionAssert.DoesNotContain(manager.Selected.ToArray(), p2Home);
         }
 
@@ -79,6 +80,43 @@ namespace Warmask.Tests
 
             Assert.AreEqual(2, manager.SelectedCount, "holding the add button adds instead of sending");
             CollectionAssert.Contains(manager.Selected.ToArray(), spare);
+        }
+
+        [UnityTest]
+        public IEnumerator SelectedPlanet_HighlightUsesThePlayerColour()
+        {
+            Globals.Instance.playerCount = 2;
+            yield return GameplaySceneLoader.Load("LargeMap");
+
+            PlanetSelectionManager manager = PlanetSelectionManager.Instance;
+            PlanetInstance home = Object.FindObjectsByType<PlanetInstance>()
+                .First(p => p.OwnedBy == Globals.ePlayer.Player1);
+
+            manager.HandlePlanetClick(home);
+
+            Light2D highlight = home.GetComponentsInChildren<Light2D>(true)
+                .First(l => l.gameObject.name == "Spot Light 2D");
+            Assert.AreEqual(Globals.Instance.GetPlayerColor(Globals.ePlayer.Player1), highlight.color);
+        }
+
+        [UnityTest]
+        public IEnumerator FailedSend_EndsTheOrder()
+        {
+            Globals.Instance.playerCount = 2;
+            yield return GameplaySceneLoader.Load("LargeMap");
+
+            PlanetSelectionManager manager = PlanetSelectionManager.Instance;
+            PlanetInstance[] planets = Object.FindObjectsByType<PlanetInstance>();
+            PlanetInstance home = planets.First(p => p.OwnedBy == Globals.ePlayer.Player1);
+            PlanetInstance enemy = planets.First(p => p.OwnedBy == Globals.ePlayer.Player2);
+
+            manager.HandlePlanetClick(home);
+            Assert.AreEqual(1, manager.SelectedCount, "the home is selected first");
+
+            home.SetTransferableShipCount(0);
+            manager.HandlePlanetClick(enemy);
+
+            Assert.AreEqual(0, manager.SelectedCount, "a send with no ships must end the order");
         }
 
         private sealed class AdditivePointer : IPointerSource
