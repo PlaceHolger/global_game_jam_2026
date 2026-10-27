@@ -73,6 +73,9 @@ namespace Warmask.Planet
         private static bool CtrlHeld => Keyboard.current != null &&
             (Keyboard.current.leftCtrlKey.isPressed || Keyboard.current.rightCtrlKey.isPressed);
 
+        /// <summary>Keyboard/gamepad pointers bring their own add-to-selection button.</summary>
+        private bool AdditiveHeld => _pointerSource != null ? _pointerSource.AddToSelectionHeld : ShiftHeld;
+
         private void Awake()
         {
             _planetLayerMask = LayerMask.GetMask("Planets");
@@ -296,7 +299,7 @@ namespace Warmask.Planet
             {
                 // A plain click on an unselected own planet is an order (reinforce it).
                 // Shift-click, or a click on an already selected planet, edits the selection instead.
-                if (ShiftHeld || _selected.Count == 0 || _selected.Contains(planet))
+                if (AdditiveHeld || _selected.Count == 0 || _selected.Contains(planet))
                     ToggleSelected(planet);
                 else
                     SendTo(planet, sendAll);

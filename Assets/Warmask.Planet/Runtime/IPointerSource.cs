@@ -9,6 +9,7 @@ namespace Warmask.Planet
         bool ConfirmPressed { get; }
         bool CancelPressed { get; }
         bool SendAllHeld { get; }
+        bool AddToSelectionHeld { get; }
         bool TryGetWorldPoint(Camera camera, out Vector3 worldPoint);
     }
 }

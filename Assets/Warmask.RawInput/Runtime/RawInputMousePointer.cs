@@ -24,6 +24,8 @@ namespace Warmask.RawInput
         public bool CancelPressed => _router != null && _router.WasRightPressed(_device);
         public bool SendAllHeld => Keyboard.current != null &&
             (Keyboard.current.leftCtrlKey.isPressed || Keyboard.current.rightCtrlKey.isPressed);
+        public bool AddToSelectionHeld => Keyboard.current != null &&
+            (Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed);
 
         public void Initialize(RawInputMouseRouter router, IntPtr device, Globals.ePlayer player)
         {

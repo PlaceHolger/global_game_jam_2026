@@ -5,8 +5,6 @@ namespace Warmask.Planet
 {
     public class KeyboardCursorPointer : MonoBehaviour, IPointerSource
     {
-        [SerializeField] private float cursorSpeed = 900f;
-
         private Vector2 _position;
         private SpriteRenderer _cursorRenderer;
         private Camera _camera;
@@ -18,6 +16,8 @@ namespace Warmask.Planet
         public bool CancelPressed => Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
         public bool SendAllHeld => Keyboard.current != null &&
             (Keyboard.current.leftCtrlKey.isPressed || Keyboard.current.rightCtrlKey.isPressed);
+        public bool AddToSelectionHeld => Keyboard.current != null &&
+            (Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed);
 
         private void Awake()
         {
@@ -32,18 +32,18 @@ namespace Warmask.Planet
             if (keyboard == null)
                 return;
 
-            Vector2 move = Vector2.zero;
-            if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed) move.x -= 1f;
-            if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) move.x += 1f;
-            if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed) move.y -= 1f;
-            if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed) move.y += 1f;
+            Vector2 direction = Vector2.zero;
+            if (keyboard.aKey.wasPressedThisFrame || keyboard.leftArrowKey.wasPressedThisFrame) direction.x -= 1f;
+            if (keyboard.dKey.wasPressedThisFrame || keyboard.rightArrowKey.wasPressedThisFrame) direction.x += 1f;
+            if (keyboard.sKey.wasPressedThisFrame || keyboard.downArrowKey.wasPressedThisFrame) direction.y -= 1f;
+            if (keyboard.wKey.wasPressedThisFrame || keyboard.upArrowKey.wasPressedThisFrame) direction.y += 1f;
 
-            if (move.sqrMagnitude > 0f)
-            {
-                _position += move.normalized * (cursorSpeed * Time.unscaledDeltaTime);
-                _position.x = Mathf.Clamp(_position.x, 0f, Screen.width);
-                _position.y = Mathf.Clamp(_position.y, 0f, Screen.height);
-            }
+            if (!_camera)
+                _camera = Camera.main;
+
+            if (direction.sqrMagnitude > 0f &&
+                CursorSnapping.TrySnap(_camera, _position, direction, out Vector2 target))
+                _position = target;
 
             if (_cursorRenderer && TryGetWorldPoint(_camera, out Vector3 worldPoint))
                 _cursorRenderer.transform.position = worldPoint;

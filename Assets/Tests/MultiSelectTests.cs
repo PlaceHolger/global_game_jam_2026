@@ -59,5 +59,42 @@ namespace Warmask.Tests
             CollectionAssert.DoesNotContain(manager.Selected.ToArray(), spare);
             Assert.Less(manager.SelectedCount, 2, "clicking a second own planet sends instead of adding it");
         }
+
+        [UnityTest]
+        public IEnumerator AddToSelectionHeld_AddsASecondPlanet()
+        {
+            Globals.Instance.playerCount = 2;
+            yield return GameplaySceneLoader.Load("LargeMap");
+
+            PlanetSelectionManager manager = PlanetSelectionManager.Instance;
+            PlanetInstance[] planets = Object.FindObjectsByType<PlanetInstance>();
+            PlanetInstance home = planets.First(p => p.OwnedBy == Globals.ePlayer.Player1);
+            PlanetInstance spare = planets.First(p => p.OwnedBy == Globals.ePlayer.None);
+            spare.SetOwner(Globals.ePlayer.Player1, spawnCaptureEffect: false);
+
+            manager.Initialize(Globals.ePlayer.Player1, new AdditivePointer());
+
+            manager.HandlePlanetClick(home);
+            manager.HandlePlanetClick(spare);
+
+            Assert.AreEqual(2, manager.SelectedCount, "holding the add button adds instead of sending");
+            CollectionAssert.Contains(manager.Selected.ToArray(), spare);
+        }
+
+        private sealed class AdditivePointer : IPointerSource
+        {
+            public Globals.ePlayer Player => Globals.ePlayer.Player1;
+            public Vector2 ScreenPosition => Vector2.zero;
+            public bool ConfirmPressed => false;
+            public bool CancelPressed => false;
+            public bool SendAllHeld => false;
+            public bool AddToSelectionHeld => true;
+
+            public bool TryGetWorldPoint(Camera camera, out Vector3 worldPoint)
+            {
+                worldPoint = default;
+                return false;
+            }
+        }
     }
 }

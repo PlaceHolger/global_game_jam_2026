@@ -87,12 +87,12 @@ namespace Warmask.Planet
                     var gamepadPointer = p2Root.AddComponent<GamepadCursorPointer>();
                     gamepadPointer.Initialize(gamepad);
                     pointer = gamepadPointer;
-                    controlHint = "left stick move, A send, LT+A all, B cancel, LB/RB mask";
+                    controlHint = "D-pad snap, stick move, A send, LT+A all, RB+A multi, B cancel";
                 }
                 else
                 {
                     pointer = p2Root.AddComponent<KeyboardCursorPointer>();
-                    controlHint = "WASD/arrows move, Enter send, Ctrl+Enter all, Esc cancel, 1/2/Space mask";
+                    controlHint = "WASD/arrows snap, Enter send, Ctrl+Enter all, Shift+Enter multi, Esc cancel, Space mask";
                 }
             }
 

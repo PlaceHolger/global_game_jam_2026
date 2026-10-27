@@ -17,6 +17,7 @@ namespace Warmask.Planet
         public bool ConfirmPressed => _gamepad != null && _gamepad.buttonSouth.wasPressedThisFrame;
         public bool CancelPressed => _gamepad != null && _gamepad.buttonEast.wasPressedThisFrame;
         public bool SendAllHeld => _gamepad != null && _gamepad.leftTrigger.isPressed;
+        public bool AddToSelectionHeld => _gamepad != null && _gamepad.rightShoulder.isPressed;
 
         public void Initialize(Gamepad gamepad)
         {
@@ -35,12 +36,30 @@ namespace Warmask.Planet
             if (_gamepad == null || !_gamepad.added)
                 return;
 
-            Vector2 stick = _gamepad.leftStick.ReadValue();
-            if (stick.sqrMagnitude > 0.01f)
+            if (!_camera)
+                _camera = Camera.main;
+
+            // D-pad jumps planet to planet; the stick keeps the fine-grained drift.
+            Vector2 direction = Vector2.zero;
+            if (_gamepad.dpad.left.wasPressedThisFrame) direction.x -= 1f;
+            if (_gamepad.dpad.right.wasPressedThisFrame) direction.x += 1f;
+            if (_gamepad.dpad.down.wasPressedThisFrame) direction.y -= 1f;
+            if (_gamepad.dpad.up.wasPressedThisFrame) direction.y += 1f;
+
+            if (direction.sqrMagnitude > 0f &&
+                CursorSnapping.TrySnap(_camera, _position, direction, out Vector2 target))
             {
-                _position += stick * (cursorSpeed * Time.unscaledDeltaTime);
-                _position.x = Mathf.Clamp(_position.x, 0f, Screen.width);
-                _position.y = Mathf.Clamp(_position.y, 0f, Screen.height);
+                _position = target;
+            }
+            else
+            {
+                Vector2 stick = _gamepad.leftStick.ReadValue();
+                if (stick.sqrMagnitude > 0.01f)
+                {
+                    _position += stick * (cursorSpeed * Time.unscaledDeltaTime);
+                    _position.x = Mathf.Clamp(_position.x, 0f, Screen.width);
+                    _position.y = Mathf.Clamp(_position.y, 0f, Screen.height);
+                }
             }
 
             if (!_cursorRenderer)
