@@ -4,12 +4,13 @@ using UnityEngine.InputSystem;
 namespace Warmask.Planet
 {
     /// <summary>
-    /// One scaled-time control for the whole match: pause and 0.5x..2x speed.
+    /// One scaled-time control for the whole match: 0 (pause) and 0.5x..2x speed.
     /// Lives in GameCore so every map gets it and the menu never does.
     /// </summary>
     public class MatchClock : MonoBehaviour
     {
-        private static readonly float[] Speeds = { 0.5f, 1f, 1.5f, 2f };
+        private static readonly float[] Speeds = { 0f, 0.5f, 0.75f, 1f, 1.5f, 2f };
+        private const int DefaultSpeedIndex = 3;
 
         private const float StripWidth = 220f;
         private const float StripHeight = 38f;
@@ -17,10 +18,10 @@ namespace Warmask.Planet
 
         private static MatchClock _instance;
 
-        private int _speedIndex = 1;
-        private bool _paused;
+        private int _speedIndex = DefaultSpeedIndex;
+        private int _lastSpeedIndex = DefaultSpeedIndex;
 
-        public bool Paused => _paused;
+        public bool Paused => Speed == 0f;
         public float Speed => Speeds[_speedIndex];
 
         private void Awake()
@@ -44,19 +45,29 @@ namespace Warmask.Planet
 
         public void TogglePause()
         {
-            _paused = !_paused;
+            if (Paused)
+                _speedIndex = _lastSpeedIndex;
+            else
+            {
+                _lastSpeedIndex = _speedIndex;
+                _speedIndex = 0;
+            }
+
             Apply();
         }
 
         public void StepSpeed(int direction)
         {
             _speedIndex = Mathf.Clamp(_speedIndex + direction, 0, Speeds.Length - 1);
+            if (!Paused)
+                _lastSpeedIndex = _speedIndex;
+
             Apply();
         }
 
         private void Apply()
         {
-            Time.timeScale = _paused ? 0f : Speed;
+            Time.timeScale = Speed;
         }
 
         private void OnDisable()
@@ -99,13 +110,10 @@ namespace Warmask.Planet
             GUILayout.BeginArea(new Rect(rect.x + 6f, rect.y + 6f, rect.width - 12f, rect.height - 12f));
             GUILayout.BeginHorizontal();
 
-            if (GUILayout.Button(_paused ? ">" : "II", GUILayout.Width(38f)))
-                TogglePause();
-
             if (GUILayout.Button("-", GUILayout.Width(30f)))
                 StepSpeed(-1);
 
-            GUILayout.Label(_paused ? "PAUSED" : Speed.ToString("0.#") + "x", GUILayout.Width(82f));
+            GUILayout.Label(Paused ? "PAUSED" : Speed.ToString("0.##") + "x", GUILayout.Width(120f));
 
             if (GUILayout.Button("+", GUILayout.Width(30f)))
                 StepSpeed(1);

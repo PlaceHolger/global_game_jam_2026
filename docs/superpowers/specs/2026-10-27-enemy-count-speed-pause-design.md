@@ -24,12 +24,14 @@ clock, one material fix.
 component and maps straight onto the existing `playerCount`, which the HUD, the
 AI cloning and the win rule already read.
 
-**Speed and pause.** (a) In-match controls: a small strip with a pause button and
-a speed stepper (0.5×, 1×, 1.5×, 2×), plus `P` and `[`/`]` keys, driving one
-`Time.timeScale` value. (b) Menu-only speed setting, no pause. (c) Continuous
-sliders. Chosen: **a** — pausing is a mid-match action, and one timescale already
-drives ships, planets, AI and DOTween; the HUDs refresh on unscaled time so they
-stay live. Space is already the mask toggle, so pause uses `P`.
+**Speed and pause.** (a) In-match control: one speed stepper over a single list
+(0, 0.5×, 0.75×, 1×, 1.5×, 2×), plus `P` and `[`/`]` keys, driving one
+`Time.timeScale` value. 0 is pause, so there is no separate pause button; `P`
+jumps to 0 and back to the last non-zero speed. (b) Menu-only speed setting, no
+pause. (c) Continuous sliders. Chosen: **a** — pausing is a mid-match action, and
+one timescale already drives ships, planets, AI and DOTween; the HUDs refresh on
+unscaled time so they stay live. Space is already the mask toggle, so the key
+shortcut is `P`.
 
 **Debris squares.** Keep the explosion prefab's material and look, but move it from
 the built-in `Legacy Shaders/Particles/Additive` to URP `Particles/Unlit` in
@@ -52,11 +54,13 @@ including your own.
 - **Slot setup** — `FourPlayerSetup` keeps its name and slots, gains a `spareHomes`
   array and walks it for every player after P1. Three players: NW/SE/NE owned, SW
   neutral; clones the scene's `EnemyAi` for each AI slot.
-- **Clock** — `MatchClock` on the GameCore scene: `P` toggles pause, `[`/`]` step
-  speed; OnGUI draws a bottom-centre strip (PAUSED / 1×) with clickable buttons.
-  `Time.timeScale = paused ? 0 : speed`; restores 1 on disable and destroy so the
-  menu and the next match are never stuck. `BlocksPointer` keeps the selection
-  manager from treating clicks on the strip as map clicks.
+- **Clock** — `MatchClock` on the GameCore scene: one list `{0, 0.5, 0.75, 1,
+  1.5, 2}` where 0 is pause, starting at 1×; `[`/`]` step it and `P` jumps to 0
+  and back to the last non-zero speed. OnGUI draws a bottom-centre strip
+  (`-`, `PAUSED` / `1x`, `+`) with clickable buttons. `Time.timeScale = Speed`;
+  restores 1 on disable and destroy so the menu and the next match are never
+  stuck. `BlocksPointer` keeps the selection manager from treating clicks on the
+  strip as map clicks.
 - **Win rule, HUD** already count-driven; no change.
 
 ## Constraints
@@ -79,9 +83,10 @@ including your own.
 - PlayMode tests: slider clamps 1–3 and keeps the 4 Players toggle in sync; a
   three-player match owns NW/SE/NE, leaves SW neutral and runs two AIs; `GameCore`
   forces `LargeMap` for more than two players.
-- PlayMode tests: pause sets `Time.timeScale` 0 and restores 1 on resume and destroy;
-  speed steps 0.5×–2× and stops at both ends; the strip blocks map clicks; the
-  `GameCore` scene actually carries the clock.
+- PlayMode tests: stepping to 0 pauses and `Time.timeScale` restores 1 on resume and
+  destroy; `P` returns to the last non-zero speed; the stepper covers 0–2× and stops
+  at both ends; the strip blocks map clicks; the `GameCore` scene actually carries
+  the clock.
 - PlayMode tests: right-click keeps working after a small drift and after a second own
   planet is clicked; box drag selects several owned planets; sending iterates all.
 - Play mode: slider set to 3 shows "Enemies: 3" and `playerCount` 4.
