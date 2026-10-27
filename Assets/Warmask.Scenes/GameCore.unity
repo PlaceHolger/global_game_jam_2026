@@ -1240,6 +1240,7 @@ GameObject:
   m_Component:
   - component: {fileID: 810728112}
   - component: {fileID: 810728111}
+  - component: {fileID: 810728113}
   m_Layer: 0
   m_Name: PlanetSelectionManager
   m_TagString: Untagged
@@ -1261,6 +1262,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   clearDelay: 0.4
   player: 1
+--- !u!114 &810728113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 810728110}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec9363b47b20d2d43b72571068407f8d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Warmask.Planet::Warmask.Planet.MatchClock
 --- !u!4 &810728112
 Transform:
   m_ObjectHideFlags: 0

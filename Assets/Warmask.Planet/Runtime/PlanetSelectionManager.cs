@@ -136,7 +136,8 @@ namespace Warmask.Planet
                 return;
 
             Vector2 screenPosition = Mouse.current.position.ReadValue();
-            PlanetInstance mousePlanet = FindPlanetAt(screenPosition);
+            bool overClock = MatchClock.BlocksPointer(screenPosition);
+            PlanetInstance mousePlanet = overClock ? null : FindPlanetAt(screenPosition);
             SetHoveredPlanet(mousePlanet);
             if (_primary)
                 UpdateOrderPreview(mousePlanet);
@@ -144,7 +145,7 @@ namespace Warmask.Planet
             if (Mouse.current.rightButton.wasPressedThisFrame)
             {
                 _rightPressScreen = screenPosition;
-                _rightPressPlanet = mousePlanet;
+                _rightPressPlanet = overClock ? null : mousePlanet;
                 _rightPressTime = Time.unscaledTime;
                 _rightDragged = false;
             }
@@ -157,7 +158,7 @@ namespace Warmask.Planet
             {
                 // Right-click is a command on the selection, or a select when nothing is selected.
                 // The planet from press time is used so a tiny cursor drift cannot lose the target.
-                bool quick = !_rightDragged &&
+                bool quick = !_rightDragged && !overClock &&
                              Time.unscaledTime - _rightPressTime <= RightClickMaxSeconds;
                 if (quick && _rightPressPlanet)
                 {
@@ -171,7 +172,7 @@ namespace Warmask.Planet
                 return;
             }
 
-            if (Mouse.current.leftButton.wasPressedThisFrame)
+            if (Mouse.current.leftButton.wasPressedThisFrame && !overClock)
             {
                 _leftPressScreen = screenPosition;
                 _leftPressPlanet = mousePlanet;
