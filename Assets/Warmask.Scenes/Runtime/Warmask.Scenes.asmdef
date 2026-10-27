@@ -2,6 +2,8 @@
 	"name": "Warmask.Scenes",
 	"references": [
 		"Warmask.Planet",
-		"Warmask.Globals"
+		"Warmask.Globals",
+		"UnityEngine.UI",
+		"Unity.TextMeshPro"
 	]
 }

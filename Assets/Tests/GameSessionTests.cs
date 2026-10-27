@@ -22,6 +22,15 @@ namespace Warmask.Tests
         }
 
         [Test]
+        public void ThreePlayers_AlwaysUsesTheLargeMap()
+        {
+            Globals.Instance.playerCount = 3;
+            GameSession.MapScene = "SampleScene";
+
+            Assert.AreEqual("LargeMap", GameSession.MapScene);
+        }
+
+        [Test]
         public void TwoPlayers_KeepsTheChosenMap()
         {
             Globals.Instance.playerCount = 2;

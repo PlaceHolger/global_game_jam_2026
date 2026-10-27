@@ -9,11 +9,11 @@ namespace Warmask.Scenes
         private static string _mapScene = "LargeMap";
 
         /// <summary>
-        /// Four players only fit on the large map, so a four-player match ignores the menu choice.
+        /// Three or four players need the extra homes, so those matches ignore the menu choice.
         /// </summary>
         public static string MapScene
         {
-            get => Globals.Instance != null && Globals.Instance.playerCount >= 4 ? "LargeMap" : _mapScene;
+            get => Globals.Instance != null && Globals.Instance.playerCount > 2 ? "LargeMap" : _mapScene;
             set => _mapScene = value;
         }
     }

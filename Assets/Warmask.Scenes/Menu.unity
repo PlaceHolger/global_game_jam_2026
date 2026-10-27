@@ -610,6 +610,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58b5636640a5e324690e0fda734afb3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Warmask.Scenes::Warmask.Scenes.MapMenuSettings
+  enemySliderHost: 1
 --- !u!114 &502414694
 MonoBehaviour:
   m_ObjectHideFlags: 0

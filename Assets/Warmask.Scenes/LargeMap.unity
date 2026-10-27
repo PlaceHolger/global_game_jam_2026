@@ -645,8 +645,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f00b0733f0e64345a95351ce38be9e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FourPlayerSetup
-  p3Home: {fileID: 1378063464}
-  p4Home: {fileID: 1406632136}
+  spareHomes:
+  - {fileID: 1378063464}
+  - {fileID: 1406632136}
   prototype: {fileID: 1905601654}
 --- !u!4 &485241249
 Transform:
