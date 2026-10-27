@@ -160,6 +160,10 @@ namespace Warmask.RawInput
 
         private void OnGUI()
         {
+            // Nothing until F9 starts the spike; this panel used to sit on the menu's Start button.
+            if (!_active)
+                return;
+
             if (_style == null)
             {
                 _style = new GUIStyle(GUI.skin.label)
@@ -173,9 +177,6 @@ namespace Warmask.RawInput
             var rect = new Rect(10f, Screen.height - 92f, 520f, 82f);
             GUI.Box(rect, GUIContent.none);
             GUI.Label(new Rect(rect.x + 8f, rect.y + 6f, rect.width - 16f, rect.height - 12f), _status, _style);
-
-            if (!_active && GUI.Button(new Rect(rect.x + 8f, rect.y + rect.height - 30f, 180f, 24f), "Start (F9)"))
-                StartSpike();
         }
 
         private void DestroyPointers()
