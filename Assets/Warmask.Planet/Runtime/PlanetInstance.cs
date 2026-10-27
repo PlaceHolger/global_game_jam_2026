@@ -107,6 +107,7 @@ namespace Warmask.Planet
         private bool _hovered;
         private Vector3 _baseScale;
         private Light2D _selectionLight;
+        private SpriteRenderer _selectionRing;
 
         private const float HoverScale = 1.1f;
 
@@ -347,6 +348,26 @@ namespace Warmask.Planet
 
             selection_highlight.SetActive(isSelected);
 
+            SpriteRenderer ring = SelectionRing;
+            if (ring)
+            {
+                ring.gameObject.SetActive(isSelected);
+                ring.transform.DOKill();
+
+                float diameter = planetRenderer.sprite.bounds.size.x;
+                ring.transform.localScale = Vector3.one * (diameter * 1.12f);
+
+                if (isSelected)
+                {
+                    if (selectingPlayer != Globals.ePlayer.None && Globals.Instance)
+                        ring.color = Globals.Instance.GetPlayerColor(selectingPlayer);
+
+                    ring.transform.DOScale(diameter * 1.22f, 0.6f)
+                        .SetLoops(-1, LoopType.Yoyo)
+                        .SetEase(Ease.InOutSine);
+                }
+            }
+
             if (isSelected && selectingPlayer != Globals.ePlayer.None && Globals.Instance)
             {
                 if (!_selectionLight)
@@ -362,6 +383,40 @@ namespace Warmask.Planet
 
             if (isSelected)
                 highlight.DOScale(1.15f, 0.5f).SetLoops(-1, LoopType.Yoyo).SetEase(Ease.InOutSine);
+        }
+
+        /// <summary>
+        /// A hollow ring above the planet in the selecting player's colour. Created on first
+        /// selection so the shared Planet.prefab stays untouched.
+        /// </summary>
+        private SpriteRenderer SelectionRing
+        {
+            get
+            {
+                if (_selectionRing)
+                    return _selectionRing;
+                if (!planetRenderer && !TryGetComponent(out planetRenderer))
+                    return null;
+                if (!planetRenderer || !planetRenderer.sprite)
+                    return null;
+
+                Sprite ringSprite = Resources.Load<Sprite>("Selection Ring");
+                if (!ringSprite)
+                    return null;
+
+                var ringObject = new GameObject("Selection Ring");
+                ringObject.transform.SetParent(transform, false);
+
+                _selectionRing = ringObject.AddComponent<SpriteRenderer>();
+                _selectionRing.sprite = ringSprite;
+                _selectionRing.sortingLayerID = planetRenderer.sortingLayerID;
+                _selectionRing.sortingOrder = planetRenderer.sortingOrder + 1;
+
+                float diameter = planetRenderer.sprite.bounds.size.x;
+                ringObject.transform.localScale = Vector3.one * (diameter * 1.15f);
+                ringObject.SetActive(false);
+                return _selectionRing;
+            }
         }
 
         void OnValidate()

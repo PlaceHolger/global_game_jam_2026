@@ -97,6 +97,11 @@ namespace Warmask.Tests
             Light2D highlight = home.GetComponentsInChildren<Light2D>(true)
                 .First(l => l.gameObject.name == "Spot Light 2D");
             Assert.AreEqual(Globals.Instance.GetPlayerColor(Globals.ePlayer.Player1), highlight.color);
+
+            SpriteRenderer ring = home.transform.Find("Selection Ring")?.GetComponent<SpriteRenderer>();
+            Assert.IsNotNull(ring, "the selected planet gets an outline ring");
+            Assert.IsTrue(ring.gameObject.activeSelf);
+            Assert.AreEqual(Globals.Instance.GetPlayerColor(Globals.ePlayer.Player1), ring.color);
         }
 
         [UnityTest]
@@ -117,6 +122,8 @@ namespace Warmask.Tests
             manager.HandlePlanetClick(enemy);
 
             Assert.AreEqual(0, manager.SelectedCount, "a send with no ships must end the order");
+            Assert.IsFalse(home.transform.Find("Selection Ring").gameObject.activeSelf,
+                "the outline disappears with the order");
         }
 
         private sealed class AdditivePointer : IPointerSource
