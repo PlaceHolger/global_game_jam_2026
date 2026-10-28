@@ -17,9 +17,24 @@ using Warmask.Planet;
 public class EnemyAi : MonoBehaviour
 {
     [SerializeField] private Globals.ePlayer ownPlayer = Globals.ePlayer.Player2;
+    [SerializeField] private MatchAiStrength strength = MatchAiStrength.Normal;
+    [SerializeField] private MatchAiType aiType = MatchAiType.Balanced;
 
     /// <summary>Extra AIs are clones of the scene's AI; each gets its own slot.</summary>
-    public void ConfigurePlayer(Globals.ePlayer own) => ownPlayer = own;
+    public void ConfigurePlayer(Globals.ePlayer own) => Configure(own, strength, aiType);
+
+    public void Configure(Globals.ePlayer own, MatchAiStrength newStrength, MatchAiType newType)
+    {
+        ownPlayer = own;
+        strength = newStrength;
+        aiType = newType;
+
+        float multiplier = strength == MatchAiStrength.Easy ? 2.666f
+            : strength == MatchAiStrength.Hard ? 0.6f
+            : 1f;
+        effectiveDecisionInterval = decisionInterval * multiplier;
+        enabled = true;
+    }
     
     [SerializeField] float decisionInterval = 1f;
     [SerializeField] float IntervalAfterAttack = 4f;
@@ -59,7 +74,8 @@ public class EnemyAi : MonoBehaviour
 
     void Update()
     {
-        if (Globals.Instance.localMultiplayer) return;
+        // Only a human-controlled slot needs its scene AI paused; other AI slots keep playing.
+        if (Globals.Instance.IsHuman(ownPlayer)) return;
         if (Time.time < nextDecisionTime) return;
         nextDecisionTime = Time.time + (InOpeningBoost ? openingDecisionInterval : effectiveDecisionInterval);
 
@@ -82,9 +98,10 @@ public class EnemyAi : MonoBehaviour
         int totalAvailableTroops = 0;
         PlanetInstance mostAvailableTroopsOnOnePlanetPlanet = null;
         int mostAvailableTroopsOnOnePlanet = 0;
+        int keepAtHome = aiType == MatchAiType.Defensive ? 2 : 1;
         foreach (var planet in ourPlanets)
         {
-            int availableTroops = planet.DefendingShipsInOrbit - 1; // Keep at least 1 troop for defense
+            int availableTroops = planet.DefendingShipsInOrbit - keepAtHome;
             if (availableTroops > 0)
             {
                 totalAvailableTroops += availableTroops;
@@ -105,7 +122,10 @@ public class EnemyAi : MonoBehaviour
             //TODO: SendTroops(mostAvailableTroopsOnOnePlanetPlanet, targetPlanet);
             Debug.Log("Enemy AI: Attacking planet " + targetPlanet.name);
             float neededTroops = Mathf.Min(targetPlanet.DefendingShipsInOrbit + 4, mostAvailableTroopsOnOnePlanet) ; // Send enough troops to conquer
-            neededTroops = Mathf.Max(mostAvailableTroopsOnOnePlanet * 0.666f, neededTroops); //at least send half the troops, otherwise the new planet is too easy to be re-concquered
+            float sendShare = aiType == MatchAiType.Aggressive ? 0.8f
+                : aiType == MatchAiType.Defensive ? 0.5f
+                : 0.666f;
+            neededTroops = Mathf.Max(mostAvailableTroopsOnOnePlanet * sendShare, neededTroops); //at least send half the troops, otherwise the new planet is too easy to be re-concquered
             int sendTroops = TroopMovementManager.GetInstance().MoveTroops(mostAvailableTroopsOnOnePlanetPlanet, targetPlanet, (int)neededTroops, ownPlayer);
             if(sendTroops > 0)
             {
@@ -122,7 +142,10 @@ public class EnemyAi : MonoBehaviour
                         _mouseLineHelper.SetEndPos(null);
                     });
                 }
-                nextDecisionTime += InOpeningBoost ? openingPostAttackDelay : IntervalAfterAttack; //wait a bit longer before next decision
+                float postAttack = strength == MatchAiStrength.Easy ? IntervalAfterAttack * 1.5f
+                    : strength == MatchAiStrength.Hard ? IntervalAfterAttack * 0.6f
+                    : IntervalAfterAttack;
+                nextDecisionTime += InOpeningBoost ? openingPostAttackDelay : postAttack; //wait a bit longer before next decision
                 return;
             }
         }
@@ -137,6 +160,13 @@ public class EnemyAi : MonoBehaviour
         // iterate over all planets, check if less troops than we can send + some heuristic (distance, production rate)
         PlanetInstance bestTarget = null;
         float bestScore = float.MinValue;
+        float distanceWeight = aiType == MatchAiType.Aggressive ? DistanceFactor * 0.6f
+            : aiType == MatchAiType.Defensive ? DistanceFactor * 1.5f
+            : DistanceFactor;
+        int enemyPlanetWeight = aiType == MatchAiType.Aggressive ? PreferEnemyPlanets * 2
+            : aiType == MatchAiType.Defensive ? Mathf.Max(0, PreferEnemyPlanets / 2)
+            : PreferEnemyPlanets;
+
         foreach (var planet in ourPlanets)
         {
             int defendingTroops = planet.DefendingShipsInOrbit;
@@ -144,11 +174,11 @@ public class EnemyAi : MonoBehaviour
                 continue; // Can't attack this planet
             // Simple heuristic: prefer planets with fewer troops and closer distance
             // Any owner that is not us is fair game; a bonus for taking it from a player rather than neutral.
-            int ownedByEnemyBonus = (planet.OwnedBy != Globals.ePlayer.None && planet.OwnedBy != ownPlayer) ? PreferEnemyPlanets : 0;
+            int ownedByEnemyBonus = (planet.OwnedBy != Globals.ePlayer.None && planet.OwnedBy != ownPlayer) ? enemyPlanetWeight : 0;
             float distance = (troopPlanet) ? Vector3.Distance(planet.transform.position, troopPlanet.transform.position) : 0;
             float score = (availableTroops - defendingTroops) * PreferPlanetsWithLessTroops +
                           planet.PlanetSize * PreferBiggerPlanets -
-                          distance * DistanceFactor + // Larger planets are more valuable, nearer planets are easier to attack
+                          distance * distanceWeight + // Larger planets are more valuable, nearer planets are easier to attack
                           ownedByEnemyBonus -
                           planet.DefendingUnityOnGround * 0.05f; // Penalize planets with more ground troops
             if (score > bestScore)

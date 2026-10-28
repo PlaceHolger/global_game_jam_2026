@@ -141,7 +141,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 20.5
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 2657204218749837906, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
@@ -205,15 +205,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.b
-      value: 0.76369756
+      value: 0.54614705
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.g
-      value: 0
+      value: 0.4125
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.r
-      value: 0.5808828
+      value: 0.5141545
       objectReference: {fileID: 0}
     - target: {fileID: 8506309251168395980, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Name
@@ -438,7 +438,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 20.5
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor.b
@@ -542,15 +542,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.b
-      value: 0.4551772
+      value: 0.24386969
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.g
-      value: 0.5072059
+      value: 0.5411765
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.r
-      value: 0.4125
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8506309251168395980, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Name
@@ -570,6 +570,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4909586255671823781, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
   m_PrefabInstance: {fileID: 215062120}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &215062122 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+  m_PrefabInstance: {fileID: 215062120}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6882826f1b16bd4483fe390371e6f9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Planet
 --- !u!1001 &257885855
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -592,7 +603,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 20.5
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 2657204218749837906, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
@@ -656,15 +667,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.b
-      value: 0.76369756
+      value: 0.54614705
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.g
-      value: 0
+      value: 0.4125
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.r
-      value: 0.5808828
+      value: 0.5141545
       objectReference: {fileID: 0}
     - target: {fileID: 8506309251168395980, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Name
@@ -710,7 +721,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 20.5
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 2657204218749837906, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
@@ -774,15 +785,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.b
-      value: 0.76369756
+      value: 0.54614705
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.g
-      value: 0
+      value: 0.4125
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.r
-      value: 0.5808828
+      value: 0.5141545
       objectReference: {fileID: 0}
     - target: {fileID: 8506309251168395980, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Name
@@ -820,7 +831,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 20.5
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 2657204218749837906, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
@@ -876,15 +887,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.b
-      value: 0.4551772
+      value: 0.24386969
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.g
-      value: 0.5072059
+      value: 0.5411765
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.r
-      value: 0.4125
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8506309251168395980, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Name
@@ -904,6 +915,67 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4909586255671823781, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
   m_PrefabInstance: {fileID: 642976907}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &642976909 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+  m_PrefabInstance: {fileID: 642976907}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6882826f1b16bd4483fe390371e6f9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Planet
+--- !u!1 &1082733335
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1082733337}
+  - component: {fileID: 1082733336}
+  m_Layer: 0
+  m_Name: Four Player Setup
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1082733336
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1082733335}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f00b0733f0e64345a95351ce38be9e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FourPlayerSetup
+  homes:
+  - {fileID: 2020198257867747114}
+  - {fileID: 2074975728}
+  - {fileID: 215062122}
+  - {fileID: 642976909}
+  prototype: {fileID: 1905601654}
+--- !u!4 &1082733337
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1082733335}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1168885639
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -930,7 +1002,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 30
+      value: 16.25
       objectReference: {fileID: 0}
     - target: {fileID: 2657204218749837906, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
@@ -1002,15 +1074,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.b
-      value: 0.76369756
+      value: 0.54614705
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.g
-      value: 0
+      value: 0.4125
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.r
-      value: 0.5808828
+      value: 0.5141545
       objectReference: {fileID: 0}
     - target: {fileID: 8506309251168395980, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Name
@@ -1061,7 +1133,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 20.5
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 2657204218749837906, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
@@ -1125,15 +1197,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.b
-      value: 0.76369756
+      value: 0.54614705
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.g
-      value: 0
+      value: 0.4125
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.r
-      value: 0.5808828
+      value: 0.5141545
       objectReference: {fileID: 0}
     - target: {fileID: 8506309251168395980, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Name
@@ -1247,15 +1319,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.b
-      value: 0.4551772
+      value: 0.24386969
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.g
-      value: 0.5072059
+      value: 0.5411765
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.r
-      value: 0.4125
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8506309251168395980, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Name
@@ -1434,8 +1506,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAi
   ownPlayer: 2
+  strength: 1
+  aiType: 0
   decisionInterval: 2
   IntervalAfterAttack: 4
+  openingBoostDuration: 5
+  openingDecisionInterval: 0.35
+  openingPostAttackDelay: 1
   DistanceFactor: 11
   PreferEnemyPlanets: 3
   PreferPlanetsWithLessTroops: 2
@@ -1550,15 +1627,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.b
-      value: 0.4551772
+      value: 0.24386969
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.g
-      value: 0.5072059
+      value: 0.5411765
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.r
-      value: 0.4125
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8506309251168395980, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Name
@@ -1600,7 +1677,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 20.5
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 2657204218749837906, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
@@ -1656,15 +1733,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.b
-      value: 0.4551772
+      value: 0.24386969
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.g
-      value: 0.5072059
+      value: 0.5411765
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.r
-      value: 0.4125
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8506309251168395980, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Name
@@ -1684,6 +1761,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4909586255671823781, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
   m_PrefabInstance: {fileID: 2074975726}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2074975728 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+  m_PrefabInstance: {fileID: 2074975726}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6882826f1b16bd4483fe390371e6f9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Planet
 --- !u!1001 &2020198257867747113
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1742,7 +1830,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontSize
-      value: 21
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor.b
@@ -1858,15 +1946,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.b
-      value: 0.4551772
+      value: 0.24386969
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.g
-      value: 0.5072059
+      value: 0.5411765
       objectReference: {fileID: 0}
     - target: {fileID: 7977471512161003402, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.r
-      value: 0.4125
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8506309251168395980, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Name
@@ -1885,9 +1973,21 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+--- !u!114 &2020198257867747114 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+  m_PrefabInstance: {fileID: 2020198257867747113}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6882826f1b16bd4483fe390371e6f9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Planet
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1863545545}
   - {fileID: 1905601655}
+  - {fileID: 1082733337}

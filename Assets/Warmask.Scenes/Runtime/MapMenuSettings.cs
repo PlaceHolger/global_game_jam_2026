@@ -17,9 +17,8 @@ namespace Warmask.Scenes
 
         private void Start()
         {
-            // The menu reloads from disk with its saved toggles, so forget the last match's choices.
-            GameSession.MapScene = "LargeMap";
-            Globals.Instance.playerCount = 2;
+            // Match options moved to the setup screen that opens from Start the Battle.
+            HideLegacyControls();
 
             if (!enemySlider)
                 return;
@@ -28,7 +27,20 @@ namespace Warmask.Scenes
             enemySlider.maxValue = 3f;
             enemySlider.wholeNumbers = true;
             enemySlider.onValueChanged.AddListener(SetEnemyCount);
-            SetEnemyCount(enemySlider.value);
+        }
+
+        private void HideLegacyControls()
+        {
+            Transform menu = transform.parent;
+            if (!menu)
+                return;
+
+            foreach (string name in new[] { "Toggle", "Button", "Large Map Toggle", "Enemies Slider", "Enemies Label" })
+            {
+                Transform child = menu.Find(name);
+                if (child)
+                    child.gameObject.SetActive(false);
+            }
         }
 
         public void SetLargeMap(bool isLarge) => GameSession.MapScene = isLarge ? "LargeMap" : "SampleScene";

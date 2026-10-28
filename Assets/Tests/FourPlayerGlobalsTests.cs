@@ -5,6 +5,9 @@ namespace Warmask.Tests
 {
     public class FourPlayerGlobalsTests
     {
+        [SetUp]
+        public void ResetMatchConfig() => MatchConfig.Reset();
+
         [Test]
         public void PlayerEnum_HasFourSlots()
         {

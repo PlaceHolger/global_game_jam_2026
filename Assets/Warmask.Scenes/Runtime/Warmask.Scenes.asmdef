@@ -4,6 +4,7 @@
 		"Warmask.Planet",
 		"Warmask.Globals",
 		"UnityEngine.UI",
-		"Unity.TextMeshPro"
+		"Unity.TextMeshPro",
+		"Unity.InputSystem"
 	]
 }

@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using Warmask.Planet;
 
@@ -14,6 +15,7 @@ namespace Warmask.Scenes
         [SerializeField] private GameObject lostButton;
 
         private PlanetsManager _planets;
+        private TMP_Text _statsText;
 
         public void Configure(GameObject endScreenObject, GameObject win, GameObject lost)
         {
@@ -30,6 +32,33 @@ namespace Warmask.Scenes
             if (endScreen) endScreen.SetActive(true);
             if (activeButton) activeButton.SetActive(true);
             if (inactiveButton) inactiveButton.SetActive(false);
+
+            EnsureStatsText();
+            if (_statsText)
+                _statsText.text = MatchStats.BuildReport();
+        }
+
+        private void EnsureStatsText()
+        {
+            if (!endScreen || _statsText)
+                return;
+
+            var go = new GameObject("Match Stats", typeof(RectTransform), typeof(TextMeshProUGUI));
+            go.transform.SetParent(endScreen.transform, false);
+
+            var rect = go.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = new Vector2(0f, 235f);
+            rect.sizeDelta = new Vector2(1120f, 320f);
+
+            _statsText = go.GetComponent<TextMeshProUGUI>();
+            _statsText.font = TMP_Settings.defaultFontAsset;
+            _statsText.fontSize = 21f;
+            _statsText.alignment = TextAlignmentOptions.Top;
+            _statsText.color = Color.white;
+            _statsText.raycastTarget = false;
         }
 
         private void Update()

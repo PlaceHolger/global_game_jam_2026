@@ -13,6 +13,7 @@ namespace Warmask.Tests
         public void RestoreTwoPlayers()
         {
             Globals.Instance.playerCount = 2;
+            MatchConfig.Reset();
         }
 
         [UnityTest]

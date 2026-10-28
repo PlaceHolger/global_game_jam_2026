@@ -7,6 +7,8 @@ namespace Warmask.Ship
     {
         public const float HitRadius = 0.3f;
 
+        public static event System.Action<Globals.ePlayer> ShipDestroyed;
+
         [Header("Movement")] [SerializeField] private float moveSpeed = 5f;
         [SerializeField] private float maxTurnAnglePerSecond = 90f;
         [SerializeField] private float moveCommandSpeedBoost = 1.8f;
@@ -738,6 +740,8 @@ namespace Warmask.Ship
         private void HandleDeath()
         {
             isBeingDestroyed = true;
+            if (playerId > 0)
+                ShipDestroyed?.Invoke((Globals.ePlayer)playerId);
 
             if (explosionPrefab)
             {

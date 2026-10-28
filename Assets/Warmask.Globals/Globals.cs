@@ -55,6 +55,9 @@ public class Globals : ScriptableObject
 
     [SerializeField] private Sprite[] playerSprites;
 
+    [SerializeField, Tooltip("Badge/logo choices on the match setup screen. Add new owner sprites here.")]
+    private Sprite[] playerBadges;
+
     [SerializeField, Tooltip("Plain shield icon for the defense badge shown beside a planet's ground-unit count")]
     private Sprite shieldIcon;
 
@@ -67,20 +70,62 @@ public class Globals : ScriptableObject
         new Color(1f, 0.45f, 0.72f)    // Player4: pink
     };
 
-    public Color GetPlayerColor(ePlayer player) => playerColors[(int)player];
+    private Color[] matchColors;
+    private Sprite[] matchShips;
+    private Sprite[] matchBadges;
+
+    public Color GetPlayerColor(ePlayer player)
+    {
+        int index = (int)player;
+        return matchColors != null && index < matchColors.Length ? matchColors[index] : playerColors[index];
+    }
 
     public Color GetTypeColor(eType type) => typeColors[(int)type];
     
     public bool EasyMode = false;
-    
-    public Sprite GetPlayerSprite(ePlayer player) => playerSprites[(int)player];
+
+    public int ShipTypeCount => playerSprites != null ? playerSprites.Length : 0;
+    public int BadgeCount => playerBadges != null ? playerBadges.Length : 0;
+
+    public Sprite GetPlayerSprite(ePlayer player)
+    {
+        int index = (int)player;
+        return matchShips != null && index < matchShips.Length ? matchShips[index] : playerSprites[index];
+    }
+
+    public Sprite GetShipSpriteByIndex(int index) =>
+        playerSprites != null && playerSprites.Length > 0
+            ? playerSprites[Mathf.Clamp(index, 0, playerSprites.Length - 1)]
+            : null;
+
+    public Sprite GetBadgeByIndex(int index) =>
+        playerBadges != null && playerBadges.Length > 0
+            ? playerBadges[Mathf.Clamp(index, 0, playerBadges.Length - 1)]
+            : null;
+
+    /// <summary>Null keeps the planet prefab's own badge sprite.</summary>
+    public Sprite GetPlayerBadge(ePlayer player)
+    {
+        int index = (int)player;
+        return matchBadges != null && index < matchBadges.Length ? matchBadges[index] : null;
+    }
+
+    public void ApplyMatchCosmetics(Color[] colors, Sprite[] ships, Sprite[] badges)
+    {
+        matchColors = colors;
+        matchShips = ships;
+        matchBadges = badges;
+    }
 
     [NonSerialized] public bool localMultiplayer;
     [NonSerialized] public float maskCooldownRemaining;
     [NonSerialized, Tooltip("Slots in the current match, 2 or 4. Set by the menu before the map loads.")]
     public int playerCount = 2;
 
-    public bool IsHuman(ePlayer player) => player == ePlayer.Player1 || (localMultiplayer && player == ePlayer.Player2);
+    public bool IsHuman(ePlayer player) =>
+        MatchConfig.IsConfigured
+            ? MatchConfig.IsHuman(player)
+            : player == ePlayer.Player1 || (localMultiplayer && player == ePlayer.Player2);
 
     public bool IsPlayer(ePlayer player) => IsHuman(player);
 

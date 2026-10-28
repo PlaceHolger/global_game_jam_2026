@@ -2,47 +2,77 @@ using UnityEngine;
 using Warmask.Planet;
 
 /// <summary>
-/// Gives the spare corner homes to the extra slots and grows the scene AI into one
-/// per opponent. Lives in Assembly-CSharp so it can see both Globals and EnemyAi.
+/// Applies the match-setup slots to a map's four start positions and grows the
+/// scene AI into one per AI slot. Lives in Assembly-CSharp so it sees EnemyAi.
 /// </summary>
 public class FourPlayerSetup : MonoBehaviour
 {
-    [SerializeField] private PlanetInstance[] spareHomes; // P3 then P4
+    [SerializeField] private PlanetInstance[] homes; // start position 1..4
     [SerializeField] private EnemyAi prototype;
 
     private void Awake()
     {
-        if (!Globals.Instance || Globals.Instance.playerCount <= 2)
-            return;
-
-        int extraPlayers = Globals.Instance.playerCount - 2;
-        if (spareHomes == null || spareHomes.Length < extraPlayers || !prototype)
+        if (homes == null || homes.Length < MatchConfig.MaxSlots)
         {
-            Debug.LogError("[FourPlayerSetup] Needs one spare home per extra player and the AI prototype; match will be incomplete.");
+            Debug.LogError("[FourPlayerSetup] Needs four start-position planets.");
             return;
         }
 
-        for (int slot = 2; slot < Globals.Instance.playerCount; slot++)
+        MatchSlot[] slots = MatchConfig.Current;
+        for (int homeIndex = 0; homeIndex < homes.Length; homeIndex++)
         {
-            PlanetInstance home = spareHomes[slot - 2];
+            PlanetInstance home = homes[homeIndex];
             if (!home)
             {
-                Debug.LogError("[FourPlayerSetup] Spare home for slot " + slot + " is missing.");
+                Debug.LogError("[FourPlayerSetup] Start position " + (homeIndex + 1) + " is missing.");
                 continue;
             }
 
-            Globals.ePlayer owner = (Globals.ePlayer)(slot + 1);
-
             // Silent hand-off: a neutral home becoming owned is setup, not a capture.
-            home.SetOwner(owner, spawnCaptureEffect: false);
-            AddAi(owner);
+            home.SetOwner(OwnerAt(slots, homeIndex), spawnCaptureEffect: false);
         }
+
+        if (!prototype)
+        {
+            if (HasAi(slots))
+                Debug.LogError("[FourPlayerSetup] No EnemyAi prototype; AI slots will not play.");
+            return;
+        }
+
+        int spawned = 0;
+        for (int i = 0; i < MatchConfig.MaxSlots; i++)
+        {
+            if (!slots[i].IsAi)
+                continue;
+
+            EnemyAi ai = spawned == 0
+                ? prototype
+                : Instantiate(prototype, prototype.transform.parent);
+
+            spawned++;
+            ai.name = "EnemyAI P" + (i + 1);
+            ai.gameObject.SetActive(true);
+            ai.Configure((Globals.ePlayer)(i + 1), slots[i].strength, slots[i].aiType);
+        }
+
+        // No AI slot uses the scene prototype this match (P2 is human/off).
+        if (spawned == 0)
+            prototype.gameObject.SetActive(false);
     }
 
-    private void AddAi(Globals.ePlayer owner)
+    private static Globals.ePlayer OwnerAt(MatchSlot[] slots, int home)
     {
-        EnemyAi clone = Instantiate(prototype, prototype.transform.parent);
-        clone.name = "EnemyAI P" + (int)owner;
-        clone.ConfigurePlayer(owner);
+        for (int i = 0; i < slots.Length; i++)
+            if (slots[i].mode != MatchSlotMode.Off && slots[i].home == home)
+                return (Globals.ePlayer)(i + 1);
+        return Globals.ePlayer.None;
+    }
+
+    private static bool HasAi(MatchSlot[] slots)
+    {
+        for (int i = 0; i < slots.Length; i++)
+            if (slots[i].IsAi)
+                return true;
+        return false;
     }
 }

@@ -13,25 +13,17 @@ namespace Warmask.Tests
         }
 
         [Test]
-        public void FourPlayers_AlwaysUsesTheLargeMap()
+        public void MapChoice_IsKeptForFourPlayers()
         {
             Globals.Instance.playerCount = 4;
             GameSession.MapScene = "SampleScene";
 
-            Assert.AreEqual("LargeMap", GameSession.MapScene);
+            Assert.AreEqual("SampleScene", GameSession.MapScene,
+                "setup decides the map; the player count no longer forces LargeMap");
         }
 
         [Test]
-        public void ThreePlayers_AlwaysUsesTheLargeMap()
-        {
-            Globals.Instance.playerCount = 3;
-            GameSession.MapScene = "SampleScene";
-
-            Assert.AreEqual("LargeMap", GameSession.MapScene);
-        }
-
-        [Test]
-        public void TwoPlayers_KeepsTheChosenMap()
+        public void MapChoice_IsKeptForTwoPlayers()
         {
             Globals.Instance.playerCount = 2;
             GameSession.MapScene = "SampleScene";

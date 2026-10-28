@@ -295,6 +295,10 @@ PrefabInstance:
       value: Home NW
       objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor.b
       value: 0.39999998
       objectReference: {fileID: 0}
@@ -302,6 +306,14 @@ PrefabInstance:
       propertyPath: m_fontColor.g
       value: 0.93732285
       objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4284936191
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 20.5
+      objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor.b
       value: 0.39999998
@@ -309,6 +321,10 @@ PrefabInstance:
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor.g
       value: 0.93732285
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4284936191
       objectReference: {fileID: 0}
     - target: {fileID: 1963434011279927983, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.b
@@ -392,6 +408,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4909586255671823781, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
   m_PrefabInstance: {fileID: 93328308}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &93328310 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+  m_PrefabInstance: {fileID: 93328308}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6882826f1b16bd4483fe390371e6f9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Planet
 --- !u!1001 &280558467
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -407,6 +434,14 @@ PrefabInstance:
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
       value: Near NE
+      objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 20.5
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_size
@@ -523,6 +558,10 @@ PrefabInstance:
       value: Home SE
       objectReference: {fileID: 0}
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor.g
       value: 0.88841856
       objectReference: {fileID: 0}
@@ -530,6 +569,14 @@ PrefabInstance:
       propertyPath: m_fontColor.r
       value: 0.27843142
       objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4294959943
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 20.5
+      objectReference: {fileID: 0}
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor.g
       value: 0.88841856
@@ -537,6 +584,10 @@ PrefabInstance:
     - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_fontColor.r
       value: 0.27843142
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4294959943
       objectReference: {fileID: 0}
     - target: {fileID: 1963434011279927983, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_Color.g
@@ -616,6 +667,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4909586255671823781, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
   m_PrefabInstance: {fileID: 365606131}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &365606133 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+  m_PrefabInstance: {fileID: 365606131}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6882826f1b16bd4483fe390371e6f9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Planet
 --- !u!1 &485241247
 GameObject:
   m_ObjectHideFlags: 0
@@ -645,7 +707,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f00b0733f0e64345a95351ce38be9e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FourPlayerSetup
-  spareHomes:
+  homes:
+  - {fileID: 93328310}
+  - {fileID: 365606133}
   - {fileID: 1378063464}
   - {fileID: 1406632136}
   prototype: {fileID: 1905601654}
@@ -675,6 +739,14 @@ PrefabInstance:
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
       value: Flank NE
+      objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 20.5
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_size
@@ -761,6 +833,14 @@ PrefabInstance:
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
       value: Near NW
+      objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 20.5
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_size
@@ -860,6 +940,14 @@ PrefabInstance:
       propertyPath: m_text
       value: Flank SW
       objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 20.5
+      objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_size
       value: 0.7
@@ -945,6 +1033,14 @@ PrefabInstance:
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
       value: Outer SW
+      objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 20.5
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_type
@@ -1036,6 +1132,14 @@ PrefabInstance:
       propertyPath: m_text
       value: Outer NE
       objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 20.5
+      objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_type
       value: 1
@@ -1121,6 +1225,14 @@ PrefabInstance:
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
       value: Flank SE
+      objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 20.5
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_size
@@ -1208,6 +1320,14 @@ PrefabInstance:
       propertyPath: m_text
       value: Outer NW
       objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 20.5
+      objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_type
       value: 1
@@ -1290,6 +1410,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1863545545}
     m_Modifications:
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_text
+      value: Home NE
+      objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 20.5
+      objectReference: {fileID: 0}
     - target: {fileID: 4909586255671823781, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 16
@@ -1374,6 +1506,14 @@ PrefabInstance:
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
       value: Centre
+      objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 8.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 20.5
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_size
@@ -1469,6 +1609,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1863545545}
     m_Modifications:
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_text
+      value: Home SW
+      objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 20.5
+      objectReference: {fileID: 0}
     - target: {fileID: 4909586255671823781, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_LocalPosition.x
       value: -16
@@ -1553,6 +1705,14 @@ PrefabInstance:
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
       value: Outer SE
+      objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 20.5
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_type
@@ -1643,6 +1803,14 @@ PrefabInstance:
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
       value: Near SW
+      objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 20.5
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_size
@@ -1788,6 +1956,14 @@ PrefabInstance:
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
       value: Flank NW
+      objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 20.5
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_size
@@ -1973,6 +2149,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAi
   ownPlayer: 2
+  strength: 1
+  aiType: 0
   decisionInterval: 2
   IntervalAfterAttack: 4
   openingBoostDuration: 5
@@ -2013,6 +2191,14 @@ PrefabInstance:
     - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: m_text
       value: Near SE
+      objectReference: {fileID: 0}
+    - target: {fileID: 1701935146280941312, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778210683128888036, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
+      propertyPath: m_fontSize
+      value: 20.5
       objectReference: {fileID: 0}
     - target: {fileID: 4469381740653827523, guid: 6e6e92669b030c54cb7fd6dd902e4b7d, type: 3}
       propertyPath: planet_size
