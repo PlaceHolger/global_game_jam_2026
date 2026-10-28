@@ -28,6 +28,9 @@ namespace Warmask.Tests
                 .ToArray();
 
             Assert.AreEqual(4, homes.Length);
+            foreach (MapPlanet planet in MapLayout.For("LargeMap"))
+                Assert.IsNotNull(Object.FindObjectsByType<PlanetInstance>().SingleOrDefault(p => p.name == planet.name),
+                    "MapLayout planet is missing from the scene: " + planet.name);
             Assert.AreEqual(Globals.ePlayer.Player1, HomeNear(homes, x: -1, y: 1).OwnedBy, "NW home");
             Assert.AreEqual(Globals.ePlayer.Player2, HomeNear(homes, x: 1, y: -1).OwnedBy, "SE home");
             Assert.AreEqual(Globals.ePlayer.Player3, HomeNear(homes, x: 1, y: 1).OwnedBy, "NE home");
@@ -69,6 +72,42 @@ namespace Warmask.Tests
             Assert.AreEqual(1, losses, "the human losing all planets shows the lost screen");
         }
 
+        [UnityTest]
+        public IEnumerator TeamMatch_AlliesDoNotEndItAndLastTeamWins()
+        {
+            MatchConfig.Apply(new[]
+            {
+                new MatchSlot { mode = MatchSlotMode.Human, home = 0, input = MatchInput.MouseKeyboard, team = 1, startingShips = 5 },
+                new MatchSlot { mode = MatchSlotMode.Ai, home = 1, team = 1 },
+                new MatchSlot { mode = MatchSlotMode.Ai, home = 2, team = 2 },
+                new MatchSlot { mode = MatchSlotMode.Off, home = 3, team = 3 }
+            }, "LargeMap");
+            yield return GameplaySceneLoader.Load("LargeMap");
+
+            var planets = PlanetsManager.Instance;
+            int wins = 0;
+            int losses = 0;
+            planets.OnPlayerWin.AddListener(() => wins++);
+            planets.OnPlayerLost.AddListener(() => losses++);
+
+            int startingShips = Object.FindObjectsByType<Warmask.Ship.ShipInstance>()
+                .Count(s => s.IsAlive && s.GetPlayerId() == (int)Globals.ePlayer.Player1);
+            Assert.GreaterOrEqual(startingShips, 5, "P1 must receive the configured starting ships");
+
+            PlanetInstance ally = OwnedHome(Globals.ePlayer.Player2);
+            PlanetInstance enemy = OwnedHome(Globals.ePlayer.Player3);
+
+            Eliminate(ally, Globals.ePlayer.Player2);
+            Assert.AreEqual(0, wins, "an allied AI going down must not win the match");
+            Assert.AreEqual(0, losses, "an allied AI going down must not end the human's match");
+
+            Eliminate(enemy, Globals.ePlayer.Player3);
+            Assert.AreEqual(1, wins, "eliminating the last hostile team wins for the human team");
+            Assert.AreEqual(0, losses);
+            Assert.AreEqual(Globals.ePlayer.Player1, MatchStats.Winner,
+                "the end screen credits a human on the winning team");
+        }
+
         private static void Eliminate(PlanetInstance home, Globals.ePlayer player)
         {
             home.SetOwner(Globals.ePlayer.None, spawnCaptureEffect: false);
@@ -76,7 +115,8 @@ namespace Warmask.Tests
         }
 
         private static PlanetInstance OwnedHome(Globals.ePlayer owner) =>
-            Object.FindObjectsByType<PlanetInstance>().Single(p => p.OwnedBy == owner && p.name.StartsWith("Home"));
+            Object.FindObjectsByType<PlanetInstance>()
+                .Single(p => p.OwnedBy == owner && p.name == MapLayout.For(MatchConfig.MapScene)[(int)owner - 1].name);
 
         private static PlanetInstance HomeNear(PlanetInstance[] homes, int x, int y) =>
             homes.Single(p => Mathf.Sign(p.transform.position.x) == x && Mathf.Sign(p.transform.position.y) == y);

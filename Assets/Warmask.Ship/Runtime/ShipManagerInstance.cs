@@ -413,7 +413,8 @@ namespace Warmask.Ship
                         if (neighborIdx == selfIndex) continue;
 
                         ShipInstance other = allShips[neighborIdx];
-                        if (other == null || !other.IsAlive || other.GetPlayerId() == myPlayerId)
+                        if (other == null || !other.IsAlive ||
+                            !MatchConfig.AreEnemies((Globals.ePlayer)myPlayerId, (Globals.ePlayer)other.GetPlayerId()))
                             continue;
 
                         Vector2 toEnemy = other.SimPosition - position;

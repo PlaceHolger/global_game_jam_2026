@@ -542,7 +542,9 @@ namespace Warmask.Planet
 
             int numTroopsToSend = (from.DefendingShipsInOrbit + 1) / 2; // round half up
             // but we are trying to be clever, if the target planet has more defense troops, we send more troops
-            if (to && to != from && to.OwnedBy != from.OwnedBy && to.DefendingShipsInOrbit >= numTroopsToSend)
+            if (to && to != from && to.OwnedBy != from.OwnedBy &&
+                !MatchConfig.AreAllied(from.OwnedBy, to.OwnedBy) &&
+                to.DefendingShipsInOrbit >= numTroopsToSend)
             {
                 numTroopsToSend = Mathf.Min(to.DefendingShipsInOrbit + 2, from.DefendingShipsInOrbit); //send enough troops to conquer
             }

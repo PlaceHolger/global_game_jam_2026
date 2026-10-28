@@ -20,6 +20,7 @@ namespace Warmask.Tests
         [UnitySetUp]
         public IEnumerator SetUp()
         {
+            MatchConfig.Reset();
             ResetProfiling();
             ShipProfiling.EnableDamage = true;
 
@@ -39,6 +40,7 @@ namespace Warmask.Tests
         public void TearDown()
         {
             ResetProfiling();
+            MatchConfig.Reset();
         }
 
         [UnityTest]
@@ -80,8 +82,8 @@ namespace Warmask.Tests
         {
             ShipProfiling.EnableMovement = false;
 
-            ShipInstance shooter = SpawnShip(TestOrigin, playerId: 0, aiInterval: 0.02f);
-            ShipInstance target = SpawnShip(TestOrigin + Vector2.up * 1.5f, playerId: 1, aiInterval: 999f);
+            ShipInstance shooter = SpawnShip(TestOrigin, playerId: 1, aiInterval: 0.02f);
+            ShipInstance target = SpawnShip(TestOrigin + Vector2.up * 1.5f, playerId: 2, aiInterval: 999f);
             target.transform.rotation = Quaternion.identity;
 
             Assert.AreEqual(0, shooter.GetComponentsInChildren<Collider2D>(true).Length,
@@ -100,9 +102,9 @@ namespace Warmask.Tests
         {
             ShipProfiling.EnableMovement = false;
 
-            ShipInstance shooter = SpawnShip(TestOrigin, playerId: 0, aiInterval: 0.02f);
-            ShipInstance friendly = SpawnShip(TestOrigin + Vector2.up * 0.8f, playerId: 0, aiInterval: 999f);
-            ShipInstance enemy = SpawnShip(TestOrigin + Vector2.up * 1.8f, playerId: 1, aiInterval: 999f);
+            ShipInstance shooter = SpawnShip(TestOrigin, playerId: 1, aiInterval: 0.02f);
+            ShipInstance friendly = SpawnShip(TestOrigin + Vector2.up * 0.8f, playerId: 1, aiInterval: 999f);
+            ShipInstance enemy = SpawnShip(TestOrigin + Vector2.up * 1.8f, playerId: 2, aiInterval: 999f);
 
             Assert.Less(friendly.transform.position.y, enemy.transform.position.y);
 
@@ -198,8 +200,8 @@ namespace Warmask.Tests
                 ? Globals.eType.TypeB
                 : Globals.eType.TypeA;
 
-            ShipInstance shooter = SpawnShip(TestOrigin, playerId: 0, aiInterval: 0.02f);
-            ShipInstance enemy = SpawnShip(TestOrigin + Vector2.up * 1.5f, playerId: 1, aiInterval: 999f);
+            ShipInstance shooter = SpawnShip(TestOrigin, playerId: 1, aiInterval: 0.02f);
+            ShipInstance enemy = SpawnShip(TestOrigin + Vector2.up * 1.5f, playerId: 2, aiInterval: 999f);
             shooter.SetType(hiddenType);
             enemy.SetType(visibleType);
 

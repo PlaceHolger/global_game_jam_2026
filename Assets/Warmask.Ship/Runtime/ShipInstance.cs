@@ -539,7 +539,8 @@ namespace Warmask.Ship
                     out ShipInstance hitShip, out Vector2 hitPoint))
                 return;
 
-            if (hitShip.GetPlayerId() != playerId && hitShip.IsAlive)
+            if (hitShip.IsAlive &&
+                MatchConfig.AreEnemies((Globals.ePlayer)playerId, (Globals.ePlayer)hitShip.GetPlayerId()))
                 FireWeapon(hitShip, hitPoint);
         }
 

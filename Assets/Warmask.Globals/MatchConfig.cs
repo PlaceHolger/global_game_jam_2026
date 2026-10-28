@@ -40,7 +40,10 @@ public class MatchSlot
     public int home;
     public int color;
     public int ship;
-    public int badge = -1;
+    public int badge;
+    public int team;
+    public int startingShips;
+    public int productionBoost = 100;
     public MatchAiStrength strength = MatchAiStrength.Normal;
     public MatchAiType aiType = MatchAiType.Balanced;
     public MatchInput input;
@@ -76,6 +79,12 @@ public static class MatchConfig
         new Color(1f, 0.28f, 0.28f)
     };
 
+    public static readonly int[] StartingShipChoices = { 0, 5, 10, 20 };
+    public static readonly int[] ProductionChoices = { 100, 150, 200 };
+
+    /// <summary>Last applied matchup rating; 0 when there is no AI opposition.</summary>
+    public static float Difficulty { get; private set; }
+
     private static MatchSlot[] _slots;
     private static string _mapScene = "LargeMap";
 
@@ -96,16 +105,21 @@ public static class MatchConfig
     public static void Apply(MatchSlot[] slots, string mapScene)
     {
         MatchSlot[] copy = Clone(slots);
+        int homeCount = MapLayout.Count(mapScene);
         for (int i = 0; i < copy.Length; i++)
         {
-            copy[i].home = Mathf.Clamp(copy[i].home, 0, MaxSlots - 1);
+            copy[i].home = Mathf.Clamp(copy[i].home, 0, homeCount - 1);
             copy[i].color = Mathf.Clamp(copy[i].color, 0, Palette.Length - 1);
             copy[i].ship = Mathf.Max(0, copy[i].ship);
-            copy[i].badge = copy[i].badge < 0 ? -1 : copy[i].badge;
+            copy[i].badge = Mathf.Max(0, copy[i].badge);
+            copy[i].team = EffectiveTeam(copy[i], i);
+            copy[i].startingShips = Mathf.Clamp(copy[i].startingShips, 0, 50);
+            copy[i].productionBoost = Mathf.Clamp(BoostPercent(copy[i]), 50, 300);
         }
 
         _slots = copy;
         MapScene = mapScene;
+        Difficulty = EvaluateDifficulty(copy);
 
         Globals globals = Globals.Instance;
         if (!globals)
@@ -119,6 +133,7 @@ public static class MatchConfig
     {
         _slots = null;
         _mapScene = "LargeMap";
+        Difficulty = 0f;
         if (Globals.Instance)
             Globals.Instance.ApplyMatchCosmetics(null, null, null);
     }
@@ -150,11 +165,152 @@ public static class MatchConfig
         return result;
     }
 
-    public static bool IsValid(MatchSlot[] slots, out string error)
+    public static int EffectiveTeam(MatchSlot slot, int index) =>
+        slot != null && slot.team > 0 ? Mathf.Clamp(slot.team, 1, MaxSlots) : index + 1;
+
+    public static int TeamOf(Globals.ePlayer player)
+    {
+        int index = (int)player - 1;
+        if (index < 0 || index >= MaxSlots)
+            return 0;
+
+        MatchSlot[] slots = _slots;
+        return slots != null ? EffectiveTeam(slots[index], index) : index + 1;
+    }
+
+    public static bool AreAllied(Globals.ePlayer a, Globals.ePlayer b)
+    {
+        if (a == Globals.ePlayer.None || b == Globals.ePlayer.None)
+            return false;
+        if (a == b)
+            return true;
+
+        int indexA = (int)a - 1;
+        int indexB = (int)b - 1;
+        if (indexA < 0 || indexB < 0 || indexA >= MaxSlots || indexB >= MaxSlots || _slots == null)
+            return false;
+
+        return EffectiveTeam(_slots[indexA], indexA) == EffectiveTeam(_slots[indexB], indexB);
+    }
+
+    public static bool AreEnemies(Globals.ePlayer a, Globals.ePlayer b) =>
+        a != Globals.ePlayer.None && b != Globals.ePlayer.None && a != b && !AreAllied(a, b);
+
+    public static List<Globals.ePlayer> TeamMembers(int team)
+    {
+        var result = new List<Globals.ePlayer>();
+        MatchSlot[] slots = Current;
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i].mode != MatchSlotMode.Off && EffectiveTeam(slots[i], i) == team)
+                result.Add((Globals.ePlayer)(i + 1));
+        }
+        return result;
+    }
+
+    public static bool TeamHasHuman(int team)
+    {
+        foreach (Globals.ePlayer player in TeamMembers(team))
+            if (IsHuman(player))
+                return true;
+        return false;
+    }
+
+    public static float ProductionBoost(Globals.ePlayer player)
+    {
+        int index = (int)player - 1;
+        if (_slots == null || index < 0 || index >= _slots.Length)
+            return 1f;
+        return Mathf.Clamp(BoostPercent(_slots[index]), 50, 300) / 100f;
+    }
+
+    public static int StartingShips(Globals.ePlayer player)
+    {
+        int index = (int)player - 1;
+        if (_slots == null || index < 0 || index >= _slots.Length)
+            return 0;
+        return Mathf.Clamp(_slots[index].startingShips, 0, 50);
+    }
+
+    /// <summary>
+    /// A rough matchup rating: hostile AI power over human-side power. Team cohesion,
+    /// AI strength, starting ships and production boosts all move the number.
+    /// </summary>
+    public static float EvaluateDifficulty(MatchSlot[] slots)
+    {
+        if (slots == null)
+            return 0f;
+
+        var teamSize = new int[MaxSlots + 1];
+        for (int i = 0; i < slots.Length; i++)
+            if (slots[i].mode != MatchSlotMode.Off)
+                teamSize[EffectiveTeam(slots[i], i)]++;
+
+        float humanPower = 0f;
+        float aiPower = 0f;
+        for (int i = 0; i < slots.Length; i++)
+        {
+            MatchSlot slot = slots[i];
+            if (slot.mode == MatchSlotMode.Off)
+                continue;
+
+            int team = EffectiveTeam(slot, i);
+            float power = 1f + 0.02f * Mathf.Max(0, slot.startingShips) +
+                          Mathf.Max(0, BoostPercent(slot) - 100) / 100f;
+
+            if (slot.IsHuman)
+            {
+                humanPower += power;
+                continue;
+            }
+
+            float weight = StrengthWeight(slot.strength);
+            if (TeamHasHuman(slots, team))
+            {
+                humanPower += power * weight * 0.5f;
+                continue;
+            }
+
+            float cohesion = 1f + 0.25f * (teamSize[team] - 1);
+            aiPower += power * weight * cohesion;
+        }
+
+        return aiPower <= 0f
+            ? 0f
+            : Mathf.Clamp(aiPower / Mathf.Max(0.5f, humanPower), 0f, 99f);
+    }
+
+    private static bool TeamHasHuman(MatchSlot[] slots, int team)
+    {
+        for (int i = 0; i < slots.Length; i++)
+            if (slots[i].mode == MatchSlotMode.Human && EffectiveTeam(slots[i], i) == team)
+                return true;
+        return false;
+    }
+
+    private static float StrengthWeight(MatchAiStrength strength)
+    {
+        switch (strength)
+        {
+            case MatchAiStrength.Easy: return 0.7f;
+            case MatchAiStrength.Hard: return 1.4f;
+            default: return 1f;
+        }
+    }
+
+    private static int BoostPercent(MatchSlot slot) =>
+        slot == null || slot.productionBoost <= 0 ? 100 : slot.productionBoost;
+
+    public static bool IsValid(MatchSlot[] slots, out string error) =>
+        IsValid(slots, MapScene, out error);
+
+    public static bool IsValid(MatchSlot[] slots, string mapScene, out string error)
     {
         int active = 0;
-        bool[] homes = new bool[MaxSlots];
+        int homeCount = MapLayout.Count(mapScene);
+        bool[] homes = new bool[homeCount];
         bool[] inputs = new bool[Enum.GetValues(typeof(MatchInput)).Length];
+        bool[] teams = new bool[MaxSlots + 1];
 
         for (int i = 0; i < slots.Length; i++)
         {
@@ -163,7 +319,8 @@ public static class MatchConfig
                 continue;
 
             active++;
-            if (slot.home < 0 || slot.home >= MaxSlots)
+            teams[EffectiveTeam(slot, i)] = true;
+            if (slot.home < 0 || slot.home >= homeCount)
             {
                 error = "Start position is missing.";
                 return false;
@@ -200,6 +357,16 @@ public static class MatchConfig
             return false;
         }
 
+        int teamCount = 0;
+        for (int i = 1; i < teams.Length; i++)
+            if (teams[i])
+                teamCount++;
+        if (teamCount < 2)
+        {
+            error = "Choose at least two teams.";
+            return false;
+        }
+
         error = null;
         return true;
     }
@@ -231,7 +398,10 @@ public static class MatchConfig
                 home = i,
                 color = i,
                 ship = ships > 0 ? i % ships : 0,
-                badge = badges > 0 ? i % badges : -1,
+                badge = badges > 0 ? i % badges : 0,
+                team = i + 1,
+                startingShips = 0,
+                productionBoost = 100,
                 input = i == 0 ? MatchInput.MouseKeyboard : (MatchInput)((int)MatchInput.Gamepad1 + Mathf.Max(0, i - 1))
             };
         }
@@ -299,7 +469,7 @@ public static class MatchConfig
         for (int i = 1; i <= MaxSlots; i++)
         {
             int index = slots[i - 1].badge;
-            badges[i] = index >= 0 ? globals.GetBadgeByIndex(index) : null;
+            badges[i] = globals.GetBadgeByIndex(index);
         }
         return badges;
     }

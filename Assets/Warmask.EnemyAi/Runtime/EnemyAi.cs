@@ -116,6 +116,7 @@ public class EnemyAi : MonoBehaviour
 
         // 2. Find best attack target
         var availablePlanets = planetsManager.GetAllPlanetsNotOwnedByPlayer(ownPlayer);
+        availablePlanets.RemoveAll(p => p != null && MatchConfig.AreAllied(ownPlayer, p.OwnedBy));
         var targetPlanet = EvaluateBestTarget(availablePlanets, mostAvailableTroopsOnOnePlanet, mostAvailableTroopsOnOnePlanetPlanet);
         if (targetPlanet)  //cool, we have a target that can be attacked by sending troops from one of our planets
         {

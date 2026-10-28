@@ -532,7 +532,8 @@ namespace Warmask.Planet
 
             foreach (var kvp in shipCountCache)
             {
-                if ((Globals.ePlayer)kvp.Key == owner)
+                var shipOwner = (Globals.ePlayer)kvp.Key;
+                if (shipOwner == owner || MatchConfig.AreAllied(owner, shipOwner))
                     numOwnShipsInOrbit += kvp.Value;
                 else
                     numEnemyShipsInOrbit += kvp.Value;
@@ -559,11 +560,12 @@ namespace Warmask.Planet
             int most = 0;
             foreach (var kvp in shipsInOrbit)
             {
-                if (kvp.Value <= most || (Globals.ePlayer)kvp.Key == owner)
+                var shipOwner = (Globals.ePlayer)kvp.Key;
+                if (kvp.Value <= most || shipOwner == owner || MatchConfig.AreAllied(owner, shipOwner))
                     continue;
 
                 most = kvp.Value;
-                strongest = (Globals.ePlayer)kvp.Key;
+                strongest = shipOwner;
             }
             return strongest;
         }

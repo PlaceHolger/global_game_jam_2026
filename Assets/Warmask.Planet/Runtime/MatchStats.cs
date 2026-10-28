@@ -114,6 +114,7 @@ namespace Warmask.Planet
             var text = new StringBuilder();
             text.Append("<b>MATCH TIME  ").Append(FormatTime(Instance ? Instance.Elapsed : 0f)).Append("</b>");
             text.Append("      WINNER  ").Append(WinnerName(Winner));
+            text.Append("      DIFFICULTY  ").Append(MatchConfig.Difficulty.ToString("0.0"));
             text.Append('\n');
             text.Append("<size=80%><color=#8FA3BF>PLAYER   PLANETS   SHIPS   CAPTURED   LOST   SENT   SHIPS LOST</color></size>\n");
 
@@ -141,6 +142,17 @@ namespace Warmask.Planet
         {
             if (winner == Globals.ePlayer.None)
                 return "—";
+
+            int team = MatchConfig.TeamOf(winner);
+            var members = MatchConfig.TeamMembers(team);
+            if (members.Count > 1)
+            {
+                string names = "";
+                foreach (Globals.ePlayer player in members)
+                    names += (names.Length > 0 ? " + " : "") + "P" + (int)player;
+                return "TEAM " + team + " (" + names + ")";
+            }
+
             string color = ColorUtility.ToHtmlStringRGB(Globals.Instance.GetPlayerColor(winner));
             return $"<color=#{color}>P{(int)winner}</color>";
         }

@@ -72,32 +72,25 @@ namespace Warmask.Planet
             if (StillOwnsPlanet(playerThatLostPlanet))
                 return;
 
-            List<Globals.ePlayer> remaining = RemainingPlayers();
-            if (remaining.Count <= 1)
+            List<int> remainingTeams = RemainingTeams();
+            if (remainingTeams.Count <= 1)
             {
-                Globals.ePlayer winner = remaining.Count == 1 ? remaining[0] : Globals.ePlayer.None;
+                int winningTeam = remainingTeams.Count == 1 ? remainingTeams[0] : 0;
+                Globals.ePlayer winner = winningTeam > 0 ? WinnerFor(winningTeam) : Globals.ePlayer.None;
                 MatchStats.NoteWinner(winner);
-                if (winner != Globals.ePlayer.None && Globals.Instance.IsHuman(winner))
+                if (winningTeam > 0 && MatchConfig.TeamHasHuman(winningTeam))
                     OnPlayerWin.Invoke();
                 else
                     OnPlayerLost.Invoke();
                 return;
             }
 
-            // Several players still hold planets. A local human going out is not
-            // the end while another human is still playing.
-            bool anyHumanLeft = false;
-            foreach (Globals.ePlayer player in remaining)
+            // A team keeps fighting when one of its players loses their last planet.
+            foreach (int team in remainingTeams)
             {
-                if (Globals.Instance.IsHuman(player))
-                {
-                    anyHumanLeft = true;
-                    break;
-                }
+                if (MatchConfig.TeamHasHuman(team))
+                    return;
             }
-
-            if (anyHumanLeft)
-                return;
 
             MatchStats.NoteWinner(Globals.ePlayer.None);
             OnPlayerLost.Invoke();
@@ -113,15 +106,32 @@ namespace Warmask.Planet
             return false;
         }
 
-        private List<Globals.ePlayer> RemainingPlayers()
+        private List<int> RemainingTeams()
         {
-            var remaining = new List<Globals.ePlayer>();
+            var remaining = new List<int>();
             foreach (Globals.ePlayer player in MatchConfig.ActivePlayers())
             {
-                if (StillOwnsPlanet(player))
-                    remaining.Add(player);
+                if (!StillOwnsPlanet(player))
+                    continue;
+
+                int team = MatchConfig.TeamOf(player);
+                if (!remaining.Contains(team))
+                    remaining.Add(team);
             }
             return remaining;
+        }
+
+        private static Globals.ePlayer WinnerFor(int team)
+        {
+            foreach (Globals.ePlayer player in MatchConfig.ActivePlayers())
+                if (MatchConfig.TeamOf(player) == team && Globals.Instance.IsHuman(player))
+                    return player;
+
+            foreach (Globals.ePlayer player in MatchConfig.ActivePlayers())
+                if (MatchConfig.TeamOf(player) == team)
+                    return player;
+
+            return Globals.ePlayer.None;
         }
 
         /// <summary>True when at least one player owns a planet and every owner is human.</summary>

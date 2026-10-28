@@ -213,7 +213,8 @@ namespace Warmask.Shipyard
             if (Time.time >= nextSpawnTime && HasProductionCapacity() && spawnInterval > 0f)
             {
                 SpawnShip();
-                nextSpawnTime = Time.time + spawnInterval;
+                float boost = MatchConfig.ProductionBoost(planetInstance.OwnedBy);
+                nextSpawnTime = Time.time + spawnInterval / Mathf.Max(0.1f, boost);
             }
 
             // Ship scans feed only labels and transfer counts; 10 Hz is plenty and
@@ -261,6 +262,13 @@ namespace Warmask.Shipyard
         public void SpawnShipUnchecked()
         {
             SpawnShipInternal(ignoreCapacity: true);
+        }
+
+        /// <summary>Seeds a slot's match-start bonus without changing the normal production caps.</summary>
+        public void SpawnStartingShips(int count)
+        {
+            for (int i = 0; i < count; i++)
+                SpawnShipInternal(ignoreCapacity: true);
         }
 
         private void SpawnShipInternal(bool ignoreCapacity)

@@ -1,35 +1,46 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Warmask.Planet;
+using Warmask.Shipyard;
 
 /// <summary>
-/// Applies the match-setup slots to a map's four start positions and grows the
-/// scene AI into one per AI slot. Lives in Assembly-CSharp so it sees EnemyAi.
+/// Applies the match-setup slots to a map's planets and grows the scene AI into
+/// one per AI slot. Lives in Assembly-CSharp so it sees EnemyAi.
 /// </summary>
 public class FourPlayerSetup : MonoBehaviour
 {
-    [SerializeField] private PlanetInstance[] homes; // start position 1..4
     [SerializeField] private EnemyAi prototype;
 
     private void Awake()
     {
-        if (homes == null || homes.Length < MatchConfig.MaxSlots)
-        {
-            Debug.LogError("[FourPlayerSetup] Needs four start-position planets.");
-            return;
-        }
-
         MatchSlot[] slots = MatchConfig.Current;
-        for (int homeIndex = 0; homeIndex < homes.Length; homeIndex++)
+        MapPlanet[] layout = MapLayout.For(gameObject.scene.name);
+        var planets = new Dictionary<string, PlanetInstance>();
+        foreach (PlanetInstance planet in FindObjectsByType<PlanetInstance>())
+            planets[planet.gameObject.name] = planet;
+
+        for (int homeIndex = 0; homeIndex < layout.Length; homeIndex++)
         {
-            PlanetInstance home = homes[homeIndex];
-            if (!home)
+            if (!planets.TryGetValue(layout[homeIndex].name, out PlanetInstance home))
             {
-                Debug.LogError("[FourPlayerSetup] Start position " + (homeIndex + 1) + " is missing.");
+                Debug.LogError("[FourPlayerSetup] Map planet '" + layout[homeIndex].name + "' is missing.");
                 continue;
             }
 
-            // Silent hand-off: a neutral home becoming owned is setup, not a capture.
+            // Silent hand-off: a neutral planet becoming owned is setup, not a capture.
             home.SetOwner(OwnerAt(slots, homeIndex), spawnCaptureEffect: false);
+        }
+
+        for (int i = 0; i < MatchConfig.MaxSlots; i++)
+        {
+            if (slots[i].mode == MatchSlotMode.Off || slots[i].startingShips <= 0)
+                continue;
+
+            int homeIndex = Mathf.Clamp(slots[i].home, 0, layout.Length - 1);
+            if (!planets.TryGetValue(layout[homeIndex].name, out PlanetInstance home))
+                continue;
+            if (home.TryGetComponent(out ShipyardInstance yard))
+                yard.SpawnStartingShips(slots[i].startingShips);
         }
 
         if (!prototype)
