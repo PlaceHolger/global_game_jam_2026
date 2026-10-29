@@ -264,13 +264,6 @@ namespace Warmask.Shipyard
             SpawnShipInternal(ignoreCapacity: true);
         }
 
-        /// <summary>Seeds a slot's match-start bonus without changing the normal production caps.</summary>
-        public void SpawnStartingShips(int count)
-        {
-            for (int i = 0; i < count; i++)
-                SpawnShipInternal(ignoreCapacity: true);
-        }
-
         private void SpawnShipInternal(bool ignoreCapacity)
         {
             EnsureInitialized();

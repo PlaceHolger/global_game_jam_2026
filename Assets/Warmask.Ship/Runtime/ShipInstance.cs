@@ -666,6 +666,10 @@ namespace Warmask.Ship
             {
                 spriteRenderer.sprite = Globals.Instance.GetPlayerSprite((Globals.ePlayer)playerId);
                 spriteRenderer.color = playerColor;
+                // Some atlas hulls are drawn side-on; the sprite child carries the
+                // per-ship correction so every player's nose points up.
+                spriteRenderer.transform.localRotation =
+                    Quaternion.Euler(0f, 0f, Globals.Instance.GetPlayerRotation((Globals.ePlayer)playerId));
             }
 
             if (maskFader)

@@ -42,7 +42,6 @@ public class MatchSlot
     public int ship;
     public int badge;
     public int team;
-    public int startingShips;
     public int productionBoost = 100;
     public MatchAiStrength strength = MatchAiStrength.Normal;
     public MatchAiType aiType = MatchAiType.Balanced;
@@ -79,8 +78,9 @@ public static class MatchConfig
         new Color(1f, 0.28f, 0.28f)
     };
 
-    public static readonly int[] StartingShipChoices = { 0, 5, 10, 20 };
-    public static readonly int[] ProductionChoices = { 100, 150, 200 };
+    public const int ProductionMin = 100;
+    public const int ProductionMax = 200;
+    public const int ProductionStep = 5;
 
     /// <summary>Last applied matchup rating; 0 when there is no AI opposition.</summary>
     public static float Difficulty { get; private set; }
@@ -113,8 +113,7 @@ public static class MatchConfig
             copy[i].ship = Mathf.Max(0, copy[i].ship);
             copy[i].badge = Mathf.Max(0, copy[i].badge);
             copy[i].team = EffectiveTeam(copy[i], i);
-            copy[i].startingShips = Mathf.Clamp(copy[i].startingShips, 0, 50);
-            copy[i].productionBoost = Mathf.Clamp(BoostPercent(copy[i]), 50, 300);
+            copy[i].productionBoost = Mathf.Clamp(BoostPercent(copy[i]), ProductionMin, ProductionMax);
         }
 
         _slots = copy;
@@ -126,7 +125,7 @@ public static class MatchConfig
             return;
 
         globals.playerCount = ActiveCount(copy);
-        globals.ApplyMatchCosmetics(ColorsOf(copy), ShipsOf(copy), BadgesOf(copy));
+        globals.ApplyMatchCosmetics(ColorsOf(copy), ShipsOf(copy), BadgesOf(copy), RotationsOf(copy));
     }
 
     public static void Reset()
@@ -135,7 +134,7 @@ public static class MatchConfig
         _mapScene = "LargeMap";
         Difficulty = 0f;
         if (Globals.Instance)
-            Globals.Instance.ApplyMatchCosmetics(null, null, null);
+            Globals.Instance.ApplyMatchCosmetics(null, null, null, null);
     }
 
     public static int ActiveCount(MatchSlot[] slots)
@@ -221,15 +220,7 @@ public static class MatchConfig
         int index = (int)player - 1;
         if (_slots == null || index < 0 || index >= _slots.Length)
             return 1f;
-        return Mathf.Clamp(BoostPercent(_slots[index]), 50, 300) / 100f;
-    }
-
-    public static int StartingShips(Globals.ePlayer player)
-    {
-        int index = (int)player - 1;
-        if (_slots == null || index < 0 || index >= _slots.Length)
-            return 0;
-        return Mathf.Clamp(_slots[index].startingShips, 0, 50);
+        return Mathf.Clamp(BoostPercent(_slots[index]), ProductionMin, ProductionMax) / 100f;
     }
 
     /// <summary>
@@ -255,8 +246,7 @@ public static class MatchConfig
                 continue;
 
             int team = EffectiveTeam(slot, i);
-            float power = 1f + 0.02f * Mathf.Max(0, slot.startingShips) +
-                          Mathf.Max(0, BoostPercent(slot) - 100) / 100f;
+            float power = 1f + Mathf.Max(0, BoostPercent(slot) - 100) / 100f;
 
             if (slot.IsHuman)
             {
@@ -299,7 +289,7 @@ public static class MatchConfig
     }
 
     private static int BoostPercent(MatchSlot slot) =>
-        slot == null || slot.productionBoost <= 0 ? 100 : slot.productionBoost;
+        slot == null || slot.productionBoost <= 0 ? ProductionMin : slot.productionBoost;
 
     public static bool IsValid(MatchSlot[] slots, out string error) =>
         IsValid(slots, MapScene, out error);
@@ -400,7 +390,6 @@ public static class MatchConfig
                 ship = ships > 0 ? i % ships : 0,
                 badge = badges > 0 ? i % badges : 0,
                 team = i + 1,
-                startingShips = 0,
                 productionBoost = 100,
                 input = i == 0 ? MatchInput.MouseKeyboard : (MatchInput)((int)MatchInput.Gamepad1 + Mathf.Max(0, i - 1))
             };
@@ -472,5 +461,17 @@ public static class MatchConfig
             badges[i] = globals.GetBadgeByIndex(index);
         }
         return badges;
+    }
+
+    private static float[] RotationsOf(MatchSlot[] slots)
+    {
+        var rotations = new float[MaxSlots + 1];
+        Globals globals = Globals.Instance;
+        if (!globals)
+            return rotations;
+
+        for (int i = 1; i <= MaxSlots; i++)
+            rotations[i] = globals.GetShipRotationByIndex(slots[i - 1].ship);
+        return rotations;
     }
 }

@@ -140,18 +140,17 @@ namespace Warmask.Tests
             Assert.AreEqual(0.7f, MatchConfig.EvaluateDifficulty(slots), 0.001f);
 
             slots[1].strength = MatchAiStrength.Normal;
-            slots[1].startingShips = 10;
-            Assert.AreEqual(1.2f, MatchConfig.EvaluateDifficulty(slots), 0.001f);
+            slots[1].productionBoost = 150;
+            Assert.AreEqual(1.5f, MatchConfig.EvaluateDifficulty(slots), 0.001f);
 
-            slots[1].startingShips = 0;
             slots[1].productionBoost = 200;
             Assert.AreEqual(2f, MatchConfig.EvaluateDifficulty(slots), 0.001f);
 
             slots[1].productionBoost = 100;
-            slots[0].startingShips = 10;
-            Assert.AreEqual(1f / 1.2f, MatchConfig.EvaluateDifficulty(slots), 0.001f);
+            slots[0].productionBoost = 150;
+            Assert.AreEqual(1f / 1.5f, MatchConfig.EvaluateDifficulty(slots), 0.001f);
 
-            slots[0].startingShips = 0;
+            slots[0].productionBoost = 100;
             slots[1].team = 1;
             Assert.AreEqual(0f, MatchConfig.EvaluateDifficulty(slots), 0.001f,
                 "an AI on the human's team is not hostile opposition");
@@ -173,17 +172,21 @@ namespace Warmask.Tests
         }
 
         [Test]
-        public void Apply_KeepsStartingShipsAndProduction()
+        public void Apply_ClampsProductionToTheSliderRange()
         {
             MatchSlot[] slots = TwoSides();
-            slots[0].startingShips = 10;
             slots[1].productionBoost = 150;
-            slots[1].startingShips = -5;
+            slots[0].productionBoost = 900;
             MatchConfig.Apply(slots, "LargeMap");
 
-            Assert.AreEqual(10, MatchConfig.StartingShips(Globals.ePlayer.Player1));
             Assert.AreEqual(1.5f, MatchConfig.ProductionBoost(Globals.ePlayer.Player2), 0.001f);
-            Assert.AreEqual(0, MatchConfig.StartingShips(Globals.ePlayer.Player2));
+            Assert.AreEqual(2f, MatchConfig.ProductionBoost(Globals.ePlayer.Player1), 0.001f,
+                "the slider tops out at 200%");
+
+            slots[1].productionBoost = 10;
+            MatchConfig.Apply(slots, "LargeMap");
+            Assert.AreEqual(1f, MatchConfig.ProductionBoost(Globals.ePlayer.Player2), 0.001f,
+                "the slider bottoms out at 100%");
         }
 
         private static MatchSlot[] TwoSides()

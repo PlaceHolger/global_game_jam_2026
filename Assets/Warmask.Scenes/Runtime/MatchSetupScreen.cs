@@ -24,7 +24,6 @@ namespace Warmask.Scenes
             Strength,
             Type,
             Input,
-            StartingShips,
             Production,
             Count
         }
@@ -35,6 +34,7 @@ namespace Warmask.Scenes
             public readonly Button[] Buttons = new Button[(int)Row.Count];
             public readonly TMP_Text[] Labels = new TMP_Text[(int)Row.Count];
             public readonly Image[] Previews = new Image[(int)Row.Count];
+            public Slider Production;
         }
 
         private static MatchSetupScreen _instance;
@@ -204,7 +204,12 @@ namespace Warmask.Scenes
                 headerLayout.preferredHeight = 64f;
 
                 for (int r = 0; r < (int)Row.Count; r++)
-                    CreateCycleButton(column, i, (Row)r);
+                {
+                    if ((Row)r == Row.Production)
+                        CreateProductionRow(column, i);
+                    else
+                        CreateCycleButton(column, i, (Row)r);
+                }
 
                 column.SetAsFirstSibling();
                 column.SetSiblingIndex(i);
@@ -294,6 +299,7 @@ namespace Warmask.Scenes
             Button button = NewButton(parent, "", RowColor, () => Cycle(slot, row));
             var layout = button.gameObject.AddComponent<LayoutElement>();
             layout.preferredHeight = 52f;
+            layout.minHeight = 34f;
             layout.flexibleWidth = 1f;
 
             bool preview = row == Row.Ship || row == Row.Color || row == Row.Badge;
@@ -317,6 +323,76 @@ namespace Warmask.Scenes
             image.preserveAspect = true;
             image.raycastTarget = false;
             _columns[slot].Previews[(int)row] = image;
+        }
+
+        private void CreateProductionRow(RectTransform parent, int slot)
+        {
+            var row = NewRect(parent, "Production");
+            var layout = row.gameObject.AddComponent<LayoutElement>();
+            layout.preferredHeight = 78f;
+            layout.minHeight = 70f;
+            layout.flexibleWidth = 1f;
+            row.gameObject.AddComponent<Image>().color = RowColor;
+
+            TMP_Text label = NewText(row, "", 17f, TextAlignmentOptions.Left);
+            label.fontSize = 17f;
+            var labelRect = label.rectTransform;
+            labelRect.anchorMin = new Vector2(0f, 1f);
+            labelRect.anchorMax = new Vector2(1f, 1f);
+            labelRect.pivot = new Vector2(0.5f, 1f);
+            labelRect.offsetMin = new Vector2(12f, -40f);
+            labelRect.offsetMax = new Vector2(-12f, -2f);
+            _columns[slot].Labels[(int)Row.Production] = label;
+
+            var sliderGo = new GameObject("Slider", typeof(RectTransform), typeof(Slider));
+            var sliderRect = (RectTransform)sliderGo.transform;
+            sliderRect.SetParent(row, false);
+            sliderRect.anchorMin = new Vector2(0f, 0f);
+            sliderRect.anchorMax = new Vector2(1f, 0f);
+            sliderRect.pivot = new Vector2(0.5f, 0f);
+            sliderRect.offsetMin = new Vector2(12f, 6f);
+            sliderRect.offsetMax = new Vector2(-12f, 30f);
+
+            Image track = NewImage(sliderRect, "Background", new Color(0.15f, 0.2f, 0.3f, 1f));
+            track.rectTransform.anchorMin = new Vector2(0f, 0.5f);
+            track.rectTransform.anchorMax = new Vector2(1f, 0.5f);
+            track.rectTransform.sizeDelta = new Vector2(0f, 8f);
+
+            RectTransform fillArea = NewRect(sliderRect, "Fill Area");
+            fillArea.anchorMin = new Vector2(0f, 0.5f);
+            fillArea.anchorMax = new Vector2(1f, 0.5f);
+            fillArea.sizeDelta = new Vector2(-18f, 8f);
+            Image fill = NewImage(fillArea, "Fill", AccentColor);
+            Stretch(fill.rectTransform);
+            fill.raycastTarget = false;
+
+            RectTransform handleArea = NewRect(sliderRect, "Handle Slide Area");
+            Stretch(handleArea);
+            Image handle = NewImage(handleArea, "Handle", Color.white);
+            handle.rectTransform.sizeDelta = new Vector2(16f, 0f);
+
+            var slider = sliderGo.GetComponent<Slider>();
+            slider.fillRect = fill.rectTransform;
+            slider.handleRect = handle.rectTransform;
+            slider.targetGraphic = handle;
+            slider.direction = Slider.Direction.LeftToRight;
+            slider.minValue = MatchConfig.ProductionMin;
+            slider.maxValue = MatchConfig.ProductionMax;
+            slider.wholeNumbers = false;
+            slider.onValueChanged.AddListener(value => SetProduction(slot, value));
+            _columns[slot].Production = slider;
+        }
+
+        private void SetProduction(int slot, float value)
+        {
+            int percent = Mathf.Clamp(
+                Mathf.RoundToInt(value / MatchConfig.ProductionStep) * MatchConfig.ProductionStep,
+                MatchConfig.ProductionMin,
+                MatchConfig.ProductionMax);
+
+            _draft[slot].productionBoost = percent;
+            _columns[slot].Production.SetValueWithoutNotify(percent);
+            Refresh();
         }
 
         private void Cycle(int slot, Row row)
@@ -357,21 +433,9 @@ namespace Warmask.Scenes
                 case Row.Input:
                     selected.input = NextInput(slot);
                     break;
-                case Row.StartingShips:
-                    selected.startingShips = NextChoice(MatchConfig.StartingShipChoices, selected.startingShips);
-                    break;
-                case Row.Production:
-                    selected.productionBoost = NextChoice(MatchConfig.ProductionChoices, selected.productionBoost);
-                    break;
             }
 
             Refresh();
-        }
-
-        private static int NextChoice(int[] choices, int current)
-        {
-            int index = Array.IndexOf(choices, current);
-            return choices[(index + 1) % choices.Length];
         }
 
         private void ShowGrid(int slot, Row row)
@@ -401,6 +465,9 @@ namespace Warmask.Scenes
                 icon.preserveAspect = true;
                 Stretch(icon.rectTransform, 12f, 12f, 12f, 12f);
                 icon.raycastTarget = false;
+                if (!badges)
+                    icon.rectTransform.localRotation =
+                        Quaternion.Euler(0f, 0f, Globals.Instance.GetShipRotationByIndex(i));
 
                 if (i == current)
                 {
@@ -577,8 +644,9 @@ namespace Warmask.Scenes
                 SetRow(i, Row.Strength, "AI STRENGTH", StrengthName(slot.strength));
                 SetRow(i, Row.Type, "AI TYPE", AiTypeName(slot.aiType));
                 SetRow(i, Row.Input, "INPUT", MatchConfig.InputName(slot.input));
-                SetRow(i, Row.StartingShips, "START SHIPS", slot.startingShips.ToString());
                 SetRow(i, Row.Production, "PRODUCTION", slot.productionBoost + "%");
+                ui.Production.SetValueWithoutNotify(slot.productionBoost);
+                ui.Production.interactable = slot.mode != MatchSlotMode.Off;
 
                 ui.Previews[(int)Row.Color].color = color;
 
@@ -589,13 +657,13 @@ namespace Warmask.Scenes
                 Image ship = ui.Previews[(int)Row.Ship];
                 ship.sprite = Globals.Instance.GetShipSpriteByIndex(slot.ship);
                 ship.color = color;
+                ship.rectTransform.localRotation =
+                    Quaternion.Euler(0f, 0f, Globals.Instance.GetShipRotationByIndex(slot.ship));
 
                 ui.Buttons[(int)Row.Strength].interactable = slot.mode == MatchSlotMode.Ai;
                 ui.Buttons[(int)Row.Type].interactable = slot.mode == MatchSlotMode.Ai;
                 ui.Buttons[(int)Row.Input].interactable = slot.mode == MatchSlotMode.Human;
                 ui.Buttons[(int)Row.Team].interactable = slot.mode != MatchSlotMode.Off;
-                ui.Buttons[(int)Row.StartingShips].interactable = slot.mode != MatchSlotMode.Off;
-                ui.Buttons[(int)Row.Production].interactable = slot.mode != MatchSlotMode.Off;
             }
         }
 
@@ -628,8 +696,10 @@ namespace Warmask.Scenes
                 slot.ship = Mathf.Max(0, slot.ship);
                 slot.badge = Mathf.Clamp(slot.badge, 0, Mathf.Max(0, Globals.Instance.BadgeCount - 1));
                 slot.team = Mathf.Clamp(slot.team <= 0 ? i + 1 : slot.team, 1, MatchConfig.MaxSlots);
-                slot.startingShips = Mathf.Clamp(slot.startingShips, 0, 50);
-                slot.productionBoost = Mathf.Clamp(slot.productionBoost <= 0 ? 100 : slot.productionBoost, 50, 300);
+                slot.productionBoost = Mathf.Clamp(
+                    slot.productionBoost <= 0 ? MatchConfig.ProductionMin : slot.productionBoost,
+                    MatchConfig.ProductionMin,
+                    MatchConfig.ProductionMax);
 
                 if (homes[slot.home])
                     slot.home = FirstFreeHome(homes);

@@ -58,6 +58,9 @@ public class Globals : ScriptableObject
     [SerializeField, Tooltip("Badge/logo choices on the match setup screen. Add new owner sprites here.")]
     private Sprite[] playerBadges;
 
+    [SerializeField, Tooltip("Degrees to rotate each ship sprite counter-clockwise, index-aligned with playerSprites, so every hull is drawn nose-up. Art drawn nose-right needs +90, nose-left -90.")]
+    private float[] playerSpriteRotations;
+
     [SerializeField, Tooltip("Plain shield icon for the defense badge shown beside a planet's ground-unit count")]
     private Sprite shieldIcon;
 
@@ -73,6 +76,7 @@ public class Globals : ScriptableObject
     private Color[] matchColors;
     private Sprite[] matchShips;
     private Sprite[] matchBadges;
+    private float[] matchRotations;
 
     public Color GetPlayerColor(ePlayer player)
     {
@@ -98,6 +102,12 @@ public class Globals : ScriptableObject
             ? playerSprites[Mathf.Clamp(index, 0, playerSprites.Length - 1)]
             : null;
 
+    /// <summary>Degrees to rotate a ship sprite so its nose points along +Y.</summary>
+    public float GetShipRotationByIndex(int index) =>
+        playerSpriteRotations != null && index >= 0 && index < playerSpriteRotations.Length
+            ? playerSpriteRotations[index]
+            : 0f;
+
     public Sprite GetBadgeByIndex(int index) =>
         playerBadges != null && playerBadges.Length > 0
             ? playerBadges[Mathf.Clamp(index, 0, playerBadges.Length - 1)]
@@ -110,11 +120,18 @@ public class Globals : ScriptableObject
         return matchBadges != null && index < matchBadges.Length ? matchBadges[index] : null;
     }
 
-    public void ApplyMatchCosmetics(Color[] colors, Sprite[] ships, Sprite[] badges)
+    public void ApplyMatchCosmetics(Color[] colors, Sprite[] ships, Sprite[] badges, float[] rotations)
     {
         matchColors = colors;
         matchShips = ships;
         matchBadges = badges;
+        matchRotations = rotations;
+    }
+
+    public float GetPlayerRotation(ePlayer player)
+    {
+        int index = (int)player;
+        return matchRotations != null && index >= 0 && index < matchRotations.Length ? matchRotations[index] : 0f;
     }
 
     [NonSerialized] public bool localMultiplayer;

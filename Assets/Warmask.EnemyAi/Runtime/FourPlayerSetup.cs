@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Warmask.Planet;
-using Warmask.Shipyard;
 
 /// <summary>
 /// Applies the match-setup slots to a map's planets and grows the scene AI into
@@ -29,18 +28,6 @@ public class FourPlayerSetup : MonoBehaviour
 
             // Silent hand-off: a neutral planet becoming owned is setup, not a capture.
             home.SetOwner(OwnerAt(slots, homeIndex), spawnCaptureEffect: false);
-        }
-
-        for (int i = 0; i < MatchConfig.MaxSlots; i++)
-        {
-            if (slots[i].mode == MatchSlotMode.Off || slots[i].startingShips <= 0)
-                continue;
-
-            int homeIndex = Mathf.Clamp(slots[i].home, 0, layout.Length - 1);
-            if (!planets.TryGetValue(layout[homeIndex].name, out PlanetInstance home))
-                continue;
-            if (home.TryGetComponent(out ShipyardInstance yard))
-                yard.SpawnStartingShips(slots[i].startingShips);
         }
 
         if (!prototype)

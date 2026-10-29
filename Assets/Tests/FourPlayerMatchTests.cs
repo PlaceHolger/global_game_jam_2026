@@ -77,7 +77,7 @@ namespace Warmask.Tests
         {
             MatchConfig.Apply(new[]
             {
-                new MatchSlot { mode = MatchSlotMode.Human, home = 0, input = MatchInput.MouseKeyboard, team = 1, startingShips = 5 },
+                new MatchSlot { mode = MatchSlotMode.Human, home = 0, input = MatchInput.MouseKeyboard, team = 1 },
                 new MatchSlot { mode = MatchSlotMode.Ai, home = 1, team = 1 },
                 new MatchSlot { mode = MatchSlotMode.Ai, home = 2, team = 2 },
                 new MatchSlot { mode = MatchSlotMode.Off, home = 3, team = 3 }
@@ -89,10 +89,6 @@ namespace Warmask.Tests
             int losses = 0;
             planets.OnPlayerWin.AddListener(() => wins++);
             planets.OnPlayerLost.AddListener(() => losses++);
-
-            int startingShips = Object.FindObjectsByType<Warmask.Ship.ShipInstance>()
-                .Count(s => s.IsAlive && s.GetPlayerId() == (int)Globals.ePlayer.Player1);
-            Assert.GreaterOrEqual(startingShips, 5, "P1 must receive the configured starting ships");
 
             PlanetInstance ally = OwnedHome(Globals.ePlayer.Player2);
             PlanetInstance enemy = OwnedHome(Globals.ePlayer.Player3);
