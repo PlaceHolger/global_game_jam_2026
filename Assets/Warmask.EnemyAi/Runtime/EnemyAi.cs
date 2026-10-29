@@ -17,6 +17,7 @@ using Warmask.Planet;
 public class EnemyAi : MonoBehaviour
 {
     [SerializeField] private Globals.ePlayer ownPlayer = Globals.ePlayer.Player2;
+    public Globals.ePlayer OwnPlayer => ownPlayer;
     [SerializeField] private MatchAiStrength strength = MatchAiStrength.Normal;
     [SerializeField] private MatchAiType aiType = MatchAiType.Balanced;
 

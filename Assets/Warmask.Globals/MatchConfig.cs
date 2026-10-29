@@ -128,6 +128,24 @@ public static class MatchConfig
         globals.ApplyMatchCosmetics(ColorsOf(copy), ShipsOf(copy), BadgesOf(copy), RotationsOf(copy));
     }
 
+    public static void SetSlotHuman(int slotIndex, bool human, MatchInput input = MatchInput.Keyboard)
+    {
+        if (_slots == null || slotIndex < 0 || slotIndex >= _slots.Length)
+            return;
+        _slots[slotIndex].mode = human ? MatchSlotMode.Human : MatchSlotMode.Ai;
+        if (human)
+            _slots[slotIndex].input = input;
+        Globals globals = Globals.Instance;
+        if (globals)
+        {
+            int humans = 0;
+            for (int i = 0; i < _slots.Length; i++)
+                if (_slots[i].IsHuman)
+                    humans++;
+            globals.localMultiplayer = humans > 1;
+        }
+    }
+
     public static void Reset()
     {
         _slots = null;

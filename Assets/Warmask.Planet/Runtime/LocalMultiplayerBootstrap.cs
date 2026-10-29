@@ -12,7 +12,7 @@ namespace Warmask.Planet
     {
         private PlanetSelectionManager _p1;
         private MouseLineHelper _p1Line;
-        private readonly List<GameObject> _created = new();
+        private readonly Dictionary<int, GameObject> _humanObjects = new();
         private float _previousCooldown;
         private bool _configured;
 
@@ -50,6 +50,7 @@ namespace Warmask.Planet
                 {
                     ConfigureManager(_p1, _p1Line, 0, slots[0].input, _p1.gameObject);
                     p1Handled = true;
+                    _humanObjects[0] = _p1.gameObject;
                 }
                 else if (mouseSlot > 0)
                 {
@@ -71,7 +72,7 @@ namespace Warmask.Planet
                     continue;
                 if (i == mouseSlot && p1Handled)
                     continue;
-                CreateHuman(i, slots[i].input);
+                _humanObjects[i] = CreateHuman(i, slots[i].input);
             }
         }
 
@@ -84,7 +85,7 @@ namespace Warmask.Planet
             manager.enabled = true;
         }
 
-        private void CreateHuman(int slot, MatchInput input, IPointerSource pointerOverride = null)
+        private GameObject CreateHuman(int slot, MatchInput input, IPointerSource pointerOverride = null)
         {
             var root = new GameObject("P" + (slot + 1) + " Selection");
             root.SetActive(false);
@@ -104,7 +105,7 @@ namespace Warmask.Planet
             manager.Initialize((Globals.ePlayer)(slot + 1), pointer);
 
             root.SetActive(true);
-            _created.Add(root);
+            return root;
             Debug.Log($"[Match] Player {slot + 1}: {(pointerOverride != null ? "Raw Mouse" : MatchConfig.InputName(input))}");
         }
 
@@ -149,6 +150,114 @@ namespace Warmask.Planet
             Globals.Instance.maskCooldownRemaining = 0f;
         }
 
+        public bool JoinSlot(int slot, MatchInput input)
+        {
+            if (slot < 0 || slot >= MatchConfig.MaxSlots)
+                return false;
+            if (MatchConfig.Current[slot].mode == MatchSlotMode.Off)
+                return false;
+            if (MatchConfig.IsHuman((Globals.ePlayer)(slot + 1)))
+                return false;
+
+            MatchConfig.SetSlotHuman(slot, true, input);
+
+            if (slot == 0)
+            {
+                if (_p1)
+                {
+                    IPointerSource pointer = input == MatchInput.MouseKeyboard ? null : CreatePointer(input, _p1.gameObject);
+                    ConfigureManager(_p1, _p1Line, 0, input, _p1.gameObject);
+                    if (pointer != null && _p1Line)
+                        _p1Line.SetPointer(pointer);
+                    _humanObjects[0] = _p1.gameObject;
+                }
+            }
+            else
+            {
+                _humanObjects[slot] = CreateHuman(slot, input);
+            }
+
+            SetAiActive((Globals.ePlayer)(slot + 1), false);
+            return true;
+        }
+
+        public bool LeaveSlot(int slot)
+        {
+            if (slot < 0 || slot >= MatchConfig.MaxSlots)
+                return false;
+            if (!MatchConfig.IsHuman((Globals.ePlayer)(slot + 1)))
+                return false;
+            if (slot == 0)
+                return false; // P1 cannot leave (keeps a human in control)
+
+            MatchConfig.SetSlotHuman(slot, false);
+
+            if (_humanObjects.TryGetValue(slot, out GameObject go) && go)
+                Destroy(go);
+            _humanObjects.Remove(slot);
+
+            SetAiActive((Globals.ePlayer)(slot + 1), true);
+            return true;
+        }
+
+        private void SetAiActive(Globals.ePlayer player, bool active)
+        {
+            // Find EnemyAi instances by reflection (Warmask.Planet cannot reference the default assembly type directly).
+            foreach (var mb in FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (mb.GetType().Name != "EnemyAi")
+                    continue;
+                var field = mb.GetType().GetField("ownPlayer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                if (field == null)
+                    continue;
+                if ((Globals.ePlayer)field.GetValue(mb) != player)
+                    continue;
+                mb.gameObject.SetActive(active);
+                mb.enabled = active;
+            }
+
+            if (!active)
+                return;
+
+            // If no EnemyAi exists for this player, clone from a prototype.
+            bool found = false;
+            foreach (var mb in FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (mb.GetType().Name != "EnemyAi")
+                    continue;
+                var field = mb.GetType().GetField("ownPlayer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                if (field != null && (Globals.ePlayer)field.GetValue(mb) == player)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found)
+                return;
+
+            MonoBehaviour prototype = null;
+            foreach (var mb in FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (mb.GetType().Name == "EnemyAi")
+                {
+                    prototype = mb;
+                    break;
+                }
+            }
+
+            if (!prototype)
+                return;
+
+            GameObject clone = Instantiate(prototype.gameObject, prototype.transform.parent);
+            clone.name = "EnemyAI P" + ((int)player);
+            clone.SetActive(true);
+            var ai = clone.GetComponent(prototype.GetType());
+            var configure = ai.GetType().GetMethod("Configure");
+            // Read strength/type from MatchConfig slot.
+            MatchSlot slot = MatchConfig.Current[(int)player - 1];
+            configure?.Invoke(ai, new object[] { player, slot.strength, slot.aiType });
+        }
         private static void CopyLine(LineRenderer source, LineRenderer target)
         {
             target.positionCount = 2;

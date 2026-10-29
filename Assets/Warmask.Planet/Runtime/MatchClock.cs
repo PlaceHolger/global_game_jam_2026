@@ -26,6 +26,7 @@ namespace Warmask.Planet
         private int _savedSpeedIndex = -1;
         private float _musicVolume = 0.5f;
         private float _sfxVolume = 1f;
+        private LocalMultiplayerBootstrap _bootstrap;
         private AudioSource _musicSource;
 
         public bool Paused => Speed == 0f;
@@ -37,6 +38,7 @@ namespace Warmask.Planet
         private void Awake()
         {
             _instance = this;
+            _bootstrap = FindAnyObjectByType<LocalMultiplayerBootstrap>();
             ApplyVolumes();
         }
 
@@ -244,6 +246,35 @@ namespace Warmask.Planet
             GUILayout.Label($"Sound Volume: {_sfxVolume:0.00}");
             _sfxVolume = GUILayout.HorizontalSlider(_sfxVolume, 0f, 1f);
             SetSfxVolume(_sfxVolume);
+
+            GUILayout.Space(8f);
+            GUILayout.Label("Players");
+            if (_bootstrap == null)
+                _bootstrap = FindAnyObjectByType<LocalMultiplayerBootstrap>();
+
+            if (MatchConfig.IsConfigured)
+            {
+                MatchSlot[] slots = MatchConfig.Current;
+                for (int i = 0; i < slots.Length; i++)
+                {
+                    if (slots[i].mode == MatchSlotMode.Off)
+                        continue;
+                    bool human = MatchConfig.IsHuman((Globals.ePlayer)(i + 1));
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label($"P{i + 1}: {(human ? "Human" : "AI")}");
+                    if (human)
+                    {
+                        if (i > 0 && GUILayout.Button("Leave"))
+                            _bootstrap?.LeaveSlot(i);
+                    }
+                    else
+                    {
+                        if (GUILayout.Button("Join"))
+                            _bootstrap?.JoinSlot(i, MatchInput.Keyboard);
+                    }
+                    GUILayout.EndHorizontal();
+                }
+            }
 
             GUILayout.Space(8f);
             if (GUILayout.Button("Exit to Menu"))
