@@ -786,22 +786,18 @@ namespace Warmask.Scenes
             return false;
         }
 
-        private static MatchInput[] AllowedInputs(int slot)
+        private MatchInput[] AllowedInputs(int slot)
         {
+            var list = new System.Collections.Generic.List<MatchInput>();
             if (slot == 0)
-            {
-                return new[]
-                {
-                    MatchInput.MouseKeyboard, MatchInput.Keyboard,
-                    MatchInput.Gamepad1, MatchInput.Gamepad2, MatchInput.Gamepad3, MatchInput.Gamepad4
-                };
-            }
+                list.Add(MatchInput.MouseKeyboard);
+            list.Add(MatchInput.Keyboard);
 
-            return new[]
-            {
-                MatchInput.Keyboard,
-                MatchInput.Gamepad1, MatchInput.Gamepad2, MatchInput.Gamepad3, MatchInput.Gamepad4
-            };
+            int gamepadCount = Gamepad.all.Count;
+            for (int i = 0; i < gamepadCount && i < 4; i++)
+                list.Add((MatchInput)((int)MatchInput.Gamepad1 + i));
+
+            return list.ToArray();
         }
 
         private static int FirstFreeHome(bool[] used)

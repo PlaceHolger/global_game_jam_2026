@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -59,9 +58,16 @@ namespace Warmask.Editor
             string output = Path.GetFullPath("Builds/upgrade-smoke/Warmask.exe");
             Directory.CreateDirectory(Path.GetDirectoryName(output) ?? ".");
 
+            var enabledScenes = new System.Collections.Generic.List<string>();
+            foreach (var s in EditorBuildSettings.scenes)
+            {
+                if (s.enabled)
+                    enabledScenes.Add(s.path);
+            }
+
             var options = new BuildPlayerOptions
             {
-                scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray(),
+                scenes = enabledScenes.ToArray(),
                 locationPathName = output,
                 target = BuildTarget.StandaloneWindows64,
                 options = BuildOptions.None

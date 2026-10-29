@@ -573,11 +573,13 @@ namespace Warmask.Ship
                     laserVisual.SetPosition(1, laserEndPosition);
                     SetLaserActive(true);
 
-                    if (laserAudioEffect && ShipProfiling.EnableAudio && Time.time >= nextLaserAudioTime)
-                    {
-                        nextLaserAudioTime = Time.time + 0.03f;
-                        laserAudioEffect.PlayOneShot(laserAudioEffect.clip);
-                    }
+                        if (laserAudioEffect && ShipProfiling.EnableAudio && Time.time >= nextLaserAudioTime)
+                        {
+                            nextLaserAudioTime = Time.time + 0.12f;
+                            laserAudioEffect.pitch = 0.85f + (int)shipType * 0.07f + Random.Range(-0.06f, 0.06f);
+                            if (laserAudioEffect.clip)
+                                laserAudioEffect.PlayOneShot(laserAudioEffect.clip, 0.6f);
+                        }
                 }
 
                 if (onActiveMask && spriteRenderer && ShipProfiling.EnableRendering && ShipProfiling.EnableHitFlash)

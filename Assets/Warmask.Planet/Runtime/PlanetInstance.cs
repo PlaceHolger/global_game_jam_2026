@@ -48,6 +48,12 @@ namespace Warmask.Planet
         [SerializeField, Tooltip("Explosion prefab spawned when planet is captured")]
         private GameObject explosionPrefab;
 
+        [SerializeField, Tooltip("AudioSource used for the capture sound effect")]
+        private AudioSource captureAudio;
+
+        [SerializeField, Tooltip("One capture sound per player (index = player id)")]
+        private AudioClip[] captureSounds;
+
         [SerializeField, Tooltip("Highlight GameObject for selection indication")]
         private GameObject selection_highlight;
 
@@ -199,6 +205,18 @@ namespace Warmask.Planet
                 else
                 {
                     Destroy(Instantiate(explosionPrefab, transform.position, Quaternion.identity), 2f);
+                }
+
+                // Play a unique capture sound per player.
+                if (captureAudio != null && captureSounds != null && captureSounds.Length > 0)
+                {
+                    int idx = Mathf.Clamp((int)newOwner - 1, 0, captureSounds.Length - 1);
+                    AudioClip clip = captureSounds[idx];
+                    if (clip != null)
+                    {
+                        captureAudio.pitch = 1f;
+                        captureAudio.PlayOneShot(clip);
+                    }
                 }
             }
 
