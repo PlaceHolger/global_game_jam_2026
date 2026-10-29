@@ -192,6 +192,19 @@
       "source": "builtin",
       "dependencies": {}
     },
+    "com.unity.project-auditor": {
+      "version": "2.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "dependencies": {}
+    },
+    "com.unity.project-auditor-rules": {
+      "version": "2.0.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
     "com.unity.render-pipelines.core": {
       "version": "17.7.0",
       "depth": 1,
